@@ -1,0 +1,11 @@
+{
+  "name": "Application-for-Student-Attendance",
+  "version": "1.0.0",
+  "description": "Application",
+  "main": "index.js",
+  "scripts": {
+    "test": "dev"
+  },
+  "author": "",
+  "license": "ISC"
+}
