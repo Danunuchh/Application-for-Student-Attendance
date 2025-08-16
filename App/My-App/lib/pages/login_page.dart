@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import './signup.dart';
 
 class LoginPage extends StatefulWidget {
@@ -16,18 +17,19 @@ class _LoginPageState extends State<LoginPage> {
   static const Color kShadow = Color(0x1A000000);
 
   InputDecoration _fieldDeco(String hint) => InputDecoration(
-    hintText: hint,
-    isDense: true,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: kPrimary, width: 1.5),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: kPrimary, width: 2),
-    ),
-  );
+        hintText: hint,
+        isDense: true,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kPrimary, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kPrimary, width: 2),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -40,27 +42,17 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // image
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 22,
                   ),
-                  decoration: BoxDecoration(
-                    color: kPrimaryLight.withOpacity(0.6),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: kShadow,
-                        blurRadius: 12,
-                        offset: Offset(0, 6),
-                      ),
-                    ],
-                  ),
                   child: Center(
                     child: Image.asset(
-                      'assets/illustration.png',
-                      height: 140,
+                      'assets/login.png',
+                      height: 250,
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -96,9 +88,8 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
-                SizedBox(
-                  height: 48,
+                // ปุ่มเข้าสู่ระบบ 
+                Center(
                   child: ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
@@ -106,7 +97,11 @@ class _LoginPageState extends State<LoginPage> {
                       elevation: 6,
                       shadowColor: kPrimary.withOpacity(0.6),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(24), // มุมโค้ง
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30, // ระยะรอบข้อความ
+                        vertical: 12,
                       ),
                     ),
                     child: const Text(
@@ -115,17 +110,16 @@ class _LoginPageState extends State<LoginPage> {
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1,
-                        color: Colors.white, // เปลี่ยนสีข้อความเป็นสีขาว
+                        color: Colors.white,
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 28),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 22,
-                  ),
+                  // width: double.infinity,
+                  padding:
+                    const EdgeInsets.symmetric(horizontal: 22, vertical: 30),
                   decoration: BoxDecoration(
                     color: kPrimaryLight,
                     borderRadius: BorderRadius.circular(24),
@@ -149,7 +143,6 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(width: 12),
                       ElevatedButton(
                         onPressed: () {
-                          // เมื่อคลิกปุ่มสมัครลงทะเบียน จะไปหน้าลงทะเบียน
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -161,7 +154,7 @@ class _LoginPageState extends State<LoginPage> {
                           backgroundColor: kPrimary,
                           elevation: 4,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
+                            horizontal: 20,
                             vertical: 10,
                           ),
                           shape: RoundedRectangleBorder(
@@ -172,7 +165,7 @@ class _LoginPageState extends State<LoginPage> {
                           'ลงทะเบียน',
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            color: Colors.white, // เปลี่ยนสีข้อความเป็นสีขาว
+                            color: Colors.white,
                           ),
                         ),
                       ),

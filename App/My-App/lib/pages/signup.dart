@@ -119,7 +119,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           child: Container(
                             color: const Color(0xFFEFF5FF),
                             child: Image.asset(
-                              'assets/illustrations/signup.png',
+                              'assets/signup.png',
                               fit: BoxFit.contain,
                               errorBuilder: (_, __, ___) => const Icon(
                                 Icons.image,
