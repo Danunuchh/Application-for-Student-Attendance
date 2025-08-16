@@ -1,33 +1,29 @@
 import 'package:flutter/material.dart';
+import './pages/login_page.dart';
+import './pages/signup.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
+      title: 'Uni Check', // ชื่อแอป
+      debugShowCheckedModeBanner: false, // ปิดแถบ Debug
+      initialRoute: '/login', // กำหนดหน้าเริ่มต้น
+      routes: {
+        '/login': (context) => const LoginPage(), // กำหนดเส้นทางไปหน้า Login
+        '/signup': (context) => const SignUpPage(), // กำหนดเส้นทางไปหน้า SignUp
+        // กำหนดเส้นทางไปหน้า AttendancePage
+      },
       theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white, // <-- ตั้งพื้นหลังเป็นสีขาว
+        primarySwatch: Colors.blue, // กำหนดสีหลักให้กับแอป
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const MyHomePage(),
     );
   }
 }
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: const Center(child: Text('สวัสดีไอแก่')),
-    );
-  }
-}
-
