@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import './pages/login_page.dart';
 import './pages/signup.dart';
+import './pages/splash_screen.dart'; // แก้ไข: เพิ่ม ;
+
 
 void main() {
   runApp(const MyApp());
@@ -12,16 +14,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Uni Check', // ชื่อแอป
-      debugShowCheckedModeBanner: false, // ปิดแถบ Debug
-      initialRoute: '/login', // กำหนดหน้าเริ่มต้น
+      title: 'Uni Check',
+      debugShowCheckedModeBanner: false,
+      initialRoute: '/splash', // แก้ไข: ตั้งหน้า Splash เป็นหน้าแรก
       routes: {
-        '/login': (context) => const LoginPage(), // กำหนดเส้นทางไปหน้า Login
-        '/signup': (context) => const SignUpPage(), // กำหนดเส้นทางไปหน้า SignUp
-        // กำหนดเส้นทางไปหน้า AttendancePage
+        '/splash': (context) => const SplashScreenPage(), 
+        '/login': (context) => const LoginPage(),
+        '/signup': (context) => const SignUpPage(),
       },
       theme: ThemeData(
-        primarySwatch: Colors.blue, // กำหนดสีหลักให้กับแอป
+        // primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
     );

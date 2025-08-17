@@ -30,7 +30,7 @@ class _SignUpPageState extends State<SignUpPage> {
   // ฟอร์มเพิ่มเติม
   static const String kOtherTitle = 'อื่นๆ (ระบุ)';
   final List<String> _titles = const ['นาย', 'นางสาว', kOtherTitle];
-  String? _title; // คำนำหน้า
+  String? _prefix; // คำนำหน้า
   String? _gender; // 'ชาย' หรือ 'หญิง'
   bool _obscure1 = true;
   bool _obscure2 = true;
@@ -68,7 +68,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future<void> _onSignUp() async {
     final formOk = _formKey.currentState?.validate() ?? false;
-    final needCustom = _title == kOtherTitle;
+    final needCustom = _prefix == kOtherTitle;
     final customOk = !needCustom || _customTitleCtrl.text.trim().isNotEmpty;
 
     if (!formOk || _gender == null || !customOk) {
@@ -132,7 +132,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               Flexible(
                                 flex: 5,
                                 child: DropdownButtonFormField<String>(
-                                  value: _title,
+                                  value: _prefix,
                                   isExpanded: true,
                                   decoration: _deco('คำนำหน้า').copyWith(
                                     contentPadding: const EdgeInsets.symmetric(
@@ -154,8 +154,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                       .toList(),
                                   onChanged: (v) {
                                     setState(() {
-                                      _title = v;
-                                      if (_title != kOtherTitle) {
+                                      _prefix = v;
+                                      if (_prefix != kOtherTitle) {
                                         _customTitleCtrl.clear();
                                       }
                                     });
@@ -179,14 +179,14 @@ class _SignUpPageState extends State<SignUpPage> {
                               ),
                             ],
                           ),
-                          if (_title == kOtherTitle) ...[
+                          if (_prefix == kOtherTitle) ...[
                             const SizedBox(height: 12),
                             TextFormField(
                               controller: _customTitleCtrl,
                               textInputAction: TextInputAction.next,
                               decoration: _deco('ระบุคำนำหน้าเอง'),
                               validator: (_) {
-                                if (_title == kOtherTitle &&
+                                if (_prefix == kOtherTitle &&
                                     _customTitleCtrl.text.trim().isEmpty) {
                                   return 'โปรดระบุคำนำหน้าที่ต้องการ';
                                 }
@@ -267,8 +267,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                     setState(() => _obscure1 = !_obscure1),
                                 icon: Icon(
                                   _obscure1
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
                                 ),
                               ),
                             ),
@@ -286,8 +286,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                     setState(() => _obscure2 = !_obscure2),
                                 icon: Icon(
                                   _obscure2
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
                                 ),
                               ),
                             ),
