@@ -137,7 +137,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   decoration: _deco('คำนำหน้า').copyWith(
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 12,
-                                      vertical: 10,
+                                      vertical: 12,
                                     ),
                                   ),
                                   dropdownColor: Colors.white, // ทำให้พื้นหลัง dropdown เป็นสีขาว
