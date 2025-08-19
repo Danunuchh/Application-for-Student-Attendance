@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import './signup.dart'; // แก้ไขเป็น signup.dart
+import './signup.dart';
+import './courses_page.dart'; // NEW: หน้าคลาสเรียน
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,6 +12,11 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _obscure = true;
 
+  // NEW: controller + loading state
+  final TextEditingController _emailCtrl = TextEditingController();
+  final TextEditingController _passCtrl = TextEditingController();
+  bool _loading = false;
+
   // เพิ่มสีจากหน้า SignUpPage
   static const Color kPrimary = Color(0xFF84A9EA);
   static const Color kPrimaryLight = Color(0xFFAEC8F2);
@@ -18,22 +24,50 @@ class _LoginPageState extends State<LoginPage> {
   static const Color kBorder = Color(0xFF88A8E8);
   static const Color kFocused = Color(0xFF88A8E8); //โฟกัสเมื่อกดที่ช่อง
   static const Color kBtn = Color(0xFFA7C7FF);
-  static const Color kBottom = Color(0xFFA6CAFA); 
+  static const Color kBottom = Color(0xFFA6CAFA);
 
   InputDecoration _fieldDeco(String hint) => InputDecoration(
-        hintText: hint,
-        isDense: true,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kPrimary, width: 1.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kFocused, width: 2),
-        ),
-      );
+    hintText: hint,
+    isDense: true,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: kPrimary, width: 1.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: kFocused, width: 2),
+    ),
+  );
+
+  // NEW: ฟังก์ชันเข้าสู่ระบบ (mock) แล้วไปหน้า "คลาสเรียน"
+  Future<void> _login() async {
+    // ตรวจช่องว่างแบบง่ายๆ
+    if (_emailCtrl.text.isEmpty || _passCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('กรอกอีเมลและรหัสผ่านก่อน')));
+      return;
+    }
+
+    setState(() => _loading = true);
+    await Future.delayed(const Duration(milliseconds: 600)); // mock แทน API
+    if (!mounted) return;
+
+    // ไปหน้า "คลาสเรียน" และปิดหน้า login (ย้อนกลับไม่ได้)
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const CoursesPage()),
+    );
+  }
+
+  @override
+  void dispose() {
+    // NEW: ล้าง controller
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +78,10 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -60,21 +97,20 @@ class _LoginPageState extends State<LoginPage> {
                           'assets/login.png',
                           height: 250,
                           fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const Icon(
-                            Icons.image,
-                            size: 80,
-                            color: kBorder,
-                          ),
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.image, size: 80, color: kBorder),
                         ),
                       ),
                     ),
                     const SizedBox(height: 28),
                     TextField(
+                      controller: _emailCtrl, // NEW
                       keyboardType: TextInputType.emailAddress,
                       decoration: _fieldDeco('อีเมล'),
                     ),
                     const SizedBox(height: 16),
                     TextField(
+                      controller: _passCtrl, // NEW
                       obscureText: _obscure,
                       decoration: _fieldDeco('รหัสผ่าน').copyWith(
                         suffixIcon: IconButton(
@@ -95,14 +131,16 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: const Text(
                           'ลืมรหัสผ่าน ?',
-                          style: TextStyle(decoration: TextDecoration.underline),
+                          style: TextStyle(
+                            decoration: TextDecoration.underline,
+                          ),
                         ),
                       ),
                     ),
                     // ปุ่มเข้าสู่ระบบ
                     Center(
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: _loading ? null : _login, // NEW
                         style: ElevatedButton.styleFrom(
                           backgroundColor: kPrimary,
                           elevation: 6,
@@ -115,15 +153,26 @@ class _LoginPageState extends State<LoginPage> {
                             vertical: 10,
                           ),
                         ),
-                        child: const Text(
-                          'เข้าสู่ระบบ',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1,
-                            color: Colors.white,
-                          ),
-                        ),
+                        child: _loading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Text(
+                                'เข้าสู่ระบบ',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -131,7 +180,8 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-            Container( // ส่วนของปุ่ม "ลงทะเบียน"
+            Container(
+              // ส่วนของปุ่ม "ลงทะเบียน"
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
               decoration: const BoxDecoration(
                 color: kBottom,
@@ -145,13 +195,13 @@ class _LoginPageState extends State<LoginPage> {
                 child: SizedBox(
                   width: double.infinity,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center, // แก้ไขที่นี่
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
                         "ยังไม่มีบัญชีผู้ใช้?",
                         style: TextStyle(fontSize: 14, color: Colors.black87),
                       ),
-                      const SizedBox(width: 8), // เพิ่ม SizedBox เล็กน้อยเพื่อไม่ให้ชิดกันเกินไป
+                      const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () {
                           Navigator.push(

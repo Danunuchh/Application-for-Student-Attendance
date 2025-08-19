@@ -1,3 +1,4 @@
+// android/app/build.gradle
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -20,11 +21,9 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.my_app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // ✅ สำคัญ: ตั้งค่าตายตัวเป็น 21 เพื่อรองรับ mobile_scanner
+        minSdk = 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
