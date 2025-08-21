@@ -84,7 +84,7 @@ class _SignUpPageState extends State<SignUpPage> {
     if (!mounted) return;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('สมัครสมาชิกสำเร็จ (ทดสอบ)')));
+    ).showSnackBar(const SnackBar(content: Text('ลงทะเบียนสำเร็จ')));         
   }
 
   @override

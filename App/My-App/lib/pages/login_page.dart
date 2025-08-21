@@ -42,11 +42,12 @@ class _LoginPageState extends State<LoginPage> {
 
   // NEW: ฟังก์ชันเข้าสู่ระบบ (mock) แล้วไปหน้า "คลาสเรียน"
   Future<void> _login() async {
-    // ตรวจช่องว่างแบบง่ายๆ
+    
+    // ตรวจช่องว่างแบบง่ายๆ ดัก Error
     if (_emailCtrl.text.isEmpty || _passCtrl.text.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('กรอกอีเมลและรหัสผ่านก่อน')));
+      ).showSnackBar(const SnackBar(content: Text('กรุณากรอกอีเมลและรหัสผ่าน')));
       return;
     }
 
