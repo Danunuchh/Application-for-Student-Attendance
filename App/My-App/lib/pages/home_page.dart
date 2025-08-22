@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/logo_area.dart';
-import '../widgets/menu_tile.dart';
+import '../widgets/menu_title.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -73,7 +73,7 @@ class HomePage extends StatelessWidget {
                     mainAxisSpacing: 16,
                     childAspectRatio: 1.05,
                   ),
-                  itemBuilder: (context, i) => MenuTile(data: items[i]),
+                  itemBuilder: (context, i) => MenuTitle(data: items[i]),
                 ),
               ),
             ),

@@ -71,8 +71,8 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
   void _applyNewToken(String token) {
     _token = token;
     _expiresAt = DateTime.now().add(
-      const Duration(minutes: 2),
-    ); // หมดอายุ 2 นาที
+      const Duration(minutes: 3),
+    ); // หมดอายุ 3 นาที
     _restartTicker();
     setState(() {});
   }
@@ -188,7 +188,7 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text('หมุนโทเคนใหม่ (Mock)'),
+                            : const Text('Refresh QR code'),
                       ),
                     ],
                   ),

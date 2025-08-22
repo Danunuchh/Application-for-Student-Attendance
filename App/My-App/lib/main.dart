@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import './pages/login_page.dart';
 import './pages/signup.dart'; // ต้องมีคลาส SignUpPage อยู่ในไฟล์นี้
 import './pages/splash_screen.dart'; // ต้องมีคลาส SplashScreenPage
-import 'students/guestupload_page.dart'; // ต้องมีคลาส GuestUploadPage
+import 'student/guestupload_page.dart'; // ต้องมีคลาส GuestUploadPage
 import './pages/courses_page.dart';
-import 'teachers/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
-import 'students/student_scan_page.dart';
-import './pages/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
-import './pages/student_scan_page.dart';
+import 'teacher/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
+import 'student/student_scan_page.dart';
+import './teacher/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
+import './student/student_scan_page.dart';
 import './pages/course_history_page.dart';
 
 void main() {

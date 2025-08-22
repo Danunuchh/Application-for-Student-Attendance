@@ -1,4 +1,4 @@
-name: smart_parking_for_university
+name: my_app
 description: "A new Flutter project."
 publish_to: 'none'
 version: 0.1.0
@@ -9,22 +9,21 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  file_picker: ^8.0.0
+  file_picker: ^10.3.2
   http: ^1.2.2
   flutter_svg: ^2.0.10
   cupertino_icons: ^1.0.8
   lottie: 
   animated_splash_screen: ^1.3.0
   qr_flutter: ^4.1.0
-  mobile_scanner: ^6.0.2
+  mobile_scanner: ^7.0.1
   shared_preferences: ^2.5.3
-  fl_chart: ^0.67.0
-  mobile_scanner: ^5.2.1
+  fl_chart: ^1.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true

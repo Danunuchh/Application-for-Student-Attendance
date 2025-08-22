@@ -252,8 +252,8 @@ class _SignUpPageState extends State<SignUpPage> {
                               if (v == null || v.isEmpty) return 'กรอกอีเมล';
                               final ok = RegExp(
                                 r'^[^@]+@[^@]+\.[^@]+',
-                              ).hasMatch(v.trim());
-                              return ok ? null : 'รูปแบบอีเมลไม่ถูกต้อง';
+                              ).hasMatch(v.trim()) && v.trim().endsWith('@kmitl.ac.th'); //ตรวจสอบ email และเพิ่มเงื่อนไข
+                              return ok ? null : 'กรุณากรอกอีเมลที่รูปแบบที่ถูกต้อง @kmitl.ac.th';
                             },
                           ),
                           const SizedBox(height: 14),
