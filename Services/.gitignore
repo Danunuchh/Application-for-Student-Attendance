@@ -1,0 +1,24 @@
+# dependencies
+# ไม่เอา node_modules ไปเก็บใน Git
+# node_modules สร้างใหม่จาก package.json ได้เสมอ
+/node_modules
+
+# testing
+# ไม่เอาโฟลเดอร์ coverage ของ testing tools (เช่น Jest)
+/coverage
+
+# production
+# ไม่เอาไฟล์ build หรือโค้ด compile
+# ไม่เอาไฟล์ .env → เก็บรหัสผ่าน/secret key
+/build
+.env
+
+# debug files
+# ลบไฟล์ log ของ npm/yarn
+npm-debug.log*
+yarn-debug.log*
+
+# OS files
+# ลบไฟล์ของ macOS และ settings ของ VSCode
+.DS_Store
+.vscode
