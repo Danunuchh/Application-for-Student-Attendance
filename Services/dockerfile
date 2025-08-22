@@ -1,0 +1,15 @@
+FROM node:20.17.0-alpine
+WORKDIR /usr/src/app
+
+# ติดตั้ง dependencies จาก lockfile
+COPY package*.json ./
+RUN npm ci
+
+# คัดลอกโค้ดทั้งหมด
+COPY . .
+
+# เปิด port
+EXPOSE 3000
+
+# รัน dev mode (เช่น nodemon)
+CMD ["npm", "run", "dev"]
