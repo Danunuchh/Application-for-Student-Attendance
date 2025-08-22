@@ -19,6 +19,7 @@ dependencies:
   mobile_scanner: ^6.0.2
   shared_preferences: ^2.5.3
   fl_chart: ^0.67.0
+  mobile_scanner: ^5.2.1
 
 dev_dependencies:
   flutter_test:

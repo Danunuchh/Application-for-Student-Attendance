@@ -6,6 +6,9 @@ import 'students/guestupload_page.dart'; // ต้องมีคลาส Guest
 import './pages/courses_page.dart';
 import 'teachers/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
 import 'students/student_scan_page.dart';
+import './pages/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
+import './pages/student_scan_page.dart';
+import './pages/course_history_page.dart';
 
 void main() {
   // WidgetsFlutterBinding.ensureInitialized(); // (ไม่บังคับตอนนี้)
@@ -33,6 +36,8 @@ class MyApp extends StatelessWidget {
         '/guestupload': (context) => const GuestUploadPage(),
         '/courses': (context) => const CoursesPage(),
         '/scan': (context) => const StudentScanPage(),
+        '/course_history': (context) => const CourseHistoryPage(),
+
         // ✳️ อย่าลงทะเบียน '/teacher_qr' ที่นี่แบบเปล่า ๆ
         // เพราะเราต้องส่ง arguments (courseId, courseName)
       },

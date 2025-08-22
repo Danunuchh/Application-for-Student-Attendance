@@ -1,7 +1,5 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '12.0'
+platform :ios, '15.5'
 
-# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
@@ -28,16 +26,27 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
+  # ใช้ static frameworks + modular headers เพื่อให้ CocoaPods สร้าง module map ได้เสมอ
+  use_frameworks! :linkage => :static
+  use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
   target 'RunnerTests' do
     inherit! :search_paths
   end
 end
 
 post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    flutter_additional_ios_build_settings(target)
+  installer.pods_project.targets.each do |t|
+    flutter_additional_ios_build_settings(t)
+    t.build_configurations.each do |c|
+      # บังคับ iOS ขั้นต่ำและเปิดโมดูลให้ทุก Pod
+      c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
+      c.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+      c.build_settings['DEFINES_MODULE'] = 'YES'
+      # (ถ้าใช้ Apple Silicon แล้วเจอปัญหากับ simulator บางตัว ค่อยเปิดบรรทัดนี้)
+      # c.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+    end
   end
 end
