@@ -6,6 +6,7 @@ class MenuTitle extends StatelessWidget {
   final Color iconBg;
   final Color iconColor;
   final Color textColor;
+  final VoidCallback? onTap;
 
   const MenuTitle({
     super.key,
@@ -14,17 +15,22 @@ class MenuTitle extends StatelessWidget {
     required this.iconBg,
     required this.iconColor,
     required this.textColor,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(16);
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+      ), // ✅ รองรับ ripple ตามมุม
+      clipBehavior: Clip.antiAlias, // ✅ ตัด ripple ตามรัศมี
       elevation: 0,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {},
+        borderRadius: radius,
+        onTap: onTap, // ✅ ใช้ callback ที่ส่งเข้ามา
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           child: Column(
@@ -62,4 +68,3 @@ class MenuTitle extends StatelessWidget {
     );
   }
 }
-d

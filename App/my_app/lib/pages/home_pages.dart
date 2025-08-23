@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/logo_area.dart';
 import '../widgets/menu_title.dart';
+import '../student/leave_upload_page.dart'; // 👈 import หน้าลา
 
 class AppColors {
   static const primary = Color(0xFF4A86E8);
@@ -14,7 +15,8 @@ class AppColors {
 class MenuItemData {
   final String title;
   final IconData icon;
-  MenuItemData(this.title, this.icon);
+  final VoidCallback? onTap;
+  MenuItemData(this.title, this.icon, {this.onTap});
 }
 
 class HomePage extends StatelessWidget {
@@ -24,7 +26,16 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = <MenuItemData>[
       MenuItemData("ปฏิทิน", Icons.calendar_month_rounded),
-      MenuItemData("สั่งลา/มาสาย", Icons.schedule_rounded),
+      MenuItemData(
+        "สั่งลา/มาสาย",
+        Icons.schedule_rounded,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const LeaveUploadPage()),
+          );
+        },
+      ),
       MenuItemData("เอกสารที่รอ\nการอนุมัติ", Icons.description_rounded),
       MenuItemData("ประวัติ\nการเข้าเรียน", Icons.manage_search_rounded),
       MenuItemData("สรุป\nผลรายงาน", Icons.stacked_bar_chart_rounded),
@@ -125,6 +136,7 @@ class HomePage extends StatelessWidget {
                             iconBg: AppColors.card,
                             iconColor: AppColors.primary,
                             textColor: AppColors.sub,
+                            onTap: topRow[0].onTap, // 👈 เพิ่ม onTap
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -135,6 +147,8 @@ class HomePage extends StatelessWidget {
                             iconBg: AppColors.card,
                             iconColor: AppColors.primary,
                             textColor: AppColors.sub,
+                            onTap:
+                                topRow[1].onTap, // 👈 กดแล้วไป LeaveUploadPage
                           ),
                         ),
                       ],
@@ -150,6 +164,7 @@ class HomePage extends StatelessWidget {
                             iconBg: AppColors.card,
                             iconColor: AppColors.primary,
                             textColor: AppColors.sub,
+                            onTap: bottomRow[0].onTap,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -160,6 +175,7 @@ class HomePage extends StatelessWidget {
                             iconBg: AppColors.card,
                             iconColor: AppColors.primary,
                             textColor: AppColors.sub,
+                            onTap: bottomRow[1].onTap,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -170,6 +186,7 @@ class HomePage extends StatelessWidget {
                             iconBg: AppColors.card,
                             iconColor: AppColors.primary,
                             textColor: AppColors.sub,
+                            onTap: bottomRow[2].onTap,
                           ),
                         ),
                       ],

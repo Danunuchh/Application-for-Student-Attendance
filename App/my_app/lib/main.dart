@@ -9,6 +9,7 @@ import 'student/student_scan_page.dart';
 import './teacher/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
 import './student/student_scan_page.dart';
 import './pages/course_history_page.dart';
+import './student/leave_upload_page.dart';
 
 void main() {
   // WidgetsFlutterBinding.ensureInitialized(); // (ไม่บังคับตอนนี้)
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
         '/courses': (context) => const CoursesPage(),
         '/scan': (context) => const StudentScanPage(),
         '/course_history': (context) => const CourseHistoryPage(),
+        '/leave_upload': (context) => const LeaveUploadPage(),
 
         // ✳️ อย่าลงทะเบียน '/teacher_qr' ที่นี่แบบเปล่า ๆ
         // เพราะเราต้องส่ง arguments (courseId, courseName)
