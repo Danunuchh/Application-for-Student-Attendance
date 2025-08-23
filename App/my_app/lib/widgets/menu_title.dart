@@ -21,7 +21,6 @@ class MenuTitle extends StatelessWidget {
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
-      elevation: 0,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {},
@@ -30,7 +29,6 @@ class MenuTitle extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // ไอคอนในกล่องโค้งมนสีฟ้าอ่อน
               Container(
                 width: 72,
                 height: 72,
@@ -42,14 +40,13 @@ class MenuTitle extends StatelessWidget {
                 child: Icon(icon, size: 36, color: iconColor),
               ),
               const SizedBox(height: 10),
-              // ชื่อเมนู 1-2 บรรทัด ตรงกลาง
               Text(
                 title,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 14.5,
-                  height: 1.2,
+                  height: 1.15,
                   fontWeight: FontWeight.w600,
                 ),
                 maxLines: 2,
