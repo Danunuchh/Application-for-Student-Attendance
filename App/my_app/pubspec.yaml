@@ -32,4 +32,11 @@ flutter:
     - assets/signup.png
     - assets/unicheck.png
     - assets/loader.json
+    - assets/calendar.svg
+    - assets/file.svg
+    - assets/data-processing.svg
+    - assets/history.svg
+    - assets/dashboard.svg
+    - assets/home.svg
+
     

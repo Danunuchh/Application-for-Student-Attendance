@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class MenuTitle extends StatelessWidget {
   final String title;
-  final IconData icon;
+  final String svgPath;
   final Color iconBg;
   final Color iconColor;
   final Color textColor;
@@ -10,7 +11,7 @@ class MenuTitle extends StatelessWidget {
   const MenuTitle({
     super.key,
     required this.title,
-    required this.icon,
+    required this.svgPath,
     required this.iconBg,
     required this.iconColor,
     required this.textColor,
@@ -30,14 +31,18 @@ class MenuTitle extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 72,
-                height: 72,
+                width: 30,
+                height: 30,
                 decoration: BoxDecoration(
                   color: iconBg,
                   borderRadius: BorderRadius.circular(18),
                 ),
                 alignment: Alignment.center,
-                child: Icon(icon, size: 36, color: iconColor),
+                child: SvgPicture.asset(
+                  svgPath, 
+                  height: 20,
+                  color: iconColor,
+                ),
               ),
               const SizedBox(height: 10),
               Text(
