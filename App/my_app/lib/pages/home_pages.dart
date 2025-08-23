@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../widgets/menu_title.dart';
+import '../student/leave_upload_page.dart'; 
 
 class AppColors {
   static const primary = Color(0xFF4A86E8);
@@ -134,7 +135,7 @@ class HomePage extends StatelessWidget {
                         Expanded(
                           child: MenuTitle(
                             title: topRow[0].title,
-                            svgPath: topRow[0].svgPath,
+                            svgPath: topRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF4A86E8),
                             textColor: const Color(0xFF000000),
@@ -158,7 +159,7 @@ class HomePage extends StatelessWidget {
                         Expanded(
                           child: MenuTitle(
                             title: bottomRow[0].title,
-                            svgPath: bottomRow[0].svgPath,
+                            svgPath: topRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF4A86E8),
                             textColor: const Color(0xFF000000),
@@ -168,7 +169,7 @@ class HomePage extends StatelessWidget {
                         Expanded(
                           child: MenuTitle(
                             title: bottomRow[1].title,
-                            svgPath: bottomRow[1].svgPath,
+                            svgPath: topRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF4A86E8),
                             textColor: const Color(0xFF000000),
@@ -178,7 +179,7 @@ class HomePage extends StatelessWidget {
                         Expanded(
                           child: MenuTitle(
                             title: bottomRow[2].title,
-                            svgPath: bottomRow[2].svgPath,
+                            svgPath: topRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF4A86E8),
                             textColor: const Color(0xFF000000),
