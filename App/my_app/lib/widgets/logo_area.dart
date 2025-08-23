@@ -1,46 +1,51 @@
 import 'package:flutter/material.dart';
-import 'book_icon.dart';
 
 class LogoArea extends StatelessWidget {
   const LogoArea({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+    // โซนโลโก้จำลองให้คล้ายภาพ: ก้อนฟ้า + ข้อความ "Uni Check"
+    return SizedBox(
+      width: 340,
+      height: 240,
       child: Stack(
+        alignment: Alignment.center,
         children: [
+          // ก้อนฟ้า (blob) ขอบน้ำเงิน
           Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(top: 8, bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            width: 320,
+            height: 200,
             decoration: BoxDecoration(
-              color: cs.primary.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(28),
+              color: const Color(0xFFE8F1FF),
+              borderRadius: BorderRadius.circular(120),
+              border: Border.all(color: const Color(0xFF4A86E8), width: 3),
             ),
-            child: const SizedBox(height: 110),
           ),
-          Positioned(
-            right: 26,
-            top: 10,
-            child: BookIcon(coverColor: cs.primary, pageColor: Colors.white),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(left: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Uni",
-                  style: TextStyle(fontSize: 48, fontWeight: FontWeight.w800),
+          // ข้อความ
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Text(
+                "Uni",
+                style: TextStyle(
+                  fontSize: 72,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
+                  height: 0.9,
                 ),
-                Text(
-                  "Check",
-                  style: TextStyle(fontSize: 48, fontWeight: FontWeight.w800),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "Check",
+                style: TextStyle(
+                  fontSize: 64,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                  height: 0.9,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),

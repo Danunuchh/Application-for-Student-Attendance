@@ -1,61 +1,63 @@
 import 'package:flutter/material.dart';
-import '../pages/home_pages.dart';
-
 
 class MenuTitle extends StatelessWidget {
-  final Color coverColor;
-  final Color pageColor;
+  final String title;
+  final IconData icon;
+  final Color iconBg;
+  final Color iconColor;
+  final Color textColor;
+
   const MenuTitle({
     super.key,
-    required this.coverColor,
-    required this.pageColor,
+    required this.title,
+    required this.icon,
+    required this.iconBg,
+    required this.iconColor,
+    required this.textColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 72,
-      height: 64,
-      child: Stack(
-        children: [
-          Positioned(
-            left: 14,
-            top: 18,
-            child: _book(coverColor.withOpacity(0.9)),
-          ),
-          Positioned(left: 0, top: 0, child: _book(coverColor)),
-        ],
-      ),
-    );
-  }
-
-  Widget _book(Color cover) {
-    return Container(
-      width: 58,
-      height: 42,
-      decoration: BoxDecoration(
-        color: pageColor,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.black12),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            child: Container(
-              width: 16,
-              decoration: BoxDecoration(
-                color: cover,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(6),
-                  bottomLeft: Radius.circular(6),
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {},
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // ไอคอนในกล่องโค้งมนสีฟ้าอ่อน
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(18),
                 ),
+                alignment: Alignment.center,
+                child: Icon(icon, size: 36, color: iconColor),
               ),
-            ),
+              const SizedBox(height: 10),
+              // ชื่อเมนู 1-2 บรรทัด ตรงกลาง
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 14.5,
+                  height: 1.2,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
