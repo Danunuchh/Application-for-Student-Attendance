@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../pages/home_pages.dart';
 
-class BookIcon extends StatelessWidget {
+
+class MenuTitle extends StatelessWidget {
   final Color coverColor;
   final Color pageColor;
-  const BookIcon({
+  const MenuTitle({
     super.key,
     required this.coverColor,
     required this.pageColor,

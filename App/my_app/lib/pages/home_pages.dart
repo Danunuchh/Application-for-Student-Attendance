@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import '../widgets/logo_area.dart';
 import '../widgets/menu_title.dart';
 
+class MenuItemData {
+  final String title;
+  final IconData icon;
+
+  MenuItemData(this.title, this.icon);
+}
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -21,18 +28,20 @@ class HomePage extends StatelessWidget {
         onPressed: () {},
         child: const Icon(Icons.qr_code_2, size: 36),
       ),
-      bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: SizedBox(
         height: 64,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.home_rounded)),
-            const SizedBox(width: 48),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.campaign_rounded)),
-          ],
+        child: BottomAppBar(
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 8,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(onPressed: () {}, icon: const Icon(Icons.home_rounded)),
+              const SizedBox(width: 48),
+              IconButton(onPressed: () {}, icon: const Icon(Icons.campaign_rounded)),
+            ],
+          ),
         ),
       ),
       body: SafeArea(
@@ -43,22 +52,14 @@ class HomePage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                children: const [
                   Icon(Icons.notifications_none_rounded, color: Colors.amber, size: 28),
                   Icon(Icons.account_circle_rounded, color: Colors.black87, size: 30),
                 ],
               ),
             ),
             // Logo
-            const LogoArea(),
-            const SizedBox(height: 8),
-            const Padding(
-              padding: EdgeInsets.only(left: 24),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text("Menu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-              ),
-            ),
+            
             const SizedBox(height: 8),
             // Menu Grid
             Expanded(
@@ -73,7 +74,10 @@ class HomePage extends StatelessWidget {
                     mainAxisSpacing: 16,
                     childAspectRatio: 1.05,
                   ),
-                  itemBuilder: (context, i) => MenuTitle(data: items[i]),
+                  itemBuilder: (context, i) => MenuTitle(
+                    coverColor: Colors.blue,   // หรือเลือกตาม index
+                    pageColor: Colors.white,
+                  ),
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import './signup.dart';
 import './courses_page.dart'; // NEW: หน้าคลาสเรียน
+import 'home_pages.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -58,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
     // ไปหน้า "คลาสเรียน" และปิดหน้า login (ย้อนกลับไม่ได้)
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const CoursesPage()),
+      MaterialPageRoute(builder: (_) => const HomePage()), //HomePage  //CoursesPage
     );
   }
 
