@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import './login_page.dart';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -15,7 +18,7 @@ class _SignUpPageState extends State<SignUpPage> {
   static const Color kShadow = Color(0x1A000000);
   static const Color kBorder = Color(0xFF84A9EA); // เส้นกรอบช่อง
   static const Color kFocused = Color(0xFF88A8E8); //โฟกัสเมื่อกดที่ช่อง
-  static const Color kBtn = Color(0xFF84A9EA); // ปุ่ม login 
+  static const Color kBtn = Color(0xFF84A9EA); // ปุ่ม login
   static const Color kBottom = Color(0xFFA6CAFA); // แถบล่าง
 
   final _formKey = GlobalKey<FormState>();
@@ -47,24 +50,72 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   InputDecoration _deco(String hint) => InputDecoration(
-        hintText: hint,
-        isDense: true,
-        filled: true,
-        fillColor: Colors.white, //สีกล่องข้อความทั้งหมด
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kBorder, width: 1.4),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kBorder, width: 1.4),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: kFocused, width: 2),
-        ),
+    hintText: hint,
+    isDense: true,
+    filled: true,
+    fillColor: Colors.white, //สีกล่องข้อความทั้งหมด
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: kBorder, width: 1.4),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: kBorder, width: 1.4),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: kFocused, width: 2),
+    ),
+  );
+
+  // ฟังก์ชันส่งข้อมูลไป PHP
+  Future<void> _sendToServer() async {
+    final url = Uri.parse(
+      'http://10.0.2.2:8000/signup_api.php', //10.0.2.2 เป็น localhost ของโทรศัพท์
+    ); // เปลี่ยนเป็น URL ของคุณ
+    final data = {
+      'prefix': _prefix == kOtherTitle ? _customTitleCtrl.text.trim() : _prefix,
+      'full_name': _nameCtrl.text.trim(),
+      'gender': _gender,
+      'email': _emailCtrl.text.trim(),
+      'password': _passwordCtrl.text.trim(),
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(data),
       );
+
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        // result ขึ้นอยู่กับ php response
+        if (result['success'] == true) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('ลงทะเบียนสำเร็จ')));
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result['message'] ?? 'เกิดข้อผิดพลาด')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('ไม่สามารถเชื่อมต่อ server ได้')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
 
   Future<void> _onSignUp() async {
     final formOk = _formKey.currentState?.validate() ?? false;
@@ -77,14 +128,8 @@ class _SignUpPageState extends State<SignUpPage> {
     }
 
     setState(() => _signingUp = true);
-
-    await Future<void>.delayed(const Duration(milliseconds: 900));
-
+    await _sendToServer();
     setState(() => _signingUp = false);
-    if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('ลงทะเบียนสำเร็จ')));         
   }
 
   @override
@@ -140,7 +185,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                       vertical: 12,
                                     ),
                                   ),
-                                  dropdownColor: Colors.white, // ทำให้พื้นหลัง dropdown เป็นสีขาว
+                                  dropdownColor: Colors
+                                      .white, // ทำให้พื้นหลัง dropdown เป็นสีขาว
                                   items: _titles
                                       .map(
                                         (t) => DropdownMenuItem(
@@ -172,9 +218,11 @@ class _SignUpPageState extends State<SignUpPage> {
                                   textInputAction: TextInputAction.next,
                                   decoration: _deco('ชื่อ-นามสกุล'),
                                   validator: (v) =>
-                                      (v == null || v.trim().length < 3) //ให้กรอกชื่อมากกว่า 3
-                                          ? 'กรุณากรอกชื่อ'
-                                          : null,
+                                      (v == null ||
+                                          v.trim().length <
+                                              3) //ให้กรอกชื่อมากกว่า 3
+                                      ? 'กรุณากรอกชื่อ'
+                                      : null,
                                 ),
                               ),
                             ],
@@ -224,7 +272,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               ChoiceChip(
                                 label: const Text('หญิง'),
                                 selected: _gender == 'หญิง',
-                                onSelected: (_) => 
+                                onSelected: (_) =>
                                     setState(() => _gender = 'หญิง'),
                                 selectedColor: const Color(0xFFA6CAFA),
                                 backgroundColor: Colors.white,
@@ -250,10 +298,16 @@ class _SignUpPageState extends State<SignUpPage> {
                             decoration: _deco('อีเมล'),
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'กรอกอีเมล';
-                              final ok = RegExp(
-                                r'^[^@]+@[^@]+\.[^@]+',
-                              ).hasMatch(v.trim()) && v.trim().endsWith('@kmitl.ac.th'); //ตรวจสอบ email และเพิ่มเงื่อนไข
-                              return ok ? null : 'กรุณากรอกอีเมลที่รูปแบบที่ถูกต้อง @kmitl.ac.th';
+                              final ok =
+                                  RegExp(
+                                    r'^[^@]+@[^@]+\.[^@]+',
+                                  ).hasMatch(v.trim()) &&
+                                  v.trim().endsWith(
+                                    '@kmitl.ac.th',
+                                  ); //ตรวจสอบ email และเพิ่มเงื่อนไข
+                              return ok
+                                  ? null
+                                  : 'กรุณากรอกอีเมลที่รูปแบบที่ถูกต้อง @kmitl.ac.th';
                             },
                           ),
                           const SizedBox(height: 14),
@@ -305,7 +359,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                 elevation: 6,
                                 shadowColor: kPrimary.withOpacity(0.6),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24), // มุมโค้ง
+                                  borderRadius: BorderRadius.circular(
+                                    24,
+                                  ), // มุมโค้ง
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 26, // ระยะรอบข้อความ
@@ -330,8 +386,12 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
             ),
-            Container(  //แถบล่าง
-              padding: const EdgeInsets.symmetric(horizontal: 140, vertical: 30),
+            Container(
+              //แถบล่าง
+              padding: const EdgeInsets.symmetric(
+                horizontal: 140,
+                vertical: 30,
+              ),
               decoration: const BoxDecoration(
                 color: kBottom,
                 borderRadius: BorderRadius.only(
@@ -353,22 +413,22 @@ class _SignUpPageState extends State<SignUpPage> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                          backgroundColor: kPrimary,
-                          elevation: 4,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
+                      backgroundColor: kPrimary,
+                      elevation: 4,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
                     child: const Text(
                       'เข้าสู่ระบบ',
                       style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

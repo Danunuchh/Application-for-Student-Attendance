@@ -13,3 +13,5 @@ EXPOSE 3000
 
 # รัน dev mode (เช่น nodemon)
 CMD ["npm", "run", "dev"]
+
+

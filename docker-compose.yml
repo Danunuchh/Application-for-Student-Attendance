@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   backend:
     build:
       context: ./Services
-      dockerfile: dockerfile
+      dockerfile: Dockerfile-node
     container_name: backend-app
     ports:
       - "3000:3000"
@@ -14,8 +12,6 @@ services:
       DB_USER: root
       DB_PASSWORD: password
       DB_NAME: Application_attendance
-      CHOKIDAR_USEPOLLING: "true"
-      CHOKIDAR_INTERVAL: "300"
       TZ: Asia/Bangkok
     depends_on:
       - db
@@ -45,17 +41,30 @@ services:
       - db_data:/var/lib/mysql
       - ./db-init:/docker-entrypoint-initdb.d
 
+  php:
+    build:
+      context: ./Services
+      dockerfile: Dockerfile-php
+    container_name: php-app
+    ports:
+      - "8000:80"
+    volumes:
+      - ./Services:/var/www/html
+    depends_on:
+      - db
+    restart: always
+
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
     ports:
       - "8080:80"
-    restart: always
     environment:
       PMA_HOST: db
       MYSQL_ROOT_PASSWORD: password
     depends_on:
       - db
+    restart: always
 
 volumes:
   db_data:

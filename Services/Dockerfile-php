@@ -1,0 +1,16 @@
+FROM php:8.2-apache
+
+# ติดตั้ง dependencies สำหรับ MySQL
+RUN apt-get update && apt-get install -y \
+        default-mysql-client \
+        libzip-dev \
+        unzip \
+        libonig-dev \
+    && docker-php-ext-install pdo pdo_mysql mysqli \
+    && a2enmod rewrite
+
+# คัดลอกโค้ด PHP
+COPY . /var/www/html/
+
+WORKDIR /var/www/html
+EXPOSE 80
