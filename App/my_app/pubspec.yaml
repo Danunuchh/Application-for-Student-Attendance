@@ -19,6 +19,7 @@ dependencies:
   mobile_scanner: ^7.0.1
   shared_preferences: ^2.5.3
   fl_chart: ^1.0.0
+  table_calendar: ^3.0.9
 
 dev_dependencies:
   flutter_test:
