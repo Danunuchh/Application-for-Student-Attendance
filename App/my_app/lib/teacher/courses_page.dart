@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../teacher/teacher_qr_page.dart'; // เพิ่ม import
+import 'teacher_qr_page.dart'; // เพิ่ม import
 
 class CoursesPage extends StatefulWidget {
   const CoursesPage({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/course.dart';
-import '../teacher/course_card.dart';
+import 'course_card.dart';
 
 class CourseHistoryPage extends StatelessWidget {
   const CourseHistoryPage({super.key});

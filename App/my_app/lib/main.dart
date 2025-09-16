@@ -3,12 +3,12 @@ import './pages/login_page.dart';
 import './pages/signup.dart'; // ต้องมีคลาส SignUpPage อยู่ในไฟล์นี้
 import './pages/splash_screen.dart'; // ต้องมีคลาส SplashScreenPage
 import 'student/guestupload_page.dart'; // ต้องมีคลาส GuestUploadPage
-import './pages/courses_page.dart';
+import 'teacher/courses_page.dart';
 import 'teacher/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
 import 'student/student_scan_page.dart';
 import './teacher/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
 import './student/student_scan_page.dart';
-import './pages/course_history_page.dart';
+import 'teacher/course_history_page.dart';
 import './student/leave_upload_page.dart'; 
 
 void main() {
