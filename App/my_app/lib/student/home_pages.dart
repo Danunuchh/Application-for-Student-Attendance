@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:my_app/teacher/attendancehistory_page.dart';
+import 'package:my_app/student/leave_upload_page.dart';
 
 class AppColors {
   static const primary = Color(0xFF4A86E8);
@@ -133,16 +134,26 @@ class HomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
+                            // onTap: () { /* ไปหน้าปฏิทินถ้ามี */ },
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: MenuTitle(
-                            title: topRow[1].title,
+                            title: topRow[1].title, // ← ส่งใบลา/มาสาย
                             svgPath: topRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
+                            onTap: () {
+                              // ✅ กดแล้วไปหน้า LeaveUploadPage
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LeaveUploadPage(),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -162,13 +173,12 @@ class HomePage extends StatelessWidget {
                         const SizedBox(width: 16),
                         Expanded(
                           child: MenuTitle(
-                            title: bottomRow[1].title, // ✅ ประวัติการเข้าเรียน
+                            title: bottomRow[1].title, // ประวัติการเข้าเรียน
                             svgPath: bottomRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
                             onTap: () {
-                              // ✅ เพิ่ม onTap ตรงนี้
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -226,7 +236,7 @@ class MenuTitle extends StatelessWidget {
   final Color iconBg;
   final Color iconColor;
   final Color textColor;
-  final VoidCallback? onTap; // ✅ เพิ่ม onTap
+  final VoidCallback? onTap;
 
   const MenuTitle({
     super.key,
@@ -235,7 +245,7 @@ class MenuTitle extends StatelessWidget {
     required this.iconBg,
     required this.iconColor,
     required this.textColor,
-    this.onTap, // ✅ เพิ่ม
+    this.onTap,
   });
 
   @override
@@ -245,7 +255,7 @@ class MenuTitle extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: onTap, // ✅ ใช้ callback ที่ส่งมา
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           child: Column(
