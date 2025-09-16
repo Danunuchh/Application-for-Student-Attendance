@@ -39,5 +39,11 @@ flutter:
     - assets/history.svg
     - assets/dashboard.svg
     - assets/home.svg
+    - assets/qr-code.svg
+    - assets/bell.svg
+    - assets/profiles.svg
+    - assets/logout.svg
+    - assets/check.svg
+    - assets/num_student.svg
 
     

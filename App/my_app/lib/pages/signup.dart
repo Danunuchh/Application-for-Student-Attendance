@@ -107,7 +107,7 @@ class _SignUpPageState extends State<SignUpPage> {
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ไม่สามารถเชื่อมต่อ server ได้')),
+          const SnackBar(content: Text('อีเมลนี้ถูกใช้งานแล้ว')),
         );
       }
     } catch (e) {

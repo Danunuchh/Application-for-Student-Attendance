@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../widgets/menu_title.dart';
-import '../student/leave_upload_page.dart'; 
 
 class AppColors {
   static const primary = Color(0xFF4A86E8);
   static const ink = Color(0xFF1F2937);
   static const sub = Color.fromARGB(255, 196, 199, 208);
-  static const card = Color.fromARGB(255, 148, 171, 208);
-  static const bar = Color(0xFFA6CAFA);
   static const fabRing = Color(0xFFA6CAFA);
 }
 
 class MenuItemData {
   final String title;
-  final String svgPath; // ใช้ไฟล์ SVG แทน IconData
+  final String svgPath;
   MenuItemData(this.title, this.svgPath);
 }
 
@@ -24,11 +20,11 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <MenuItemData>[
-      MenuItemData("ปฏิทิน", "assets/calendar.svg"),
-      MenuItemData("ส่งใบลา/มาสาย", "assets/file.svg"),
-      MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/data-processing.svg"),
-      MenuItemData("ประวัติ\nการเข้าเรียน", "assets/history.svg"),
-      MenuItemData("สรุป\nผลรายงาน", "assets/dashboard.svg"),
+      MenuItemData("ปฏิทิน", "assets/bell.svg"),
+      MenuItemData("ส่งใบลา/มาสาย", "assets/num_student.svg"),
+      MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/bell.svg"),
+      MenuItemData("ประวัติ\nการเข้าเรียน", "assets/bell.svg"),
+      MenuItemData("สรุป\nผลรายงาน", "assets/bell.svg"),
     ];
     final topRow = items.sublist(0, 2);
     final bottomRow = items.sublist(2);
@@ -37,7 +33,7 @@ class HomePage extends StatelessWidget {
       backgroundColor: Colors.white,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
-        padding: const EdgeInsets.all(6), //กรอบวงกลม qr code 
+        padding: const EdgeInsets.all(6),
         decoration: const BoxDecoration(
           color: AppColors.fabRing,
           shape: BoxShape.circle,
@@ -45,14 +41,14 @@ class HomePage extends StatelessWidget {
         child: FloatingActionButton.large(
           elevation: 2,
           backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF4A86E8),
+          foregroundColor: AppColors.primary,
           shape: const CircleBorder(),
           onPressed: () {},
           child: SvgPicture.asset(
-            "assets/qr-code.svg",
+            'assets/bell.svg',
             width: 36,
             height: 36,
-            color: AppColors.primary,
+            fit: BoxFit.contain,
           ),
         ),
       ),
@@ -63,12 +59,12 @@ class HomePage extends StatelessWidget {
           shape: const CircularNotchedRectangle(),
           notchMargin: 4,
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Row(
+          child: const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _BarIcon(svgPath: "assets/home.svg"),
-              const SizedBox(width: 48),
-              _BarIcon(svgPath: "assets/logout.svg"),
+              _BarIcon(svgPath: "assets/bell.svg"),
+              SizedBox(width: 50),
+              _BarIcon(svgPath: "assets/bell.svg"),
             ],
           ),
         ),
@@ -89,14 +85,15 @@ class HomePage extends StatelessWidget {
                     height: 28,
                   ),
                   SvgPicture.asset(
-                    "assets/profiles.svg",
+                    "assets/num_student.svg",
                     width: 30,
                     height: 30,
                   ),
                 ],
               ),
             ),
-            // unicheck
+
+            // Unicheck logo
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 22),
               child: Center(
@@ -127,7 +124,7 @@ class HomePage extends StatelessWidget {
             // เมนู: แถวบน 2, แถวล่าง 3
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 120), //ระยะห่างระหว่างเมนู
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 120),
                 child: Column(
                   children: [
                     Row(
@@ -135,10 +132,10 @@ class HomePage extends StatelessWidget {
                         Expanded(
                           child: MenuTitle(
                             title: topRow[0].title,
-                            svgPath: topRow[1].svgPath,
+                            svgPath: topRow[0].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF4A86E8),
-                            textColor: const Color(0xFF000000),
+                            iconColor: const Color(0xFF000000),
+                            textColor: Colors.black,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -147,8 +144,8 @@ class HomePage extends StatelessWidget {
                             title: topRow[1].title,
                             svgPath: topRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF4A86E8),
-                            textColor: const Color(0xFF000000),
+                            iconColor: const Color(0xFF000000),
+                            textColor: Colors.black,
                           ),
                         ),
                       ],
@@ -159,30 +156,30 @@ class HomePage extends StatelessWidget {
                         Expanded(
                           child: MenuTitle(
                             title: bottomRow[0].title,
-                            svgPath: topRow[1].svgPath,
+                            svgPath: bottomRow[0].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF4A86E8),
-                            textColor: const Color(0xFF000000),
+                            iconColor: const Color(0xFF000000),
+                            textColor: Colors.black,
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: MenuTitle(
                             title: bottomRow[1].title,
-                            svgPath: topRow[1].svgPath,
+                            svgPath: bottomRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF4A86E8),
-                            textColor: const Color(0xFF000000),
+                            iconColor: const Color(0xFF000000),
+                            textColor: Colors.black,
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: MenuTitle(
                             title: bottomRow[2].title,
-                            svgPath: topRow[1].svgPath,
+                            svgPath: bottomRow[2].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF4A86E8),
-                            textColor: const Color(0xFF000000),
+                            iconColor: const Color(0xFF000000),
+                            textColor: Colors.black,
                           ),
                         ),
                       ],
@@ -198,7 +195,6 @@ class HomePage extends StatelessWidget {
   }
 }
 
-// Widget สำหรับ icon bar
 class _BarIcon extends StatelessWidget {
   final String svgPath;
   const _BarIcon({required this.svgPath});
@@ -211,14 +207,13 @@ class _BarIcon extends StatelessWidget {
         svgPath,
         width: 28,
         height: 28,
-        color: AppColors.ink,
+        colorFilter: const ColorFilter.mode(AppColors.ink, BlendMode.srcIn),
       ),
       splashRadius: 24,
     );
   }
 }
 
-// Widget MenuTitle ปรับใหม่ให้รองรับ SVG
 class MenuTitle extends StatelessWidget {
   final String title;
   final String svgPath;
@@ -260,7 +255,7 @@ class MenuTitle extends StatelessWidget {
                   svgPath,
                   width: 36,
                   height: 36,
-                  color: iconColor,
+                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
                 ),
               ),
               const SizedBox(height: 10),
