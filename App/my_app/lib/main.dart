@@ -8,7 +8,7 @@ import 'teacher/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(cours
 import 'student/student_scan_page.dart';
 import './teacher/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
 import './student/student_scan_page.dart';
-import './pages/course_history_page.dart';
+import './teacher/course_history_page.dart';
 import './student/leave_upload_page.dart';
 
 void main() {

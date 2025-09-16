@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/pages/home_pages.dart';
-import './signup.dart';
-import './courses_page.dart'; // NEW: หน้าคลาสเรียน
-import 'home_pages.dart';
+import 'package:my_app/student/home_pages.dart';
+import 'package:my_app/pages/signup.dart';
+import 'package:my_app/teacher/courses_page.dart'; // NEW: หน้าคลาสเรียน
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
