@@ -20,10 +20,9 @@ class TeacherQRPage extends StatefulWidget {
 }
 
 class _TeacherQRPageState extends State<TeacherQRPage> {
-  // ====== STATE ======
-  String? _token; // โทเคน (mock)
-  DateTime? _expiresAt; // เวลาหมดอายุ
-  Timer? _ticker; // นับถอยหลัง
+  String? _token;
+  DateTime? _expiresAt;
+  Timer? _ticker;
   Duration _remain = Duration.zero;
   bool _loading = false;
 
@@ -32,7 +31,7 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
   @override
   void initState() {
     super.initState();
-    _startSessionMock(); // เริ่มแล้วเจน QR ทันที (จำลอง)
+    _startSessionMock();
   }
 
   @override
@@ -41,12 +40,9 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
     super.dispose();
   }
 
-  // ====== MOCK SERVICES ======
   Future<void> _startSessionMock() async {
     setState(() => _loading = true);
-    await Future.delayed(
-      const Duration(milliseconds: 300),
-    ); // จำลองรอเซิร์ฟเวอร์
+    await Future.delayed(const Duration(milliseconds: 300));
     _applyNewToken(_randomToken());
     setState(() => _loading = false);
   }
@@ -58,7 +54,6 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
     setState(() => _loading = false);
   }
 
-  // สร้าง token ใหม่แบบสุ่ม
   String _randomToken() {
     final rnd = Random();
     final body = List.generate(
@@ -70,16 +65,14 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
 
   void _applyNewToken(String token) {
     _token = token;
-    _expiresAt = DateTime.now().add(
-      const Duration(minutes: 3),
-    ); // หมดอายุ 3 นาที
+    _expiresAt = DateTime.now().add(const Duration(minutes: 3));
     _restartTicker();
     setState(() {});
   }
 
   void _restartTicker() {
     _ticker?.cancel();
-    _tick(); // อัปเดตครั้งแรก
+    _tick();
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
   }
 
@@ -98,30 +91,50 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
 
   @override
   Widget build(BuildContext context) {
-    final title = 'QR เช็คชื่อ — ${widget.courseName}';
-
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis, // กันชื่อวิชายาว
-          style: const TextStyle(fontWeight: FontWeight.w700),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Center(
+      body: Align(  
+        alignment: Alignment.topCenter,
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 420,
-            ), // กันแถวล้นจอใหญ่/เล็ก
+            constraints: const BoxConstraints(maxWidth: 420),
             child: _loading && _token == null
                 ? const Center(child: CircularProgressIndicator())
                 : Column(
                     mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      // หัวข้อย้ายมา Body
+                      const Text(
+                        'QR Code เช็คชื่อ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        widget.courseName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // QR Code
                       if (_token != null)
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -130,7 +143,7 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: const Color(0xFF88A8E8),
-                              width: 1.2,
+                              width: 2,
                             ),
                             boxShadow: const [
                               BoxShadow(
@@ -141,9 +154,7 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
                             ],
                           ),
                           child: QrImageView(
-                            data: jsonEncode({
-                              't': _token,
-                            }), // QR เก็บ {"t": token}
+                            data: jsonEncode({'t': _token}),
                             version: QrVersions.auto,
                             size: 250,
                             backgroundColor: Colors.white,
@@ -151,7 +162,7 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
                         ),
                       const SizedBox(height: 14),
 
-                      // ⛑ เปลี่ยนจาก Row -> Wrap กัน overflow แน่นอน
+                      // เวลานับถอยหลัง
                       if (_expiresAt != null)
                         Wrap(
                           alignment: WrapAlignment.center,
@@ -159,33 +170,44 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
                           spacing: 6,
                           runSpacing: 4,
                           children: [
-                            const Icon(
-                              Icons.timer_outlined,
-                              size: 18,
-                              color: Colors.black54,
-                            ),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 320),
-                              child: Text(
-                                'หมดอายุใน ${_fmtRemain()}',
-                                style: const TextStyle(color: Colors.black54),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                softWrap: false,
+                            const Icon(Icons.timer_outlined,
+                                size: 20, color: Colors.black54),
+                            Text(
+                              'หมดอายุใน ${_fmtRemain()}',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                color: Colors.black87,
                               ),
                             ),
                           ],
                         ),
+                      const SizedBox(height: 30),
 
-                      const SizedBox(height: 16),
-                      FilledButton.tonal(
+                      // ปุ่ม Refresh
+                      FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFFA6CAFA),
+                          foregroundColor: const Color(0xFF000000),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(28),
+                          ),
+                        ),
                         onPressed: _loading ? null : _rotateMock,
                         child: _loading
                             ? const SizedBox(
-                                width: 18,
-                                height: 18,
+                                width: 20,
+                                height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
+                                  color: Colors.white,
                                 ),
                               )
                             : const Text('Refresh QR code'),

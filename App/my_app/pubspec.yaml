@@ -45,5 +45,6 @@ flutter:
     - assets/logout.svg
     - assets/check.svg
     - assets/num_student.svg
+    - assets/arrow.svg
 
     
