@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/pages/home_pages.dart';
 import './signup.dart';
-import '../teacher/courses_page.dart'; // NEW: หน้าคลาสเรียน
-import '../student/home_pages.dart';
+import './courses_page.dart'; // NEW: หน้าคลาสเรียน
+import 'home_pages.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -43,12 +44,11 @@ class _LoginPageState extends State<LoginPage> {
 
   // NEW: ฟังก์ชันเข้าสู่ระบบ (mock) แล้วไปหน้า "คลาสเรียน"
   Future<void> _login() async {
-    
     // ตรวจช่องว่างแบบง่ายๆ ดัก Error
     if (_emailCtrl.text.isEmpty || _passCtrl.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('กรุณากรอกอีเมลและรหัสผ่าน')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('กรุณากรอกอีเมลและรหัสผ่าน')),
+      );
       return;
     }
 
@@ -59,7 +59,9 @@ class _LoginPageState extends State<LoginPage> {
     // ไปหน้า "คลาสเรียน" และปิดหน้า login (ย้อนกลับไม่ได้)
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const CoursesPage()), //HomePage  //CoursesPage
+      MaterialPageRoute(
+        builder: (_) => const HomePage(),
+      ), //HomePage  //CoursesPage
     );
   }
 
