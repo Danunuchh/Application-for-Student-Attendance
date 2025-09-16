@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'attendancedetail_page.dart';
+//import 'attendancedetail_page.dart';
 
 class AttendanceHistoryPage extends StatelessWidget {
   const AttendanceHistoryPage({super.key});
