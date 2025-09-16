@@ -22,7 +22,7 @@ class HomePage extends StatelessWidget {
     final items = <MenuItemData>[
       MenuItemData("ปฏิทิน", "assets/bell.svg"),
       MenuItemData("ส่งใบลา/มาสาย", "assets/num_student.svg"),
-      MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/bell.svg"),
+      MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/num_student.svg"),
       MenuItemData("ประวัติ\nการเข้าเรียน", "assets/bell.svg"),
       MenuItemData("สรุป\nผลรายงาน", "assets/bell.svg"),
     ];
