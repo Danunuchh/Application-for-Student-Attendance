@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LeaveUploadPage extends StatefulWidget {
   const LeaveUploadPage({super.key});
@@ -22,10 +23,10 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
   static const _ink = Color(0xFF1F2937);
   static const _hintGrey = Color(0xFF9CA3AF);
   static const _panelBg = Color(0xFFF6FAFF);
-  static const _chipBg = Color(0xFFE7E9FF);
+  static const _chipBg = Color.fromARGB(255, 254, 254, 254);
   static const _greenText = Color(0xFF16A34A);
 
-  static const _radius = 14.0;
+  static const _radius = 20.0;
   static const _padV = 12.0;
   static const _padH = 16.0;
   static const _borderWidth = 1.5;
@@ -121,25 +122,31 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
 
   // ====== ชุดตกแต่งกรอบอินพุตให้เหมือนกันทุกตัว ======
   InputDecoration _inputDecoration({String? hint, Widget? suffixIcon}) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: _hintGrey),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: _padH,
-        vertical: _padV,
-      ),
-      suffixIcon: suffixIcon,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(_radius)),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(_radius),
-        borderSide: const BorderSide(color: _borderBlue, width: _borderWidth),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(_radius),
-        borderSide: const BorderSide(color: _borderBlue, width: 2),
-      ),
-    );
-  }
+  return InputDecoration(
+    hintText: hint,
+    hintStyle: const TextStyle(color: _hintGrey),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: _padH,
+      vertical: _padV,
+    ),
+    suffixIcon: suffixIcon,
+    filled: true,
+    fillColor: Colors.white, // ✅ มีพื้นหลังตลอด
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(_radius),
+      borderSide: const BorderSide(color: _borderBlue, width: _borderWidth),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(_radius),
+      borderSide: const BorderSide(color: _borderBlue, width: _borderWidth),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(_radius),
+      borderSide: const BorderSide(color: _borderBlue, width: _borderWidth), // ✅ ไม่หนาขึ้น ไม่เปลี่ยนสี
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +154,12 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent, // ปิด overlay ตอนเลื่อน
         foregroundColor: _ink,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
           'แนบไฟล์การลา',
           style: TextStyle(fontWeight: FontWeight.w600),
@@ -163,7 +175,7 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
               decoration: BoxDecoration(
-                color: _panelBg,
+                color: const Color.from(alpha: 1, red: 1, green: 1, blue: 1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
@@ -175,10 +187,10 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(
-                      Icons.upload_outlined,
-                      size: 34,
-                      color: _chevronGrey,
+                    child: SvgPicture.asset(
+                      'assets/file.svg',
+                      width: 36,
+                      height: 36,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -197,7 +209,7 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                         horizontal: 22,
                         vertical: 10,
                       ),
-                      backgroundColor: _chipBg,
+                      backgroundColor: const Color(0xFFBFD6FF),
                       foregroundColor: _ink,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
@@ -228,12 +240,15 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
               ),
             ),
             InputDecorator(
-              decoration: _inputDecoration(),
+              decoration: _inputDecoration().copyWith(
+                filled: true,
+                fillColor: Colors.white, // ✅ สีพื้นหลังกล่อง Dropdown
+              ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _leaveType,
                   hint: const Text(
-                    'ประเภทการลา',
+                    'เลือกประเภทการลา',
                     style: TextStyle(color: _hintGrey),
                   ),
                   isExpanded: true,
@@ -241,9 +256,16 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                     Icons.keyboard_arrow_down_rounded,
                     color: _chevronGrey,
                   ),
+                  dropdownColor: const Color.fromARGB(255, 255, 255, 255), // ✅ สีพื้นหลังของเมนูที่แสดงออกมา
                   items: const [
-                    DropdownMenuItem(value: 'ลากิจ', child: Text('ลากิจ')),
-                    DropdownMenuItem(value: 'ลาป่วย', child: Text('ลาป่วย')),
+                    DropdownMenuItem(
+                      value: 'ลากิจ',
+                      child: Text('ลากิจ'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'ลาป่วย',
+                      child: Text('ลาป่วย'),
+                    ),
                   ],
                   onChanged: (v) => setState(() => _leaveType = v),
                 ),
@@ -266,12 +288,12 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                 onTap: _pickDate,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: _padH,
-                    vertical: _padV,
+                    horizontal: 22,
+                    vertical: 22,
                   ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(_radius),
-                    border: Border.all(color: _borderBlue, width: _borderWidth),
+                    border: Border.all(color: const Color(0xFFBFD6FF), width: _borderWidth),
                   ),
                   child: Row(
                     children: [
@@ -291,7 +313,7 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                       ),
                       const Spacer(),
                       const Icon(
-                        Icons.keyboard_arrow_down_rounded,
+                        Icons.keyboard_arrow_down_rounded, 
                         color: _chevronGrey,
                       ),
                     ],

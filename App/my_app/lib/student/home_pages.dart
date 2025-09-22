@@ -64,7 +64,7 @@ class HomePage extends StatelessWidget {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _BarIcon(svgPath: "assets/bell.svg"),
+              _BarIcon(svgPath: "assets/time.svg"),
               SizedBox(width: 50),
               _BarIcon(svgPath: "assets/bell.svg"),
             ],
@@ -81,9 +81,12 @@ class HomePage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SvgPicture.asset("assets/bell.svg", width: 28, height: 28),
                   SvgPicture.asset(
-                    "assets/num_student.svg",
+                    "assets/bell.svg", 
+                    width: 28, 
+                    height: 28),
+                  SvgPicture.asset(
+                    "assets/add.svg",
                     width: 30,
                     height: 30,
                   ),

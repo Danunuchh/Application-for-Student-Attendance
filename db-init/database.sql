@@ -6,7 +6,7 @@ CREATE DATABASE IF NOT EXISTS `Application_attendance` CHARACTER SET utf8mb4 COL
 USE `Application_attendance`;
 
 -- Drop old tables (respect FK dependency order)
-DROP TABLE IF EXISTS `User`;
+DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `Gender`;
 DROP TABLE IF EXISTS `Prefix`;
 DROP TABLE IF EXISTS `Day`;
@@ -37,7 +37,7 @@ CREATE TABLE `Prefix` (
 -- =========================
 -- USERS TABLE
 -- =========================
-CREATE TABLE `User` (
+CREATE TABLE `users` (
   `user_id`             INT PRIMARY KEY,
   `full_name`           VARCHAR(255),
   `email`               VARCHAR(255),

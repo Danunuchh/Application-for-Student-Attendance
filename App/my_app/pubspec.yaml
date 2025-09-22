@@ -21,6 +21,10 @@ dependencies:
   fl_chart: ^1.0.0
   table_calendar: ^3.0.9
 
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -34,18 +38,13 @@ flutter:
     - assets/signup.png
     - assets/unicheck.png
     - assets/loader.json
-    - assets/calendar.svg
-    - assets/file.svg
-    - assets/data-processing.svg
-    - assets/history.svg
-    - assets/dashboard.svg
-    - assets/home.svg
-    - assets/qr-code.svg
     - assets/bell.svg
-    - assets/profiles.svg
-    - assets/logout.svg
     - assets/check.svg
     - assets/num_student.svg
     - assets/arrow.svg
-
+    - assets/time.svg
+    - assets/add.svg
+    - assets/plus.svg
+    - assets/exclamation.svg
+    - assets/file.svg
     
