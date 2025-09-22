@@ -188,7 +188,7 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: SvgPicture.asset(
-                      'assets/file.svg',
+                      'assets/fileupload.svg',
                       width: 36,
                       height: 36,
                     ),

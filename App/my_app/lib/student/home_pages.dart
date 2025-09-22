@@ -22,11 +22,11 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <MenuItemData>[
-      MenuItemData("ปฏิทิน", "assets/bell.svg"),
-      MenuItemData("ส่งใบลา/มาสาย", "assets/num_student.svg"),
-      MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/num_student.svg"),
-      MenuItemData("ประวัติ\nการเข้าเรียน", "assets/bell.svg"),
-      MenuItemData("สรุป\nผลรายงาน", "assets/bell.svg"),
+      MenuItemData("ปฏิทิน", "assets/calendar.svg"),
+      MenuItemData("ส่งใบลา/มาสาย", "assets/file.svg"),
+      MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/document.svg"),
+      MenuItemData("ประวัติ\nการเข้าเรียน", "assets/history.svg"),
+      MenuItemData("สรุป\nผลรายงาน", "assets/piechart.svg"),
     ];
     final topRow = items.sublist(0, 2);
     final bottomRow = items.sublist(2);
@@ -47,9 +47,9 @@ class HomePage extends StatelessWidget {
           shape: const CircleBorder(),
           onPressed: () {},
           child: SvgPicture.asset(
-            'assets/bell.svg',
-            width: 36,
-            height: 36,
+            'assets/qr_code.svg',
+            width: 50,
+            height: 50,
             fit: BoxFit.contain,
           ),
         ),
@@ -64,9 +64,9 @@ class HomePage extends StatelessWidget {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _BarIcon(svgPath: "assets/time.svg"),
+              _BarIcon(svgPath: "assets/home.svg"),
               SizedBox(width: 50),
-              _BarIcon(svgPath: "assets/bell.svg"),
+              _BarIcon(svgPath: "assets/logout.svg"),
             ],
           ),
         ),
@@ -86,7 +86,7 @@ class HomePage extends StatelessWidget {
                     width: 28, 
                     height: 28),
                   SvgPicture.asset(
-                    "assets/add.svg",
+                    "assets/profile.svg",
                     width: 30,
                     height: 30,
                   ),

@@ -47,4 +47,17 @@ flutter:
     - assets/plus.svg
     - assets/exclamation.svg
     - assets/file.svg
-    
+    - assets/calendar.svg
+    - assets/check_circle.svg
+    - assets/fileupload.svg
+    - assets/fix.svg
+    - assets/history.svg
+    - assets/home.svg
+    - assets/logout.svg
+    - assets/map.svg
+    - assets/piechart.svg
+    - assets/profile.svg
+    - assets/qr_code.svg
+    - assets/search.svg
+    - assets/cross_circle.svg
+    - assets/document.svg
