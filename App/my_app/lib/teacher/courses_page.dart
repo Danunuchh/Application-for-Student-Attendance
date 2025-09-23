@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'teacher_qr_page.dart';
-import 'addcourse_page.dart'; // <-- เพิ่มไฟล์นี้
+import 'addcourse_page.dart';
+import 'course_detail_page.dart';
 
 class CoursesPage extends StatefulWidget {
   const CoursesPage({super.key});
@@ -10,7 +11,7 @@ class CoursesPage extends StatefulWidget {
 }
 
 class _CoursesPageState extends State<CoursesPage> {
-  // เปลี่ยนให้แก้ไขได้ (ไม่ใส่ const)
+  // ดัมมี่คอร์ส (แก้ไขได้)
   final List<Map<String, dynamic>> _courses = [
     {'id': 1, 'name': 'DATA MINING', 'code': '11256043'},
     {
@@ -20,6 +21,20 @@ class _CoursesPageState extends State<CoursesPage> {
     },
   ];
 
+  // ไปหน้า “รายละเอียดวิชา”
+  void _goToDetail(Map<String, dynamic> c) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CourseDetailPage(
+          courseName: c['name'] as String,
+          courseCode: c['code'] as String,
+        ),
+      ),
+    );
+  }
+
+  // (ถ้าอยากยังใช้หน้า QR ก็เรียกฟังก์ชันนี้ได้ เช่น long-press)
   void _goToQR(Map<String, dynamic> c) {
     Navigator.push(
       context,
@@ -32,6 +47,7 @@ class _CoursesPageState extends State<CoursesPage> {
     );
   }
 
+  // ปุ่ม + เพิ่มคอร์ส
   Future<void> _onAddCourse() async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
@@ -74,7 +90,7 @@ class _CoursesPageState extends State<CoursesPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle, color: Colors.blue),
-            onPressed: _onAddCourse, // <-- เปิดหน้าเพิ่มคอร์ส
+            onPressed: _onAddCourse,
           ),
         ],
       ),
@@ -112,7 +128,8 @@ class _CoursesPageState extends State<CoursesPage> {
                 ),
               ),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => _goToQR(c),
+              onTap: () => _goToDetail(c), // แตะแล้วไปหน้า “รายละเอียดวิชา”
+              onLongPress: () => _goToQR(c), // (ตัวเลือก) กดค้างไปหน้า QR
             ),
           );
         },
