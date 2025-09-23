@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:my_app/teacher/attendancehistory_page.dart';
-import 'package:my_app/student/leave_upload_page.dart';
+import 'package:my_app/teacher/calender_page.dart';
+import 'package:my_app/teacher/courses_page.dart';
+import 'package:my_app/teacher/dashboard_page.dart';
+import 'package:my_app/teacher/pending_approvals_page.dart';
+
+import '../components/menu_title.dart';
 
 class AppColors {
   static const primary = Color(0xFF4A86E8);
@@ -16,14 +21,14 @@ class MenuItemData {
   MenuItemData(this.title, this.svgPath);
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class TeacherHomePage extends StatelessWidget {
+  const TeacherHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final items = <MenuItemData>[
+      MenuItemData("คลาสเรียน", "assets/bell.svg"),
       MenuItemData("ปฏิทิน", "assets/calendar.svg"),
-      MenuItemData("ส่งใบลา/มาสาย", "assets/file.svg"),
       MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/document.svg"),
       MenuItemData("ประวัติ\nการเข้าเรียน", "assets/history.svg"),
       MenuItemData("สรุป\nผลรายงาน", "assets/piechart.svg"),
@@ -47,9 +52,9 @@ class HomePage extends StatelessWidget {
           shape: const CircleBorder(),
           onPressed: () {},
           child: SvgPicture.asset(
-            'assets/qr_code.svg',
-            width: 50,
-            height: 50,
+            'assets/plus.svg',
+            width: 36,
+            height: 36,
             fit: BoxFit.contain,
           ),
         ),
@@ -81,14 +86,25 @@ class HomePage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SvgPicture.asset(
-                    "assets/bell.svg", 
-                    width: 28, 
-                    height: 28),
-                  SvgPicture.asset(
-                    "assets/profile.svg",
-                    width: 30,
-                    height: 30,
+                  IconButton(
+                    onPressed: () {
+                      // Add your onPressed logic for the first button here
+                    },
+                    icon: SvgPicture.asset(
+                      "assets/bell.svg",
+                      width: 28,
+                      height: 28,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      // Add your onPressed logic for the second button here
+                    },
+                    icon: SvgPicture.asset(
+                      "assets/num_student.svg",
+                      width: 30,
+                      height: 30,
+                    ),
                   ),
                 ],
               ),
@@ -137,23 +153,30 @@ class HomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
-                            // onTap: () { /* ไปหน้าปฏิทินถ้ามี */ },
+                            onTap: () {
+                              // ไปหน้า CoursesPage
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const CoursesPage(),
+                                ),
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: MenuTitle(
-                            title: topRow[1].title, // ← ส่งใบลา/มาสาย
+                            title: topRow[1].title,
                             svgPath: topRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
                             onTap: () {
-                              // ✅ กดแล้วไปหน้า LeaveUploadPage
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => const LeaveUploadPage(),
+                                  builder: (_) => const CalendarPage(),
                                 ),
                               );
                             },
@@ -171,12 +194,20 @@ class HomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const PendingApprovalsPage(),
+                                ),
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: MenuTitle(
-                            title: bottomRow[1].title, // ประวัติการเข้าเรียน
+                            title: bottomRow[1].title,
                             svgPath: bottomRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
@@ -199,6 +230,14 @@ class HomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const DashboardPage(),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -220,81 +259,18 @@ class _BarIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: () {},
-      icon: SvgPicture.asset(
-        svgPath,
-        width: 28,
-        height: 28,
-        colorFilter: const ColorFilter.mode(AppColors.ink, BlendMode.srcIn),
-      ),
-      splashRadius: 24,
-    );
-  }
-}
-
-class MenuTitle extends StatelessWidget {
-  final String title;
-  final String svgPath;
-  final Color iconBg;
-  final Color iconColor;
-  final Color textColor;
-  final VoidCallback? onTap;
-
-  const MenuTitle({
-    super.key,
-    required this.title,
-    required this.svgPath,
-    required this.iconBg,
-    required this.iconColor,
-    required this.textColor,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                alignment: Alignment.center,
-                child: SvgPicture.asset(
-                  svgPath,
-                  width: 36,
-                  height: 36,
-                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 14.5,
-                  height: 1.15,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
+    return SizedBox(
+      width: 48, // Adjust the width to make the button larger
+      height: 48, // Adjust the height to make the button larger
+      child: IconButton(
+        onPressed: () {},
+        icon: SvgPicture.asset(
+          svgPath,
+          width: 32, // Adjust the icon size
+          height: 32, // Adjust the icon size
+          colorFilter: const ColorFilter.mode(AppColors.ink, BlendMode.srcIn),
         ),
+        splashRadius: 28, // Adjust the splash radius for better feedback
       ),
     );
   }

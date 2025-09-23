@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/student/home_pages.dart';
 import 'package:my_app/pages/signup.dart';
-import 'package:my_app/teacher/courses_page.dart'; // NEW: หน้าคลาสเรียน
+import 'package:my_app/teacher/courses_page.dart';
+import 'package:my_app/teacher/teacher_home_pages.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -59,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => const HomePage(),
+        builder: (_) => const TeacherHomePage(),
       ), //HomePage  //CoursesPage
     );
   }

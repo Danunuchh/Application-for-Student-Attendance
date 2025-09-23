@@ -93,7 +93,6 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          // ชื่อวิชาใต้หัวเรื่อง
           Center(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -157,6 +156,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
               focusedDay: _focusedDay,
               headerVisible: false, // เราทำ header เองข้างบนแล้ว
               calendarFormat: CalendarFormat.month,
+              startingDayOfWeek: StartingDayOfWeek.sunday, // SUN เป็นคอลัมน์แรก
               selectedDayPredicate: (d) =>
                   _selectedDay != null && isSameDay(d, _selectedDay),
               onPageChanged: (f) => setState(() => _focusedDay = f),
@@ -165,9 +165,30 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                 _focusedDay = foc;
               }),
               availableGestures: AvailableGestures.horizontalSwipe,
+
               // แสดง marker วันไหนมีข้อมูล
               eventLoader: (day) => _recordsOf(day),
+
+              // ปรับ decoration ให้ไม่ crash (ไม่ผสม circle + borderRadius)
               calendarStyle: CalendarStyle(
+                // cells = สี่เหลี่ยมมน (ไม่มี shape)
+                defaultDecoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                weekendDecoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                outsideDecoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                disabledDecoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                holidayDecoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+
+                // today/selected = สี่เหลี่ยมมนเช่นกัน
                 todayDecoration: BoxDecoration(
                   border: Border.all(color: outline, width: 1.5),
                   borderRadius: BorderRadius.circular(6),
@@ -176,11 +197,14 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                   border: Border.all(color: outline, width: 2),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                markerDecoration: BoxDecoration(
-                  color: outline,
+
+                // markers = วงกลม (ไม่มี borderRadius)
+                markerDecoration: const BoxDecoration(
+                  color: Colors.lightBlue,
                   shape: BoxShape.circle,
                 ),
                 markersAlignment: Alignment.bottomCenter,
+
                 outsideDaysVisible: true,
               ),
               daysOfWeekStyle: const DaysOfWeekStyle(
@@ -236,7 +260,6 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ซ้าย: วันที่ + รหัส/ชื่อ
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,7 +279,6 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                     ],
                   ),
                 ),
-                // ขวา: เวลาเช็คชื่อ หรือ ข้อความไม่ได้เช็คชื่อ
                 Text(
                   r.present ? (r.checkTime ?? '') : 'ไม่ได้เช็คชื่อ',
                   style: TextStyle(

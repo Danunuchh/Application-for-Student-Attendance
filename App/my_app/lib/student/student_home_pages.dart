@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:my_app/teacher/attendancehistory_page.dart';
+import 'package:my_app/student/leave_upload_page.dart';
 
 class AppColors {
   static const primary = Color(0xFF4A86E8);
@@ -14,17 +16,17 @@ class MenuItemData {
   MenuItemData(this.title, this.svgPath);
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class StudentHomePage extends StatelessWidget {
+  const StudentHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final items = <MenuItemData>[
-      MenuItemData("คลาสเรียน", "assets/bell.svg"),
-      MenuItemData("ปฏิทิน", "assets/num_student.svg"),
-      MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/num_student.svg"),
-      MenuItemData("ประวัติ\nการเข้าเรียน", "assets/bell.svg"),
-      MenuItemData("สรุป\nผลรายงาน", "assets/bell.svg"),
+      MenuItemData("ปฏิทิน", "assets/calendar.svg"),
+      MenuItemData("ส่งใบลา/มาสาย", "assets/file.svg"),
+      MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/document.svg"),
+      MenuItemData("ประวัติ\nการเข้าเรียน", "assets/history.svg"),
+      MenuItemData("สรุป\nผลรายงาน", "assets/piechart.svg"),
     ];
     final topRow = items.sublist(0, 2);
     final bottomRow = items.sublist(2);
@@ -45,9 +47,9 @@ class HomePage extends StatelessWidget {
           shape: const CircleBorder(),
           onPressed: () {},
           child: SvgPicture.asset(
-            'assets/bell.svg',
-            width: 36,
-            height: 36,
+            'assets/qr_code.svg',
+            width: 50,
+            height: 50,
             fit: BoxFit.contain,
           ),
         ),
@@ -62,9 +64,9 @@ class HomePage extends StatelessWidget {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _BarIcon(svgPath: "assets/bell.svg"),
+              _BarIcon(svgPath: "assets/home.svg"),
               SizedBox(width: 50),
-              _BarIcon(svgPath: "assets/bell.svg"),
+              _BarIcon(svgPath: "assets/logout.svg"),
             ],
           ),
         ),
@@ -79,16 +81,8 @@ class HomePage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SvgPicture.asset(
-                    "assets/bell.svg",
-                    width: 28,
-                    height: 28,
-                  ),
-                  SvgPicture.asset(
-                    "assets/num_student.svg",
-                    width: 30,
-                    height: 30,
-                  ),
+                  SvgPicture.asset("assets/bell.svg", width: 28, height: 28),
+                  SvgPicture.asset("assets/profile.svg", width: 30, height: 30),
                 ],
               ),
             ),
@@ -136,16 +130,34 @@ class HomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const AttendanceHistoryPage(),
+                                ),
+                              );
+                            },
+                            // onTap: () { /* ไปหน้าปฏิทินถ้ามี */ },
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: MenuTitle(
-                            title: topRow[1].title,
+                            title: topRow[1].title, // ← ส่งใบลา/มาสาย
                             svgPath: topRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
+                            onTap: () {
+                              // ✅ กดแล้วไปหน้า LeaveUploadPage
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LeaveUploadPage(),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -165,11 +177,19 @@ class HomePage extends StatelessWidget {
                         const SizedBox(width: 16),
                         Expanded(
                           child: MenuTitle(
-                            title: bottomRow[1].title,
+                            title: bottomRow[1].title, // ประวัติการเข้าเรียน
                             svgPath: bottomRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const AttendanceHistoryPage(),
+                                ),
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -220,6 +240,7 @@ class MenuTitle extends StatelessWidget {
   final Color iconBg;
   final Color iconColor;
   final Color textColor;
+  final VoidCallback? onTap;
 
   const MenuTitle({
     super.key,
@@ -228,6 +249,7 @@ class MenuTitle extends StatelessWidget {
     required this.iconBg,
     required this.iconColor,
     required this.textColor,
+    this.onTap,
   });
 
   @override
@@ -237,7 +259,7 @@ class MenuTitle extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {},
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           child: Column(

@@ -47,14 +47,13 @@ class AttendanceHistoryPage extends StatelessWidget {
   }
 }
 
-/// ---- UI Card ภายในไฟล์นี้ (เรียบง่าย) ----
+/// ---- UI Card ----
 class _CourseCard extends StatelessWidget {
   final String courseName;
   final String courseCode;
   final VoidCallback? onTap;
 
   const _CourseCard({
-    super.key,
     required this.courseName,
     required this.courseCode,
     this.onTap,
