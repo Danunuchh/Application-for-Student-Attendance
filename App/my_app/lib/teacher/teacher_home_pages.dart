@@ -19,7 +19,7 @@ class AppColors {
 class MenuItemData {
   final String title;
   final String svgPath;
-  MenuItemData(this.title, this.svgPath);
+  const MenuItemData(this.title, this.svgPath);
 }
 
 class TeacherHomePage extends StatelessWidget {
@@ -28,17 +28,19 @@ class TeacherHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <MenuItemData>[
-      MenuItemData("คลาสเรียน", "assets/bell.svg"),
-      MenuItemData("ปฏิทิน", "assets/calendar.svg"),
-      MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/document.svg"),
-      MenuItemData("ประวัติ\nการเข้าเรียน", "assets/history.svg"),
-      MenuItemData("สรุป\nผลรายงาน", "assets/piechart.svg"),
+      const MenuItemData("คลาสเรียน", "assets/bell.svg"),
+      const MenuItemData("ปฏิทิน", "assets/calendar.svg"),
+      const MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/document.svg"),
+      const MenuItemData("ประวัติ\nการเข้าเรียน", "assets/history.svg"),
+      const MenuItemData("สรุป\nผลรายงาน", "assets/piechart.svg"),
     ];
     final topRow = items.sublist(0, 2);
     final bottomRow = items.sublist(2);
 
     return Scaffold(
       backgroundColor: Colors.white,
+
+      // >>> ปุ่มบวก: เชื่อมไป CoursesPage แบบ push (เหมือนสไตล์ไฟล์เดิม) <<<
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
         padding: const EdgeInsets.all(6),
@@ -51,7 +53,12 @@ class TeacherHomePage extends StatelessWidget {
           backgroundColor: Colors.white,
           foregroundColor: AppColors.primary,
           shape: const CircleBorder(),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CoursesPage()),
+            );
+          },
           child: SvgPicture.asset(
             'assets/plus.svg',
             width: 36,
@@ -60,6 +67,7 @@ class TeacherHomePage extends StatelessWidget {
           ),
         ),
       ),
+
       bottomNavigationBar: SizedBox(
         height: 60,
         child: BottomAppBar(
@@ -77,20 +85,19 @@ class TeacherHomePage extends StatelessWidget {
           ),
         ),
       ),
+
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top icons
+            // ไอคอนด้านบน
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    onPressed: () {
-                      // Add your onPressed logic for the first button here
-                    },
+                    onPressed: () {},
                     icon: SvgPicture.asset(
                       "assets/bell.svg",
                       width: 28,
@@ -116,7 +123,7 @@ class TeacherHomePage extends StatelessWidget {
               ),
             ),
 
-            // Unicheck logo
+            // โลโก้
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 22),
               child: Center(
@@ -138,13 +145,13 @@ class TeacherHomePage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF000000),
+                  color: Colors.black,
                 ),
               ),
             ),
             const SizedBox(height: 8),
 
-            // เมนู: แถวบน 2, แถวล่าง 3
+            // เมนู
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 120),
@@ -160,7 +167,6 @@ class TeacherHomePage extends StatelessWidget {
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
                             onTap: () {
-                              // ไปหน้า CoursesPage
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -266,17 +272,17 @@ class _BarIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 48, // Adjust the width to make the button larger
-      height: 48, // Adjust the height to make the button larger
+      width: 48,
+      height: 48,
       child: IconButton(
         onPressed: () {},
         icon: SvgPicture.asset(
           svgPath,
-          width: 32, // Adjust the icon size
-          height: 32, // Adjust the icon size
+          width: 32,
+          height: 32,
           colorFilter: const ColorFilter.mode(AppColors.ink, BlendMode.srcIn),
         ),
-        splashRadius: 28, // Adjust the splash radius for better feedback
+        splashRadius: 28,
       ),
     );
   }
