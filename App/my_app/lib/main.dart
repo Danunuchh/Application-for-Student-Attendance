@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/student/student_home_pages.dart';
+import 'package:my_app/teacher/teacher_home_pages.dart';
+
 import './pages/login_page.dart';
-import './pages/signup.dart'; // ต้องมีคลาส SignUpPage อยู่ในไฟล์นี้
-import './pages/splash_screen.dart'; // ต้องมีคลาส SplashScreenPage
-import 'student/guestupload_page.dart'; // ต้องมีคลาส GuestUploadPage
-import 'teacher/courses_page.dart';
-import 'teacher/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
+import './pages/signup.dart';
+import './pages/splash_screen.dart';
+
+// --- Student side ---
+import 'student/guestupload_page.dart';
 import 'student/student_scan_page.dart';
-import './teacher/teacher_qr_page.dart'; // มีคลาส TeacherQRPage(courseId, courseName)
-import './student/student_scan_page.dart';
-import './teacher/course_history_page.dart';
-import './student/leave_upload_page.dart';
+import 'student/leave_upload_page.dart';
+
+// --- Teacher side ---
+import 'teacher/courses_page.dart';
+import 'teacher/teacher_qr_page.dart';
+import 'teacher/course_history_page.dart';
 
 void main() {
-  // WidgetsFlutterBinding.ensureInitialized(); // (ไม่บังคับตอนนี้)
   runApp(const MyApp());
 }
 
@@ -25,26 +29,28 @@ class MyApp extends StatelessWidget {
       title: 'Uni Check',
       debugShowCheckedModeBanner: false,
 
-      // หน้าแรก
-      initialRoute: '/splash',
+      // ตอนนี้เปิดเป็น Student Home
+      // initialRoute: '/teacher_home', // 👉 ถ้าอยากไปหน้าอาจารย์ เอา // ออก
+      initialRoute: '/student_home',
 
-      // ลงทะเบียนเส้นทางที่มีจริงทั้งหมด (เหมือนเดิม)
       routes: {
-        '/': (context) => const LoginPage(), // สำรองไว้ถ้าหลงมา root
+        '/': (context) => const LoginPage(),
         '/splash': (context) => const SplashScreenPage(),
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignUpPage(),
+
+        // --- Student side ---
+        '/student_home': (context) => const StudentHomePage(),
         '/guestupload': (context) => const GuestUploadPage(),
-        '/courses': (context) => const CoursesPage(),
         '/scan': (context) => const StudentScanPage(),
-        '/course_history': (context) => const CourseHistoryPage(),
         '/leave_upload': (context) => const LeaveUploadPage(),
 
-        // ✳️ อย่าลงทะเบียน '/teacher_qr' ที่นี่แบบเปล่า ๆ
-        // เพราะเราต้องส่ง arguments (courseId, courseName)
+        // --- Teacher side ---
+        '/teacher_home': (context) => const TeacherHomePage(),
+        '/courses': (context) => const CoursesPage(),
+        '/course_history': (context) => const CourseHistoryPage(),
       },
 
-      // NEW: รองรับหน้า /teacher_qr ที่ต้อง "รับ arguments"
       onGenerateRoute: (settings) {
         if (settings.name == '/teacher_qr') {
           final args = settings.arguments;
@@ -59,18 +65,16 @@ class MyApp extends StatelessWidget {
               );
             }
           }
-          // arguments ไม่ครบ → กลับหน้า courses
           return MaterialPageRoute(builder: (_) => const CoursesPage());
         }
-        return null; // ให้ไปต่อ onUnknownRoute ถ้าไม่แมตช์
+        return null;
       },
 
-      // NEW: กันกรณี route ไม่รู้จัก
       onUnknownRoute: (_) =>
           MaterialPageRoute(builder: (_) => const LoginPage()),
 
       theme: ThemeData(
-        useMaterial3: true, // ดูทันสมัยขึ้นนิดหน่อย (จะเอาออกก็ได้)
+        useMaterial3: true,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
     );

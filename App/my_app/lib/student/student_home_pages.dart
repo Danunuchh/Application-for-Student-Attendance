@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:my_app/teacher/attendancehistory_page.dart';
 import 'package:my_app/student/leave_upload_page.dart';
+import 'package:my_app/student/student_calender_page.dart';
+import 'package:my_app/student/pending_approvals_page.dart';
+import 'package:my_app/student/student_courses_page.dart';
+import 'package:my_app/student/qr_scan_page.dart';
 
 class AppColors {
   static const primary = Color(0xFF4A86E8);
@@ -33,19 +37,26 @@ class StudentHomePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+
+      // ===== FAB วงกลมกลาง + วงแหวนฟ้า =====
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
         padding: const EdgeInsets.all(6),
         decoration: const BoxDecoration(
-          color: AppColors.fabRing,
+          color: AppColors.fabRing, // วงแหวนฟ้าอ่อน
           shape: BoxShape.circle,
         ),
         child: FloatingActionButton.large(
           elevation: 2,
           backgroundColor: Colors.white,
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.ink,
           shape: const CircleBorder(),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const QRScanPage()),
+            );
+          },
           child: SvgPicture.asset(
             'assets/qr_code.svg',
             width: 50,
@@ -54,23 +65,58 @@ class StudentHomePage extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: SizedBox(
-        height: 60,
-        child: BottomAppBar(
-          color: const Color(0xFFA6CAFA),
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 4,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _BarIcon(svgPath: "assets/home.svg"),
-              SizedBox(width: 50),
-              _BarIcon(svgPath: "assets/logout.svg"),
-            ],
+
+      // ===== Bottom bar แท่งฟ้าอ่อน (ไม่มี notch) =====
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+        child: Container(
+          height: 56,
+          decoration: const BoxDecoration(
+            color: AppColors.fabRing, // ฟ้าอ่อน
+            borderRadius: BorderRadius.zero, // เหลี่ยม/โค้งนิดหน่อยตามต้องการ
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // ไอคอนซ้าย (Home)
+                IconButton(
+                  onPressed: () {},
+                  icon: SvgPicture.asset(
+                    "assets/home.svg",
+                    width: 28,
+                    height: 28,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.black,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  splashRadius: 24,
+                ),
+                // ไอคอนขวา (Logout)
+                IconButton(
+                  onPressed: () {
+                    // TODO: logout
+                  },
+                  icon: SvgPicture.asset(
+                    "assets/logout.svg",
+                    width: 28,
+                    height: 28,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.black,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  splashRadius: 24,
+                ),
+              ],
+            ),
           ),
         ),
       ),
+
+      // ===== Body เดิม =====
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,7 +161,6 @@ class StudentHomePage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // เมนู: แถวบน 2, แถวล่าง 3
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 120),
@@ -128,29 +173,27 @@ class StudentHomePage extends StatelessWidget {
                             title: topRow[0].title,
                             svgPath: topRow[0].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF000000),
+                            iconColor: Colors.black,
                             textColor: Colors.black,
                             onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => const AttendanceHistoryPage(),
+                                  builder: (_) => const StudentCalendarPage(),
                                 ),
                               );
                             },
-                            // onTap: () { /* ไปหน้าปฏิทินถ้ามี */ },
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: MenuTitle(
-                            title: topRow[1].title, // ← ส่งใบลา/มาสาย
+                            title: topRow[1].title,
                             svgPath: topRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF000000),
+                            iconColor: Colors.black,
                             textColor: Colors.black,
                             onTap: () {
-                              // ✅ กดแล้วไปหน้า LeaveUploadPage
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -170,17 +213,25 @@ class StudentHomePage extends StatelessWidget {
                             title: bottomRow[0].title,
                             svgPath: bottomRow[0].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF000000),
+                            iconColor: Colors.black,
                             textColor: Colors.black,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const PendingApprovalsPage(),
+                                ),
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: MenuTitle(
-                            title: bottomRow[1].title, // ประวัติการเข้าเรียน
+                            title: bottomRow[1].title,
                             svgPath: bottomRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF000000),
+                            iconColor: Colors.black,
                             textColor: Colors.black,
                             onTap: () {
                               Navigator.push(
@@ -198,8 +249,16 @@ class StudentHomePage extends StatelessWidget {
                             title: bottomRow[2].title,
                             svgPath: bottomRow[2].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF000000),
+                            iconColor: Colors.black,
                             textColor: Colors.black,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const StudentCoursesPage(),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -211,25 +270,6 @@ class StudentHomePage extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _BarIcon extends StatelessWidget {
-  final String svgPath;
-  const _BarIcon({required this.svgPath});
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: () {},
-      icon: SvgPicture.asset(
-        svgPath,
-        width: 28,
-        height: 28,
-        colorFilter: const ColorFilter.mode(AppColors.ink, BlendMode.srcIn),
-      ),
-      splashRadius: 24,
     );
   }
 }
