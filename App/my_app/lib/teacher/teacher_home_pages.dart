@@ -4,6 +4,7 @@ import 'package:my_app/teacher/attendancehistory_page.dart';
 import 'package:my_app/teacher/calender_page.dart';
 import 'package:my_app/teacher/courses_page.dart';
 import 'package:my_app/teacher/dashboard_page.dart';
+import 'package:my_app/teacher/edit_profile_page.dart';
 import 'package:my_app/teacher/pending_approvals_page.dart';
 
 import '../components/menu_title.dart';
@@ -98,7 +99,12 @@ class TeacherHomePage extends StatelessWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      // Add your onPressed logic for the second button here
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const EditProfilePage(),
+                        ),
+                      );
                     },
                     icon: SvgPicture.asset(
                       "assets/num_student.svg",
