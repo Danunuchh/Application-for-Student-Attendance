@@ -132,8 +132,8 @@ class StudentHomePage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SvgPicture.asset("assets/bell.svg", width: 28, height: 28),
-                  SvgPicture.asset("assets/profile.svg", width: 30, height: 30),
+                  SvgPicture.asset("assets/bell.svg", width: 22, height: 22),
+                  SvgPicture.asset("assets/profile.svg", width: 34, height: 34),
                 ],
               ),
             ),
