@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
 
       // ตอนนี้เปิดเป็น Student Home
       // initialRoute: '/teacher_home', // 👉 ถ้าอยากไปหน้าอาจารย์ เอา // ออก
-      initialRoute: '/teacher_home',
+      initialRoute: '/student_home',
 
       routes: {
         '/': (context) => const LoginPage(),
