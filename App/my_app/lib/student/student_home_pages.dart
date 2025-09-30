@@ -6,6 +6,7 @@ import 'package:my_app/student/student_calender_page.dart';
 import 'package:my_app/student/pending_approvals_page.dart';
 import 'package:my_app/student/student_courses_page.dart';
 import 'package:my_app/student/qr_scan_page.dart';
+import 'package:my_app/student/edit_profile_student_page.dart';
 
 class AppColors {
   static const primary = Color(0xFF4A86E8);
@@ -77,7 +78,7 @@ class StudentHomePage extends StatelessWidget {
           height: 50,
           decoration: const BoxDecoration(
             color: AppColors.fabRing, // ฟ้าอ่อน
-            borderRadius: BorderRadius.zero, // เหลี่ยม/โค้งนิดหน่อยตามต้องการ
+            borderRadius: BorderRadius.zero,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -120,7 +121,7 @@ class StudentHomePage extends StatelessWidget {
         ),
       ),
 
-      // ===== Body เดิม =====
+      // ===== Body =====
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,8 +132,8 @@ class StudentHomePage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SvgPicture.asset("assets/bell.svg", width: 22, height: 22),
-                  SvgPicture.asset("assets/profile.svg", width: 34, height: 34),
+                  SvgPicture.asset("assets/bell.svg", width: 28, height: 28),
+                  SvgPicture.asset("assets/profile.svg", width: 30, height: 30),
                 ],
               ),
             ),

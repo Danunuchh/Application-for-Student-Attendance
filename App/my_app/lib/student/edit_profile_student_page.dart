@@ -1,14 +1,14 @@
 // lib/pages/edit_profile_page.dart
 import 'package:flutter/material.dart';
 
-class EditProfilePage extends StatefulWidget {
-  const EditProfilePage({super.key});
+class EditProfileStudentPage extends StatefulWidget {
+  const EditProfileStudentPage({super.key});
 
   @override
-  State<EditProfilePage> createState() => _EditProfilePageState();
+  State<EditProfileStudentPage> createState() => _EditProfilePageState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
+class _EditProfilePageState extends State<EditProfileStudentPage> {
   final _formKey = GlobalKey<FormState>();
 
   // controllers (dummy เริ่มต้น)
@@ -16,6 +16,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _email = TextEditingController(text: 'p_user@email.com');
   final _firstName = TextEditingController(text: 'พีระพัฒน์');
   final _lastName = TextEditingController(text: 'อรุณศรี');
+  final _studentId = TextEditingController(text: '65200128');
   final _phone = TextEditingController(text: '0812345678');
   final _address = TextEditingController(
     text: '233 หมู่ 9 ตำบลวังหิน อ.บางขัน จ.นครศรีธรรมราช',
@@ -173,6 +174,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   TextFormField(
                     controller: _lastName,
                     decoration: _field('นามสกุล'),
+                  ),
+
+                  _title('รหัสนักศึกษา'),
+                  TextFormField(
+                    controller: _studentId,
+                    keyboardType: TextInputType.number,
+                    decoration: _field('รหัสนักศึกษา'),
                   ),
 
                   _title('เบอร์โทรศัพท์'),
