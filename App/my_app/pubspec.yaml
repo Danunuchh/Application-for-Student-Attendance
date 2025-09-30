@@ -61,3 +61,5 @@ flutter:
     - assets/search.svg
     - assets/cross_circle.svg
     - assets/document.svg
+    - assets/bookplus.svg
+    - assets/scan.svg

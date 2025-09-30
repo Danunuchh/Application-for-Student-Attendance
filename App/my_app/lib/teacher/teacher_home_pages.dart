@@ -28,7 +28,7 @@ class TeacherHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <MenuItemData>[
-      const MenuItemData("คลาสเรียน", "assets/bell.svg"),
+      const MenuItemData("คลาสเรียน", "assets/bookplus.svg"),
       const MenuItemData("ปฏิทิน", "assets/calendar.svg"),
       const MenuItemData("เอกสารที่รอ\nการอนุมัติ", "assets/document.svg"),
       const MenuItemData("ประวัติ\nการเข้าเรียน", "assets/history.svg"),
@@ -40,51 +40,87 @@ class TeacherHomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // >>> ปุ่มบวก: เชื่อมไป CoursesPage แบบ push (เหมือนสไตล์ไฟล์เดิม) <<<
+      // ===== FAB วงกลมกลาง + วงแหวนฟ้า =====
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(5), // ความหนาของวงแหวนฟ้า
         decoration: const BoxDecoration(
           color: AppColors.fabRing,
           shape: BoxShape.circle,
         ),
-        child: FloatingActionButton.large(
-          elevation: 2,
-          backgroundColor: Colors.white,
-          foregroundColor: AppColors.primary,
-          shape: const CircleBorder(),
-          onPressed: () {
+        child: SizedBox(
+          width: 84,   // ปรับขนาดเองของวงกลมสีขาว
+          height: 84,
+          child: FloatingActionButton(
+            elevation: 2,
+            backgroundColor: Colors.white, // วงกลมสีขาว
+            foregroundColor: AppColors.ink,
+            shape: const CircleBorder(),
+            onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const CoursesPage()),
             );
           },
-          child: SvgPicture.asset(
-            'assets/plus.svg',
-            width: 36,
-            height: 36,
-            fit: BoxFit.contain,
+            child: SvgPicture.asset(
+              'assets/qr_code.svg',
+              width: 40, // ปรับไอคอนให้สมดุล
+              height: 40,
+            ),
           ),
         ),
       ),
 
-      bottomNavigationBar: SizedBox(
-        height: 60,
-        child: BottomAppBar(
-          color: const Color(0xFFA6CAFA),
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 4,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _BarIcon(svgPath: "assets/home.svg"),
-              SizedBox(width: 50),
-              _BarIcon(svgPath: "assets/logout.svg"),
-            ],
+       // ===== Bottom bar แท่งฟ้าอ่อน (ไม่มี notch) =====
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+        child: Container(
+          height: 50,
+          decoration: const BoxDecoration(
+            color: AppColors.fabRing, // ฟ้าอ่อน
+            borderRadius: BorderRadius.zero, // เหลี่ยม/โค้งนิดหน่อยตามต้องการ
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // ไอคอนซ้าย (Home)
+                IconButton(
+                  onPressed: () {},
+                  icon: SvgPicture.asset(
+                    "assets/home.svg",
+                    width: 26,
+                    height: 26,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.black,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  splashRadius: 24,
+                ),
+                // ไอคอนขวา (Logout)
+                IconButton(
+                  onPressed: () {
+                    // TODO: logout
+                  },
+                  icon: SvgPicture.asset(
+                    "assets/logout.svg",
+                    width: 26,
+                    height: 26,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.black,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  splashRadius: 24,
+                ),
+              ],
+            ),
           ),
         ),
       ),
+
 
       body: SafeArea(
         child: Column(
@@ -100,8 +136,8 @@ class TeacherHomePage extends StatelessWidget {
                     onPressed: () {},
                     icon: SvgPicture.asset(
                       "assets/bell.svg",
-                      width: 28,
-                      height: 28,
+                      width: 22,
+                      height: 22,
                     ),
                   ),
                   IconButton(
@@ -114,9 +150,9 @@ class TeacherHomePage extends StatelessWidget {
                       );
                     },
                     icon: SvgPicture.asset(
-                      "assets/num_student.svg",
-                      width: 30,
-                      height: 30,
+                      "assets/profile.svg",
+                      width: 34,
+                      height: 34,
                     ),
                   ),
                 ],
@@ -129,7 +165,7 @@ class TeacherHomePage extends StatelessWidget {
               child: Center(
                 child: Image.asset(
                   'assets/unicheck.png',
-                  height: 240,
+                  height: 210,
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) =>
                       const Icon(Icons.image, size: 80, color: AppColors.sub),
@@ -143,7 +179,7 @@ class TeacherHomePage extends StatelessWidget {
               child: Text(
                 "Menu",
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
@@ -265,25 +301,70 @@ class TeacherHomePage extends StatelessWidget {
   }
 }
 
-class _BarIcon extends StatelessWidget {
+class MenuTitle extends StatelessWidget {
+  final String title;
   final String svgPath;
-  const _BarIcon({required this.svgPath});
+  final Color iconBg;
+  final Color iconColor;
+  final Color textColor;
+  final VoidCallback? onTap;
+
+  const MenuTitle({
+    super.key,
+    required this.title,
+    required this.svgPath,
+    required this.iconBg,
+    required this.iconColor,
+    required this.textColor,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 48,
-      height: 48,
-      child: IconButton(
-        onPressed: () {},
-        icon: SvgPicture.asset(
-          svgPath,
-          width: 32,
-          height: 32,
-          colorFilter: const ColorFilter.mode(AppColors.ink, BlendMode.srcIn),
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(  //เมนูกรอบสีฟ้า 5 เมนู
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                alignment: Alignment.center,
+                child: SvgPicture.asset(  //ขนาดของไอคอนตรงเมนู
+                  svgPath,
+                  width: 28,
+                  height: 28,
+                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 11,
+                  height: 1.15,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
-        splashRadius: 28,
       ),
     );
   }
 }
+

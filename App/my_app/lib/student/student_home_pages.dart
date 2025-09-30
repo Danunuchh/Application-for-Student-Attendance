@@ -41,36 +41,40 @@ class StudentHomePage extends StatelessWidget {
       // ===== FAB วงกลมกลาง + วงแหวนฟ้า =====
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(5), // ความหนาของวงแหวนฟ้า
         decoration: const BoxDecoration(
-          color: AppColors.fabRing, // วงแหวนฟ้าอ่อน
+          color: AppColors.fabRing,
           shape: BoxShape.circle,
         ),
-        child: FloatingActionButton.large(
-          elevation: 2,
-          backgroundColor: Colors.white,
-          foregroundColor: AppColors.ink,
-          shape: const CircleBorder(),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const QRScanPage()),
-            );
-          },
-          child: SvgPicture.asset(
-            'assets/qr_code.svg',
-            width: 50,
-            height: 50,
-            fit: BoxFit.contain,
+        child: SizedBox(
+          width: 84,   // ปรับขนาดเองของวงกลมสีขาว
+          height: 84,
+          child: FloatingActionButton(
+            elevation: 2,
+            backgroundColor: Colors.white, // วงกลมสีขาว
+            foregroundColor: AppColors.ink,
+            shape: const CircleBorder(),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const QRScanPage()),
+              );
+            },
+            child: SvgPicture.asset(
+              'assets/scan.svg',
+              width: 40, // ปรับไอคอนให้สมดุล
+              height: 40,
+            ),
           ),
         ),
       ),
+
 
       // ===== Bottom bar แท่งฟ้าอ่อน (ไม่มี notch) =====
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
         child: Container(
-          height: 56,
+          height: 50,
           decoration: const BoxDecoration(
             color: AppColors.fabRing, // ฟ้าอ่อน
             borderRadius: BorderRadius.zero, // เหลี่ยม/โค้งนิดหน่อยตามต้องการ
@@ -85,8 +89,8 @@ class StudentHomePage extends StatelessWidget {
                   onPressed: () {},
                   icon: SvgPicture.asset(
                     "assets/home.svg",
-                    width: 28,
-                    height: 28,
+                    width: 26,
+                    height: 26,
                     colorFilter: const ColorFilter.mode(
                       Colors.black,
                       BlendMode.srcIn,
@@ -101,8 +105,8 @@ class StudentHomePage extends StatelessWidget {
                   },
                   icon: SvgPicture.asset(
                     "assets/logout.svg",
-                    width: 28,
-                    height: 28,
+                    width: 26,
+                    height: 26,
                     colorFilter: const ColorFilter.mode(
                       Colors.black,
                       BlendMode.srcIn,
@@ -127,8 +131,8 @@ class StudentHomePage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SvgPicture.asset("assets/bell.svg", width: 28, height: 28),
-                  SvgPicture.asset("assets/profile.svg", width: 30, height: 30),
+                  SvgPicture.asset("assets/bell.svg", width: 22, height: 22),
+                  SvgPicture.asset("assets/profile.svg", width: 34, height: 34),
                 ],
               ),
             ),
@@ -139,7 +143,7 @@ class StudentHomePage extends StatelessWidget {
               child: Center(
                 child: Image.asset(
                   'assets/unicheck.png',
-                  height: 240,
+                  height: 210,
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) =>
                       const Icon(Icons.image, size: 80, color: AppColors.sub),
@@ -153,7 +157,7 @@ class StudentHomePage extends StatelessWidget {
               child: Text(
                 "Menu",
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF000000),
                 ),
@@ -305,18 +309,18 @@ class MenuTitle extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 72,
-                height: 72,
+              Container(  //เมนูกรอบสีฟ้า 5 เมนู
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
                   color: iconBg,
                   borderRadius: BorderRadius.circular(18),
                 ),
                 alignment: Alignment.center,
-                child: SvgPicture.asset(
+                child: SvgPicture.asset(  //ขนาดของไอคอนตรงเมนู
                   svgPath,
-                  width: 36,
-                  height: 36,
+                  width: 28,
+                  height: 28,
                   colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
                 ),
               ),
@@ -326,7 +330,7 @@ class MenuTitle extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: textColor,
-                  fontSize: 14.5,
+                  fontSize: 11,
                   height: 1.15,
                   fontWeight: FontWeight.w600,
                 ),
