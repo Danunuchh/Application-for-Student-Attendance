@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/student/student_course_report_page.dart';
 
 class StudentCoursesPage extends StatelessWidget {
@@ -19,14 +20,8 @@ class StudentCoursesPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: bgLight,
-      appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
-        title: const Text("สรุปผลรายงาน", style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-      ),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      appBar: const CustomAppBar(title: 'สรุปผลรายงาน'),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: courses.length,
@@ -35,9 +30,9 @@ class StudentCoursesPage extends StatelessWidget {
           return Container(
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: cardLight,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: borderLight),
+              color: const Color.fromARGB(255, 255, 255, 255),
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: const Color(0xFFCFE0FF)),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x1F000000),
@@ -83,7 +78,6 @@ class StudentCoursesPage extends StatelessWidget {
           );
         },
       ),
-      // ⛔ ไม่มี bottomNavigationBar และ FAB แล้วตามที่ขอ
     );
   }
 }

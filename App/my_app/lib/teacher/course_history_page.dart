@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 import '../models/course.dart';
 import 'course_card.dart';
 
@@ -8,13 +9,7 @@ class CourseHistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text(
-          'ประวัติการเข้าเรียน',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
+      appBar: const CustomAppBar(title: 'ประวัติการเข้าเรียน'),
       body: ListView.separated(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
         itemCount: mockCourses.length,

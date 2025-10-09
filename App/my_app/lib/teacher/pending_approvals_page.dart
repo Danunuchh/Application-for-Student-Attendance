@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/teacher/approval_detail_page.dart';
 
 enum ApprovalStatus { approved, rejected, pending }
@@ -54,16 +55,7 @@ class PendingApprovalsPage extends StatelessWidget {
     final items = _items();
 
     return Scaffold(
-      appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
-        title: const Text(
-          'เอกสารรออนุมัติ',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-      ),
+      appBar: const CustomAppBar(title: 'เอกสารที่รออนุมัติ'),
       backgroundColor: Colors.white,
       body: ListView.separated(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),

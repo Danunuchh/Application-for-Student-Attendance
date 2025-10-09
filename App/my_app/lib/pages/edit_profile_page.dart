@@ -1,5 +1,6 @@
 // lib/pages/edit_profile_page.dart
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -49,20 +50,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FF),
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFFF6F8FF),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'แก้ไขโปรไฟล์',
-          style: TextStyle(color: Colors.black87),
-        ),
-        centerTitle: true,
-      ),
+      backgroundColor: const Color(0xFFFFFFFF),
+      appBar: const CustomAppBar(title: 'แก้ไขโปรไฟล์'),
       body: SafeArea(
         child: Form(
           key: _formKey,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 import 'approval_detail_page.dart';
 
 class PendingApprovalsPage extends StatelessWidget {
@@ -28,17 +29,8 @@ class PendingApprovalsPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F8FF), // พื้นหลังฟ้าอ่อน
-      appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
-        title: const Text(
-          "เอกสารรออนุมัติ",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        elevation: 0,
-      ),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255), // พื้นหลังฟ้าอ่อน
+      appBar: const CustomAppBar(title: 'เอกสารที่รออนุมัติ'),
       body: ListView.builder(
         padding: const EdgeInsets.all(12),
         itemCount: approvals.length,
@@ -51,7 +43,7 @@ class PendingApprovalsPage extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border.all(color: const Color(0xFFCFE0FF), width: 1.5),
-              borderRadius: BorderRadius.circular(30), // ทำให้โค้งแบบ capsule
+              borderRadius: BorderRadius.circular(26), // ทำให้โค้งแบบ capsule
             ),
             child: ListTile(
               shape: RoundedRectangleBorder(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 /// โมเดลบันทึกการเข้าเรียน (mock)
@@ -75,21 +76,11 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final outline = Colors.blue.shade300;
+    final outline = const Color(0xFFCDE0F9);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text(
-          'ประวัติการเข้าเรียน',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+      appBar: const CustomAppBar(title: 'ประวัติการเข้าเรียน'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [

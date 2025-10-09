@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 
 class ApprovalDetailPage extends StatelessWidget {
   final Map<String, String> item;
@@ -14,23 +15,14 @@ class ApprovalDetailPage extends StatelessWidget {
     final status = item["status"] ?? "";
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F8FF), // พื้นหลังฟ้าอ่อน
-      appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
-        title: const Text(
-          "เอกสารรออนุมัติ",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        elevation: 0,
-      ),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255), // พื้นหลังฟ้าอ่อน
+      appBar: const CustomAppBar(title: 'เอกสารที่รออนุมัติ'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(26),
             border: Border.all(color: const Color(0xFFCFE0FF), width: 1.5),
             boxShadow: [
               BoxShadow(

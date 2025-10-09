@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'subject_detail_page.dart'; // <<— นำเข้าหน้ารายละเอียด
 
@@ -82,16 +83,7 @@ class _CalendarPageState extends State<CalendarPage> {
     final items = _getItemsForDay(_selectedDay ?? _focusedDay);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Calendar', style: TextStyle(color: Colors.black)),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.white,
-      ),
+      appBar: const CustomAppBar(title: 'Calendar'),
       backgroundColor: Colors.white,
       body: ListView(
         padding: const EdgeInsets.all(16),

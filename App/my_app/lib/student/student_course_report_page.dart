@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 
 class StudentCourseReportPage extends StatefulWidget {
   final String courseName;
@@ -44,16 +45,8 @@ class _StudentCourseReportPageState extends State<StudentCourseReportPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
-        title: const Text(
-          "ผลรายงานการเข้าเรียน",
-          style: TextStyle(color: Colors.black),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-      ),
+      backgroundColor: Colors.white,
+      appBar: const CustomAppBar(title: 'สรุปผลรายงาน'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         child: Column(
@@ -195,7 +188,7 @@ class _DropdownBox<T> extends StatelessWidget {
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFE5E7EB)),
         color: Colors.white,
       ),

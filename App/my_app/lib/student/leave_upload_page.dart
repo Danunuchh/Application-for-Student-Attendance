@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:my_app/components/custom_appbar.dart';
 
 class LeaveUploadPage extends StatefulWidget {
   const LeaveUploadPage({super.key});
@@ -151,21 +152,8 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent, // ปิด overlay ตอนเลื่อน
-        foregroundColor: _ink,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'แนบไฟล์การลา',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-      ),
-      backgroundColor: Colors.white,
+      appBar: const CustomAppBar(title: 'แนบไฟล์การลา'),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: Form(
         key: _formKey,
         child: ListView(

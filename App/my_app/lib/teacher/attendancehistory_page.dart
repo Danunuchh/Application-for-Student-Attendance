@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 import 'attendancedetail_page.dart';
 
 class AttendanceHistoryPage extends StatelessWidget {
@@ -12,19 +13,8 @@ class AttendanceHistoryPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "ประวัติการเข้าเรียน",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-      ),
+      backgroundColor: Colors.white,
+      appBar: const CustomAppBar(title: 'ประวัติการเข้าเรียน'),
       body: ListView.separated(
         padding: const EdgeInsets.all(16.0),
         itemCount: courses.length,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 import 'pending_approvals_page.dart'; // ใช้ enum/สีเดิมได้ ถ้าไม่มีก็ตัดออก
 
 class ApprovalDetail {
@@ -38,19 +39,7 @@ class ApprovalDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'เอกสารรออนุมัติ',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-      ),
+      appBar: const CustomAppBar(title: 'เอกสารที่รออนุมัติ'),
       backgroundColor: Colors.white,
       body: ListView(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),

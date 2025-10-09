@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 import 'teacher_qr_page.dart';
 import 'addcourse_page.dart';
 import 'course_detail_page.dart';
@@ -71,29 +72,7 @@ class _CoursesPageState extends State<CoursesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => Navigator.pop(context),
-        ),
-        centerTitle: true,
-        title: const Text(
-          "คลาสเรียน",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle, color: Color(0xFF88A8E8)),
-            onPressed: _onAddCourse,
-          ),
-        ],
-      ),
+      appBar: const CustomAppBar(title: 'คลาสเรียน'),
       body: ListView.separated(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         itemCount: _courses.length,

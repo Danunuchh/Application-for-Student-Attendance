@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
 
       // ตอนนี้เปิดเป็น Student Home
       // initialRoute: '/teacher_home',  //ของอาจารย์  '/student_home'
-      initialRoute: '/student_home',
+      initialRoute: '/teacher_home',
 
       routes: {
         '/': (context) => const LoginPage(),
