@@ -39,7 +39,10 @@ class ApprovalDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
           'เอกสารรออนุมัติ',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),

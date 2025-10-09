@@ -7,7 +7,7 @@ import './pages/signup.dart';
 import './pages/splash_screen.dart';
 
 // --- Student side ---
-import 'student/guestupload_page.dart';
+// import 'student/guestupload_page.dart';
 import 'student/student_scan_page.dart';
 import 'student/leave_upload_page.dart';
 
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
 
       // ตอนนี้เปิดเป็น Student Home
       // initialRoute: '/teacher_home',  //ของอาจารย์  '/student_home'
-      initialRoute: '/teacher_home',
+      initialRoute: '/student_home',
 
       routes: {
         '/': (context) => const LoginPage(),
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
 
         // --- Student side ---
         '/student_home': (context) => const StudentHomePage(),
-        '/guestupload': (context) => const GuestUploadPage(),
+        // '/guestupload': (context) => const GuestUploadPage(),
         '/scan': (context) => const StudentScanPage(),
         '/leave_upload': (context) => const LeaveUploadPage(),
 

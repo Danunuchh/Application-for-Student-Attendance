@@ -22,7 +22,7 @@ class StudentCoursesPage extends StatelessWidget {
       backgroundColor: bgLight,
       appBar: AppBar(
         leading: const BackButton(color: Colors.black),
-        title: const Text("ผลรายงาน", style: TextStyle(color: Colors.black)),
+        title: const Text("สรุปผลรายงาน", style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,

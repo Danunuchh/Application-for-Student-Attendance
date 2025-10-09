@@ -89,7 +89,7 @@ class _CoursesPageState extends State<CoursesPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle, color: Colors.blue),
+            icon: const Icon(Icons.add_circle, color: Color(0xFF88A8E8)),
             onPressed: _onAddCourse,
           ),
         ],
@@ -129,7 +129,7 @@ class _CoursesPageState extends State<CoursesPage> {
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => _goToDetail(c), // แตะแล้วไปหน้า “รายละเอียดวิชา”
-              onLongPress: () => _goToQR(c), // (ตัวเลือก) กดค้างไปหน้า QR
+              // onLongPress: () => _goToQR(c), // (ตัวเลือก) กดค้างไปหน้า QR
             ),
           );
         },
