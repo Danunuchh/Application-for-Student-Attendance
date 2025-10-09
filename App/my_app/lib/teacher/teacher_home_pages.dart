@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:my_app/teacher/attendancehistory_page.dart';
-import 'package:my_app/teacher/calender_page.dart'; 
+import 'package:my_app/teacher/teacher_attendancehistory_page.dart';
+import 'package:my_app/teacher/calender_page.dart';
 import 'package:my_app/teacher/courses_page.dart';
 import 'package:my_app/teacher/dashboard_page.dart';
 import 'package:my_app/pages/edit_profile_page.dart';
@@ -41,7 +41,10 @@ class TeacherHomePage extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
         padding: const EdgeInsets.all(5),
-        decoration: const BoxDecoration(color: AppColors.fabRing, shape: BoxShape.circle),
+        decoration: const BoxDecoration(
+          color: AppColors.fabRing,
+          shape: BoxShape.circle,
+        ),
         child: SizedBox(
           width: 84,
           height: 84,
@@ -51,9 +54,16 @@ class TeacherHomePage extends StatelessWidget {
             foregroundColor: AppColors.ink,
             shape: const CircleBorder(),
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const CoursesPage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CoursesPage()),
+              );
             },
-            child: SvgPicture.asset('assets/qr_code.svg', width: 40, height: 40),
+            child: SvgPicture.asset(
+              'assets/qr_code.svg',
+              width: 40,
+              height: 40,
+            ),
           ),
         ),
       ),
@@ -72,8 +82,10 @@ class TeacherHomePage extends StatelessWidget {
                 "assets/home.svg",
                 width: 26,
                 height: 26,
-                colorFilter:
-                    const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(
+                  Colors.black,
+                  BlendMode.srcIn,
+                ),
               ),
               splashRadius: 24,
             ),
@@ -85,8 +97,10 @@ class TeacherHomePage extends StatelessWidget {
                 "assets/logout.svg",
                 width: 26,
                 height: 26,
-                colorFilter:
-                    const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(
+                  Colors.black,
+                  BlendMode.srcIn,
+                ),
               ),
               splashRadius: 24,
             ),
@@ -112,7 +126,8 @@ class TeacherHomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const EditProfilePage()),
+                          builder: (_) => const EditProfilePage(),
+                        ),
                       );
                     },
                     child: SvgPicture.asset(
@@ -137,7 +152,8 @@ class TeacherHomePage extends StatelessWidget {
                   child: Image.asset(
                     'assets/unicheck.png',
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 80, color: AppColors.sub),
+                    errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.image, size: 80, color: AppColors.sub),
                   ),
                 ),
               ),
@@ -146,8 +162,13 @@ class TeacherHomePage extends StatelessWidget {
 
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 26),
-              child: Text("Menu",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
+              child: Text(
+                "Menu",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -168,7 +189,12 @@ class TeacherHomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CoursesPage())),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CoursesPage(),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -179,7 +205,12 @@ class TeacherHomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarPage())),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CalendarPage(),
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -194,7 +225,12 @@ class TeacherHomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PendingApprovalsPage())),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PendingApprovalsPage(),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -205,7 +241,12 @@ class TeacherHomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceHistoryPage())),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const AttendanceHistoryPage(),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -216,7 +257,12 @@ class TeacherHomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: const Color(0xFF000000),
                             textColor: Colors.black,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DashboardPage())),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const DashboardPage(),
+                              ),
+                            ),
                           ),
                         ),
                       ],

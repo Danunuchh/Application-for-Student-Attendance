@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/components/custom_appbar.dart';
-import 'package:my_app/teacher/approval_detail_page.dart';
+import 'package:my_app/teacher/teacher_approval_detail_page.dart';
 
 enum ApprovalStatus { approved, rejected, pending }
 

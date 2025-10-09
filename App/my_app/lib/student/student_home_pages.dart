@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:my_app/teacher/attendancehistory_page.dart';
+import 'package:my_app/student/student_attendancehistory_page.dart';
 import 'package:my_app/student/leave_upload_page.dart';
 import 'package:my_app/student/student_calendar_page.dart';
 import 'package:my_app/student/pending_approvals_page.dart';
@@ -61,11 +61,7 @@ class StudentHomePage extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const QRScanPage()),
               );
             },
-            child: SvgPicture.asset(
-              'assets/scan.svg',
-              width: 40,
-              height: 40,
-            ),
+            child: SvgPicture.asset('assets/scan.svg', width: 40, height: 40),
           ),
         ),
       ),
@@ -84,8 +80,10 @@ class StudentHomePage extends StatelessWidget {
                 "assets/home.svg",
                 width: 26,
                 height: 26,
-                colorFilter:
-                    const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(
+                  Colors.black,
+                  BlendMode.srcIn,
+                ),
               ),
               splashRadius: 24,
             ),
@@ -97,8 +95,10 @@ class StudentHomePage extends StatelessWidget {
                 "assets/logout.svg",
                 width: 26,
                 height: 26,
-                colorFilter:
-                    const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(
+                  Colors.black,
+                  BlendMode.srcIn,
+                ),
               ),
               splashRadius: 24,
             ),
@@ -124,7 +124,8 @@ class StudentHomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const EditProfilePage()),
+                          builder: (_) => const EditProfilePage(),
+                        ),
                       );
                     },
                     child: SvgPicture.asset(
@@ -139,8 +140,7 @@ class StudentHomePage extends StatelessWidget {
 
             // 🔹 โลโก้
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
@@ -192,7 +192,8 @@ class StudentHomePage extends StatelessWidget {
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (_) => const StudentCalendarPage()),
+                                builder: (_) => const StudentCalendarPage(),
+                              ),
                             ),
                           ),
                         ),
@@ -207,7 +208,8 @@ class StudentHomePage extends StatelessWidget {
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (_) => const LeaveUploadPage()),
+                                builder: (_) => const LeaveUploadPage(),
+                              ),
                             ),
                           ),
                         ),
@@ -228,7 +230,8 @@ class StudentHomePage extends StatelessWidget {
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (_) => const PendingApprovalsPage()),
+                                builder: (_) => const PendingApprovalsPage(),
+                              ),
                             ),
                           ),
                         ),
@@ -243,7 +246,8 @@ class StudentHomePage extends StatelessWidget {
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (_) => const AttendanceHistoryPage()),
+                                builder: (_) => const AttendanceHistoryPage(),
+                              ),
                             ),
                           ),
                         ),
@@ -258,7 +262,8 @@ class StudentHomePage extends StatelessWidget {
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (_) => const StudentCoursesPage()),
+                                builder: (_) => const StudentCoursesPage(),
+                              ),
                             ),
                           ),
                         ),
@@ -350,7 +355,6 @@ class MenuTitle extends StatelessWidget {
     );
   }
 }
-
 
 // // ===== Component: เมนูแต่ละช่อง =====
 // class MenuTitle extends StatelessWidget {
