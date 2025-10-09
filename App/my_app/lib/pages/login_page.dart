@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/pages/forgot_password.dart';
 import 'package:my_app/pages/signup.dart';
 import 'package:my_app/teacher/teacher_home_pages.dart';
+import 'package:my_app/student/student_home_pages.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -97,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Center(
                         child: Image.asset(
                           'assets/login.png',
-                          height: 250,
+                          height: 230,
                           fit: BoxFit.contain,
                           errorBuilder: (_, __, ___) =>
                               const Icon(Icons.image, size: 80, color: kBorder),
@@ -126,7 +128,14 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 14),
                     Center(
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ForgotPasswordPage(), // ✅ ไปหน้านี้
+                            ),
+                          );
+                        },
                         style: TextButton.styleFrom(
                           foregroundColor: Colors.black87,
                           padding: EdgeInsets.zero,
@@ -139,6 +148,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
+
                     // ปุ่มเข้าสู่ระบบ
                     Center(
                       child: ElevatedButton(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:my_app/teacher/teacher_attendancehistory_page.dart';
-import 'package:my_app/teacher/calender_page.dart';
+import 'package:my_app/teacher/calendar_page.dart';
 import 'package:my_app/teacher/courses_page.dart';
 import 'package:my_app/teacher/dashboard_page.dart';
 import 'package:my_app/pages/edit_profile_page.dart';

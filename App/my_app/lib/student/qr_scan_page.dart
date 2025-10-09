@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 // --------- ถ้าจะเปิดสแกนจริง ให้เอาคอมเมนต์ด้านล่างออก และเพิ่ม dependency ใน pubspec.yaml ---------
 // dependencies:
 //   mobile_scanner: ^6.0.2   // (หรือเวอร์ชันล่าสุด)
@@ -16,11 +17,7 @@ class QRScanPage extends StatelessWidget {
     // ======== โหมด UI อย่างเดียว (ยังไม่เปิดกล้อง) ========
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        leading: const BackButton(color: Colors.black),
-      ),
+      appBar: const CustomAppBar(title: ''),
       body: LayoutBuilder(
         builder: (context, c) {
           final double boxSize = c.maxWidth * 0.74; // กรอบ ~3/4 ของความกว้าง

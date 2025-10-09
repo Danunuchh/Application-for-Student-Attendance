@@ -22,53 +22,51 @@ class _EditProfilePageState extends State<EditProfilePage> {
     text: '233 หมู่ 9 ตำบลวังหิน อ.บางขัน จ.นครศรีธรรมราช',
   );
 
-  // โทนสี/สไตล์ให้คล้ายภาพที่สอง
-  static const Color _primary = Color(0xFF9BBDF9); // ฟ้าพาสเทลปุ่มใหญ่
-  static const Color _accent = Color(0xFF6A9BF5); // เส้นขอบ input
-  static const Color _ink = Color(0xFF1F2937); // สีตัวอักษรหลัก
+  // โทนสี
+  static const Color _primary = Color(0xFF9BBDF9);
+  static const Color _accent = Color(0xFF6A9BF5);
 
   InputDecoration _field(String hint) => InputDecoration(
-    hintText: hint,
-    filled: true,
-    fillColor: Colors.white,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Color(0xFFAFC7FA), width: 1.8),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: _accent, width: 2),
-    ),
-  );
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFAFC7FA), width: 1.8),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _accent, width: 2),
+        ),
+      );
 
   Widget _title(String text) => Padding(
-    padding: const EdgeInsets.only(left: 4, bottom: 8, top: 18),
-    child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
-  );
+        padding: const EdgeInsets.only(left: 4, bottom: 8, top: 18),
+        child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
+      );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: Colors.white,
       appBar: const CustomAppBar(title: 'แก้ไขโปรไฟล์'),
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: GestureDetector(
-            // แตะพื้นหลังเพื่อซ่อนคีย์บอร์ด
             onTap: () => FocusScope.of(context).unfocus(),
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Hero / Illustration + Avatar ปุ่มเปลี่ยนรูป
+                  // ส่วนรูปโปรไฟล์
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Column(
                       children: [
-                        // วงกลมรูปโปรไฟล์ + ไอคอนดินสอ
                         Stack(
                           clipBehavior: Clip.none,
                           children: [
@@ -86,7 +84,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   ),
                                 ],
                                 border: Border.all(
-                                  color: const Color(0xFFE3ECFF),
+                                  color: Color(0xFFE3ECFF),
                                 ),
                               ),
                               child: const Icon(
@@ -104,14 +102,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(20),
                                   onTap: () {
-                                    // TODO: เปิด image picker ถ้าจะใช้จริง (image_picker)
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'เปลี่ยนรูปโปรไฟล์ (ตัวอย่าง)',
-                                        ),
-                                      ),
-                                    );
+                                    // TODO: เปลี่ยนรูปโปรไฟล์ (ถ้าเพิ่ม image picker)
                                   },
                                   child: const Padding(
                                     padding: EdgeInsets.all(8.0),
@@ -135,7 +126,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     ),
                   ),
 
-                  // ฟอร์ม
+                  // ฟอร์มข้อมูล
                   _title('Username'),
                   TextFormField(
                     controller: _username,
@@ -197,22 +188,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     child: TextButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          // TODO: ส่งข้อมูลไป backend
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'บันทึกข้อมูลโปรไฟล์เรียบร้อย (dummy)',
-                              ),
-                            ),
-                          );
-                          Navigator.pop(context);
+                          // TODO: ส่งข้อมูลไป backend (ถ้ามี)
+                          Navigator.pop(context); // กลับหน้าก่อนหน้าเลย
                         }
                       },
                       child: const Text(
                         'บันทึกข้อมูล',
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),
                       ),

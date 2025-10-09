@@ -74,7 +74,7 @@ class _AddCoursePageState extends State<AddCoursePage> {
           elevation: 3,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: _borderBlue, width: 1.2),
+            side: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 1.2),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16),

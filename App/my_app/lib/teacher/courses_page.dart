@@ -72,7 +72,16 @@ class _CoursesPageState extends State<CoursesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const CustomAppBar(title: 'คลาสเรียน'),
+      appBar: CustomAppBar(
+        title: 'คลาสเรียน',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle, color: Color(0xFF88A8E8)),
+            onPressed: _onAddCourse,
+          ),
+          const SizedBox(width: 6),
+        ],
+      ),
       body: ListView.separated(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         itemCount: _courses.length,
@@ -81,10 +90,10 @@ class _CoursesPageState extends State<CoursesPage> {
           final c = _courses[i];
           return Card(
             color: Colors.white,
-            elevation: 2,
+            elevation: 2, //เงาของกล่องข้อความ
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
-              side: const BorderSide(color: Color(0xFF88A8E8), width: 2),
+              side: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 0.5),  //ขอบของกล่องข้อความ
             ),
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(
