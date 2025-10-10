@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-/// โมเดลบันทึกการเข้าเรียน (mock)
 class AttendanceRecord {
   final DateTime date;
   final String studentId;
   final String studentName;
-  final bool present; // true = มาเรียน, false = ไม่ได้เช็คชื่อ
-  final String? checkTime; // เช่น "10.00 น."
+  final bool present;
+  final String? checkTime;
   AttendanceRecord({
     required this.date,
     required this.studentId,
@@ -19,7 +18,7 @@ class AttendanceRecord {
 }
 
 class AttendanceDetailPage extends StatefulWidget {
-  final String courseName; // รับชื่อวิชามาแสดงบนหน้า
+  final String courseName;
   const AttendanceDetailPage({super.key, required this.courseName});
 
   @override
@@ -30,34 +29,35 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  late final List<AttendanceRecord> _all; // ข้อมูลทั้งหมด (mock)
-  late final Map<DateTime, List<AttendanceRecord>>
-  _byDay; // map ไว้ทำ event marker
+  late final List<AttendanceRecord> _all;
+  late final Map<DateTime, List<AttendanceRecord>> _byDay;
 
   @override
   void initState() {
     super.initState();
-    // ตัวอย่างข้อมูล (ทำให้หน้าตาเหมือนภาพ)
     _all = [
       AttendanceRecord(
-        date: DateTime(DateTime.now().year, 8, 4),
+        date: DateTime(DateTime.now().year, 10, 10),
         studentId: '65200020',
         studentName: 'กวิสรา แซ่เชี่ย',
         present: true,
         checkTime: '10.00 น.',
       ),
       AttendanceRecord(
-        date: DateTime(DateTime.now().year, 8, 3),
+        date: DateTime(DateTime.now().year, 10, 8),
         studentId: '65200020',
         studentName: 'กวิสรา แซ่เชี่ย',
         present: false,
       ),
     ];
     _byDay = _groupByDay(_all);
-    _selectedDay = DateTime.now();
+    _selectedDay = DateTime(
+      _focusedDay.year,
+      _focusedDay.month,
+      _focusedDay.day,
+    );
   }
 
-  // รวมรายการตามวัน (normalizing key เป็น yyyy-mm-dd)
   Map<DateTime, List<AttendanceRecord>> _groupByDay(
     List<AttendanceRecord> list,
   ) {
@@ -77,6 +77,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   @override
   Widget build(BuildContext context) {
     final outline = const Color(0xFFCDE0F9);
+    final primary = const Color(0xFF4A86E8);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -93,8 +94,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
               ),
             ),
           ),
-
-          // Header เดือน (ปุ่ม ซ้าย/ขวา + ชื่อเดือน)
+          // Header เดือน
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -134,20 +134,20 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
             ],
           ),
 
-          // ปฏิทิน
+          // ===== ปฏิทิน =====
           Container(
             decoration: BoxDecoration(
               border: Border.all(color: outline, width: 1.5),
               borderRadius: BorderRadius.circular(16),
             ),
-            padding: const EdgeInsets.fromLTRB(6, 6, 6, 6),
+            padding: const EdgeInsets.all(6),
             child: TableCalendar<AttendanceRecord>(
               firstDay: DateTime.utc(2018, 1, 1),
               lastDay: DateTime.utc(2100, 12, 31),
               focusedDay: _focusedDay,
-              headerVisible: false, // เราทำ header เองข้างบนแล้ว
+              headerVisible: false,
               calendarFormat: CalendarFormat.month,
-              startingDayOfWeek: StartingDayOfWeek.sunday, // SUN เป็นคอลัมน์แรก
+              startingDayOfWeek: StartingDayOfWeek.sunday,
               selectedDayPredicate: (d) =>
                   _selectedDay != null && isSameDay(d, _selectedDay),
               onPageChanged: (f) => setState(() => _focusedDay = f),
@@ -156,48 +156,20 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                 _focusedDay = foc;
               }),
               availableGestures: AvailableGestures.horizontalSwipe,
+              eventLoader: (_) => const [],
 
-              // แสดง marker วันไหนมีข้อมูล
-              eventLoader: (day) => _recordsOf(day),
-
-              // ปรับ decoration ให้ไม่ crash (ไม่ผสม circle + borderRadius)
-              calendarStyle: CalendarStyle(
-                // cells = สี่เหลี่ยมมน (ไม่มี shape)
-                defaultDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                weekendDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                outsideDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                disabledDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                holidayDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-
-                // today/selected = สี่เหลี่ยมมนเช่นกัน
-                todayDecoration: BoxDecoration(
-                  border: Border.all(color: outline, width: 1.5),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                selectedDecoration: BoxDecoration(
-                  border: Border.all(color: outline, width: 2),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-
-                // markers = วงกลม (ไม่มี borderRadius)
-                markerDecoration: const BoxDecoration(
-                  color: Colors.lightBlue,
-                  shape: BoxShape.circle,
-                ),
-                markersAlignment: Alignment.bottomCenter,
-
-                outsideDaysVisible: true,
+              // ---- ลบเงาสี่เหลี่ยมด้วยการ custom cell ----
+              calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, day, focusedDay) =>
+                    _buildDayCell(day, Colors.black87),
+                outsideBuilder: (context, day, focusedDay) =>
+                    _buildDayCell(day, Colors.black38),
+                todayBuilder: (context, day, focusedDay) =>
+                    _buildDayCell(day, Colors.black87, borderColor: outline),
+                selectedBuilder: (context, day, focusedDay) =>
+                    _buildDayCell(day, Colors.white, bgColor: primary),
               ),
+
               daysOfWeekStyle: const DaysOfWeekStyle(
                 weekendStyle: TextStyle(color: Colors.black87),
                 weekdayStyle: TextStyle(color: Colors.black87),
@@ -206,10 +178,42 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
           ),
 
           const SizedBox(height: 18),
-
-          // รายการบันทึกของวัน (ตามวันที่เลือก)
           ..._buildCards(day: _selectedDay ?? _focusedDay, outline: outline),
         ],
+      ),
+    );
+  }
+
+  // === cell custom แบบไม่มีเงา ===
+  Widget _buildDayCell(
+    DateTime day,
+    Color textColor, {
+    Color? bgColor,
+    Color? borderColor,
+  }) {
+    final isCircle = bgColor != null || borderColor != null;
+    return Center(
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: isCircle
+            ? BoxDecoration(
+                color: bgColor,
+                shape: BoxShape.circle,
+                border: borderColor != null
+                    ? Border.all(color: borderColor, width: 1.5)
+                    : null,
+              )
+            : const BoxDecoration(),
+        alignment: Alignment.center,
+        child: Text(
+          '${day.day}',
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+          ),
+        ),
       ),
     );
   }
@@ -227,7 +231,6 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
         ),
       ];
     }
-
     return records.map((r) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 14),
@@ -305,7 +308,6 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
     return en[m];
   }
 
-  /// แปลงวันที่เป็น 04/08/68 (ปี พ.ศ. 2 หลัก)
   String _thaiShortDate(DateTime d) {
     final dd = d.day.toString().padLeft(2, '0');
     final mm = d.month.toString().padLeft(2, '0');
