@@ -9,18 +9,32 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  file_picker: ^10.3.2
-  http: ^1.2.2
-  flutter_svg: ^2.0.10
+
+  # --- Core/UI ---
   cupertino_icons: ^1.0.8
-  lottie: 
+  flutter_svg: ^2.0.10
+  lottie: ^3.1.2
   animated_splash_screen: ^1.3.0
-  qr_flutter: ^4.1.0
-  mobile_scanner: ^7.0.1
+  page_transition: ^2.1.0
+
+  # --- Networking/Storage/Charts ---
+  http: ^1.2.2
   shared_preferences: ^2.5.3
   fl_chart: ^1.0.0
+
+  # --- Camera/QR ---
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.0.1
+  permission_handler: ^12.0.1
+  # --- Calendar ---
   table_calendar: ^3.0.9
 
+  # --- Files / Viewer ---
+  file_picker: ^8.0.0           # ✅ เหลืออันเดียว
+  open_filex: ^4.4.0
+  syncfusion_flutter_pdfviewer: ^31.1.23
+
+  # --- i18n ---
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
@@ -29,7 +43,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  http: ^1.1.0
+  # ถ้าใช้ http ในโค้ดโปรดักชันแล้ว ไม่ต้องใส่ http ซ้ำใน dev_dependencies
+  # http: ^1.1.0   # ❌ ลบออก เพื่อไม่ให้สับสนเวอร์ชัน
 
 flutter:
   uses-material-design: true
@@ -63,3 +78,5 @@ flutter:
     - assets/document.svg
     - assets/bookplus.svg
     - assets/scan.svg
+    - assets/status.svg
+    - assets/check_status.svg

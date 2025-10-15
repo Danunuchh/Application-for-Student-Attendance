@@ -45,5 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<key>NSCameraUsageDescription</key>
+	<string>แอปนี้ต้องการใช้กล้องเพื่อสแกน QR Code สำหรับเช็คชื่อเรียน</string>
 </dict>
 </plist>

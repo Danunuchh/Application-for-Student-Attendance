@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/button.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key, this.onSubmit});
@@ -103,7 +104,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 child: Column(
                   children: [
                     // โลโก้ในกรอบเส้นฟ้า
-                   Container(
+                    Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 22,
@@ -120,15 +121,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     ),
                     const SizedBox(height: 24),
 
-                    const Text(
-                      'ตั้งค่ารหัสผ่านใหม่',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4, bottom: 12),
+                      child: Text(
+                        'ตั้งค่ารหัสผ่านใหม่',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1F2937), // เทาเข้มอ่านง่าย
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
 
                     // อีเมล
                     TextFormField(
@@ -147,8 +151,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       decoration: _decorate(
                         'รหัสผ่านใหม่',
                         suffixIcon: IconButton(
-                          onPressed: () => setState(() => _hidePass = !_hidePass),
-                          icon: Icon(_hidePass ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () =>
+                              setState(() => _hidePass = !_hidePass),
+                          icon: Icon(
+                            _hidePass ? Icons.visibility_off : Icons.visibility,
+                          ),
                         ),
                       ),
                     ),
@@ -162,33 +169,24 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       decoration: _decorate(
                         'ยืนยันรหัสผ่าน',
                         suffixIcon: IconButton(
-                          onPressed: () => setState(() => _hideConfirm = !_hideConfirm),
-                          icon: Icon(_hideConfirm ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () =>
+                              setState(() => _hideConfirm = !_hideConfirm),
+                          icon: Icon(
+                            _hideConfirm
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 26),
 
                     // ปุ่มสีเขียว (ตัวอักษรสีเขียว ตามภาพ)
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButton(
-                        onPressed: _submitting ? null : _handleSubmit,
-                        child: _submitting
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Text(
-                                'บันทึกรหัสผ่านใหม่',
-                                style: TextStyle(
-                                  color: Color(0xFF34A853), // เขียว
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                      ),
+                    CustomButton(
+                      text: 'บันทึกรหัสผ่านใหม่',
+                      onPressed: _handleSubmit,
+                      backgroundColor: const Color(0xFF84A9EA),
+                      textColor: const Color.fromARGB(255, 255, 255, 255),
                     ),
                   ],
                 ),

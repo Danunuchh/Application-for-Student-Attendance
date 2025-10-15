@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/custom_appbar.dart';
 
 class Subject {
   final String title;
@@ -24,20 +25,13 @@ class SubjectDetailPage extends StatelessWidget {
 
   static const _ink = Color(0xFF1F2937);
   static const _border = Color(0xFFCFE0FF);
+  
+  VoidCallback? get _onAddCourse => null;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
-        title: const Text(
-          "ข้อมูลรายวิชา",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        elevation: 0,
-      ),
+    appBar: const CustomAppBar(title: 'เพิ่มคลาสเรียน'),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Container(

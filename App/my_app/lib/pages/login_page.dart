@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/admin/admin_home_page.dart';
+import 'package:my_app/components/button.dart';
 import 'package:my_app/pages/forgot_password.dart';
 import 'package:my_app/pages/signup.dart';
 import 'package:my_app/teacher/teacher_home_pages.dart';
 import 'package:my_app/student/student_home_pages.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -42,10 +46,12 @@ class _LoginPageState extends State<LoginPage> {
     ),
   );
 
-  // NEW: ฟังก์ชันเข้าสู่ระบบ (mock) แล้วไปหน้า "คลาสเรียน"
+  // เปลี่ยนส่วนนี้ใน _login()
   Future<void> _login() async {
-    // ตรวจช่องว่างแบบง่ายๆ ดัก Error
-    if (_emailCtrl.text.isEmpty || _passCtrl.text.isEmpty) {
+    final email = _emailCtrl.text.trim();
+    final pass = _passCtrl.text.trim();
+
+    if (email.isEmpty || pass.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('กรุณากรอกอีเมลและรหัสผ่าน')),
       );
@@ -53,16 +59,55 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     setState(() => _loading = true);
-    await Future.delayed(const Duration(milliseconds: 600)); // mock แทน API
-    if (!mounted) return;
 
-    // ไปหน้า "คลาสเรียน" และปิดหน้า login (ย้อนกลับไม่ได้)
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const TeacherHomePage(),
-      ), //HomePage  //CoursesPage
-    );
+    try {
+      final url = Uri.parse('http://10.0.2.2:8000/login_api.php');
+      final res = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': pass}),
+      );
+
+      final data = jsonDecode(res.body);
+
+      if (data['success'] == true) {
+        final role = data['role_id'];
+        final userId = data['user_id'];
+
+        // ✅ แยกหน้าแสดงผลตาม role
+        if (role == 'student') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => StudentHomePage(userId: userId.toString()),
+            ),
+          );
+        } else if (role == 'teacher') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TeacherHomePage(userId: userId.toString()),
+            ),
+          );
+        } else if (role == 'admin') {
+          Navigator.pushReplacementNamed(
+            context,
+            '/admin_home',
+            arguments: {'userId': userId.toString()},
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? 'เข้าสู่ระบบไม่สำเร็จ')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -77,6 +122,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           children: [
@@ -132,7 +178,8 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const ForgotPasswordPage(), // ✅ ไปหน้านี้
+                              builder: (_) =>
+                                  const ForgotPasswordPage(), // ✅ ไปหน้านี้
                             ),
                           );
                         },
@@ -149,107 +196,69 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
 
-                    // ปุ่มเข้าสู่ระบบ
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: _loading ? null : _login, // NEW
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kPrimary,
-                          elevation: 6,
-                          shadowColor: kPrimary.withOpacity(0.6),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24), // มุมโค้ง
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 26, // ระยะรอบข้อความ
-                            vertical: 10,
-                          ),
-                        ),
-                        child: _loading
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
-                              )
-                            : const Text(
-                                'เข้าสู่ระบบ',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 1,
-                                  color: Colors.white,
-                                ),
-                              ),
-                      ),
+                  Center(
+                    child: CustomButton(
+                      text: 'เข้าสู่ระบบ',
+                      onPressed: _loading ? null : _login,
+                      loading: _loading,
+                      backgroundColor: const Color(0xFF84A9EA),
+                      textColor: Colors.white,
+                      fontSize: 16,
                     ),
-                    const SizedBox(height: 12),
+                  ),
+
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+          ),
+
+          // ✅ ส่วนล่าง (เฉพาะปุ่ม "ลงทะเบียน" เปลี่ยนเป็น CustomButton)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+            decoration: const BoxDecoration(
+              color: kBottom,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(22),
+                topRight: Radius.circular(22),
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: SizedBox(
+                width: double.infinity,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "ยังไม่มีบัญชีผู้ใช้?",
+                      style: TextStyle(fontSize: 16, color: Colors.black87),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // ✅ ปุ่มลงทะเบียน (ใช้ CustomButton)
+                    CustomButton(
+                      text: 'ลงทะเบียน',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SignUpPage(),
+                          ),
+                        );
+                      },
+                      backgroundColor: kPrimary,
+                      textColor: Colors.white,
+                      fontSize: 15,
+                    ),
                   ],
                 ),
               ),
             ),
-            Container(
-              // ส่วนของปุ่ม "ลงทะเบียน"
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-              decoration: const BoxDecoration(
-                color: kBottom,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(22),
-                  topRight: Radius.circular(22),
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "ยังไม่มีบัญชีผู้ใช้?",
-                        style: TextStyle(fontSize: 14, color: Colors.black87),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SignUpPage(),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kPrimary,
-                          elevation: 4,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                        child: const Text(
-                          'ลงทะเบียน',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+      )
     );
   }
 }

@@ -1,7 +1,9 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:my_app/components/button.dart';
 import 'package:my_app/components/custom_appbar.dart';
+import 'package:my_app/student/approval_detail_page.dart';
 
 class LeaveUploadPage extends StatefulWidget {
   const LeaveUploadPage({super.key});
@@ -18,19 +20,12 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
   PlatformFile? _picked;
   bool _submitting = false;
 
-  // ===== Theme tokens (โทนเดียวกันทุกคอนโทรล) =====
-  static const _borderBlue = Color(0xFFBFD6FF);
+  // ===== Theme tokens =====
+  static const _borderBlue = Color(0xFFA6CAFA);
   static const _chevronGrey = Color(0xFF6B7280);
   static const _ink = Color(0xFF1F2937);
   static const _hintGrey = Color(0xFF9CA3AF);
-  static const _panelBg = Color(0xFFF6FAFF);
-  static const _chipBg = Color.fromARGB(255, 254, 254, 254);
   static const _greenText = Color(0xFF16A34A);
-
-  static const _radius = 20.0;
-  static const _padV = 12.0;
-  static const _padH = 16.0;
-  static const _borderWidth = 1.5;
 
   @override
   void dispose() {
@@ -42,7 +37,8 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
     final res = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowMultiple: false,
-      allowedExtensions: const ['pdf', 'jpeg', 'png'],
+      withData: true, // ✅ ขอ bytes มาด้วยถ้าระบบให้
+      allowedExtensions: const ['pdf', 'jpeg', 'png', 'jpg'],
     );
     if (res != null && res.files.isNotEmpty) {
       setState(() => _picked = res.files.single);
@@ -62,6 +58,44 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
       confirmText: 'ตกลง',
       cancelText: 'ยกเลิก',
       locale: const Locale('th', 'TH'),
+
+      // 🎨 ใช้ธีมสีฟ้า
+      builder: (context, child) {
+        final base = Theme.of(context);
+        return Theme(
+          data: base.copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF4A86E8), // ฟ้าเข้ม (วงกลมวันที่เลือก)
+              onPrimary: Colors.white, // สีตัวหนังสือบนวงกลม
+              surface: Color.fromARGB(
+                255,
+                255,
+                255,
+                255,
+              ), // พื้นหลังของ dialog (ฟ้าอ่อน)
+              onSurface: Color(0xFF1F2937), // สีข้อความปกติ
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Color(0xFF4A86E8), // ปุ่มตกลง / ยกเลิก
+                textStyle: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+            datePickerTheme: const DatePickerThemeData(
+              headerBackgroundColor: Color(0xFF4A86E8), // หัวปฏิทิน (เดือน/ปี)
+              headerForegroundColor: Colors.white, // ตัวหนังสือบนหัว
+              todayForegroundColor: MaterialStatePropertyAll(Color(0xFF4A86E8)),
+              todayBackgroundColor: MaterialStatePropertyAll(Color(0x204A86E8)),
+              rangePickerBackgroundColor: Color(0xFFFFFFFF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+              ),
+            ),
+            dialogBackgroundColor: const Color(0xFFFFFFFF),
+          ),
+          child: child!,
+        );
+      },
     );
     if (d != null) setState(() => _date = d);
   }
@@ -90,28 +124,30 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
     }
 
     setState(() => _submitting = true);
-    await Future<void>.delayed(const Duration(milliseconds: 600));
+    await Future<void>.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('ส่งข้อมูลสำเร็จ'),
-        content: Text(
-          'ประเภท: $_leaveType\n'
-          'วันที่ลา: ${_formatDate(_date!)}\n'
-          'ไฟล์: ${_picked!.name}'
-          '${_noteCtrl.text.isNotEmpty ? '\nหมายเหตุ: ${_noteCtrl.text}' : ''}',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('ปิด'),
-          ),
-        ],
-      ),
+    // ✅ เตรียม payload ที่จะส่งต่อไปหน้า detail
+    final item = <String, dynamic>{
+      "date": _formatDate(_date!), // เช่น 2025-08-01
+      "subject": "ใบลา", // ถ้าคุณมีวิชา/ชื่อเรื่องจริงๆ ค่อยเปลี่ยนตรงนี้
+      "status": "รออนุมัติ",
+      "students": "", // กรอกได้ตามจริง
+      "leaveType": _leaveType!,
+      "reason": _noteCtrl.text,
+      "fileName": _picked!.name,
+      "filePath": _picked!.path, // ✅ ใช้แสดงไฟล์จาก path
+      "fileBytes": _picked!.bytes, // ✅ หรือใช้ bytes ถ้ามี (บางแพลตฟอร์ม)
+    };
+
+    // ไปหน้าแสดงรายละเอียดที่เราปรับให้รองรับไฟล์จริงไว้แล้ว
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ApprovalDetailPage(item: item)),
     );
 
+    // (option) เคลียร์ฟอร์มหลังกลับมา
+    if (!mounted) return;
     setState(() {
       _leaveType = null;
       _date = null;
@@ -121,36 +157,10 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
     });
   }
 
-  // ====== ชุดตกแต่งกรอบอินพุตให้เหมือนกันทุกตัว ======
-  InputDecoration _inputDecoration({String? hint, Widget? suffixIcon}) {
-  return InputDecoration(
-    hintText: hint,
-    hintStyle: const TextStyle(color: _hintGrey),
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: _padH,
-      vertical: _padV,
-    ),
-    suffixIcon: suffixIcon,
-    filled: true,
-    fillColor: Colors.white, // ✅ มีพื้นหลังตลอด
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(_radius),
-      borderSide: const BorderSide(color: _borderBlue, width: _borderWidth),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(_radius),
-      borderSide: const BorderSide(color: _borderBlue, width: _borderWidth),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(_radius),
-      borderSide: const BorderSide(color: _borderBlue, width: _borderWidth), // ✅ ไม่หนาขึ้น ไม่เปลี่ยนสี
-    ),
-  );
-}
-
-
   @override
   Widget build(BuildContext context) {
+    final dateText = _date == null ? 'เลือกวันที่' : _formatDate(_date!);
+
     return Scaffold(
       appBar: const CustomAppBar(title: 'แนบไฟล์การลา'),
       backgroundColor: const Color(0xFFFFFFFF),
@@ -159,11 +169,11 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           children: [
-            // แนบไฟล์ (โทนเดียวกับหน้า)
+            // ===== แนบไฟล์ =====
             Container(
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
               decoration: BoxDecoration(
-                color: const Color.from(alpha: 1, red: 1, green: 1, blue: 1),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
@@ -191,35 +201,19 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 22,
-                        vertical: 10,
-                      ),
-                      backgroundColor: const Color(0xFFBFD6FF),
-                      foregroundColor: _ink,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
+                  CustomButton(
+                    text: _picked == null ? 'เลือกไฟล์' : 'เปลี่ยนไฟล์',
                     onPressed: _pickFile,
-                    child: Text(_picked == null ? 'เลือกไฟล์' : 'เปลี่ยนไฟล์'),
+                    backgroundColor: const Color(0xFFA6CAFA), // สีพื้นเดิม
+                    textColor: _ink, // สีข้อความเดิม
+                    fontSize: 15,
                   ),
-                  if (_picked != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      _picked!.name,
-                      style: const TextStyle(fontSize: 12, color: _chevronGrey),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
-            // ประเภทการลา (Dropdown ลูกศรลง – กรอบฟ้า)
+            // ===== ประเภทการลา =====
             const Padding(
               padding: EdgeInsets.only(bottom: 8),
               child: Text(
@@ -227,11 +221,21 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                 style: TextStyle(fontWeight: FontWeight.w600, color: _ink),
               ),
             ),
-            InputDecorator(
-              decoration: _inputDecoration().copyWith(
-                filled: true,
-                fillColor: Colors.white, // ✅ สีพื้นหลังกล่อง Dropdown
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: const Color(0xFFA6CAFA), width: 1.5),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 6,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _leaveType,
@@ -240,20 +244,11 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                     style: TextStyle(color: _hintGrey),
                   ),
                   isExpanded: true,
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: _chevronGrey,
-                  ),
-                  dropdownColor: const Color.fromARGB(255, 255, 255, 255), // ✅ สีพื้นหลังของเมนูที่แสดงออกมา
+                  icon: const Icon(Icons.chevron_right, color: _chevronGrey),
+                  dropdownColor: Colors.white,
                   items: const [
-                    DropdownMenuItem(
-                      value: 'ลากิจ',
-                      child: Text('ลากิจ'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'ลาป่วย',
-                      child: Text('ลาป่วย'),
-                    ),
+                    DropdownMenuItem(value: 'ลากิจ', child: Text('ลากิจ')),
+                    DropdownMenuItem(value: 'ลาป่วย', child: Text('ลาป่วย')),
                   ],
                   onChanged: (v) => setState(() => _leaveType = v),
                 ),
@@ -261,7 +256,7 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
             ),
             const SizedBox(height: 20),
 
-            // วันที่ลา (แตะทั้งแถว เปิด DatePicker – โทนเดียวกัน)
+            // ===== วันที่ลา =====
             const Padding(
               padding: EdgeInsets.only(bottom: 8),
               child: Text(
@@ -269,81 +264,92 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                 style: TextStyle(fontWeight: FontWeight.w600, color: _ink),
               ),
             ),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(_radius),
-                onTap: _pickDate,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: 22,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(_radius),
-                    border: Border.all(color: const Color(0xFFBFD6FF), width: _borderWidth),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.event_outlined,
-                        color: _chevronGrey,
-                        size: 22,
+            InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: _pickDate,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 18,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: _borderBlue, width: 1.5),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 6,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      dateText,
+                      style: TextStyle(
+                        color: _date == null ? _hintGrey : _ink,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
                       ),
-                      const SizedBox(width: 10),
-                      Text(
-                        _date == null ? 'เลือกวันที่' : _formatDate(_date!),
-                        style: TextStyle(
-                          color: _date == null ? _hintGrey : _ink,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const Spacer(),
-                      const Icon(
-                        Icons.keyboard_arrow_down_rounded, 
-                        color: _chevronGrey,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.chevron_right, color: _chevronGrey),
+                  ],
                 ),
               ),
             ),
             const SizedBox(height: 20),
 
-            // หมายเหตุ (กรอบ/ขนาดเหมือนกัน)
+            // ===== หมายเหตุ =====
             const Text(
               'หมายเหตุ',
               style: TextStyle(fontWeight: FontWeight.w600, color: _ink),
             ),
             const SizedBox(height: 8),
-            TextFormField(
-              controller: _noteCtrl,
-              maxLines: 4,
-              style: const TextStyle(color: _ink, fontSize: 14),
-              decoration: _inputDecoration(
-                hint: 'ระบุรายละเอียดเพิ่มเติม (ถ้ามี)',
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: _borderBlue, width: 1.5),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 6,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: TextFormField(
+                controller: _noteCtrl,
+                maxLines: 4,
+                style: const TextStyle(color: _ink, fontSize: 14),
+                decoration: const InputDecoration(
+                  hintText: 'ระบุรายละเอียดเพิ่มเติม (ถ้ามี)',
+                  hintStyle: TextStyle(color: _hintGrey),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                ),
               ),
             ),
 
             const SizedBox(height: 18),
 
-            // ปุ่ม "ยืนยัน" เป็นตัวหนังสือสีเขียวอย่างเดียว
+            // ===== ปุ่มยืนยัน =====
             Align(
               alignment: Alignment.centerRight,
-              child: TextButton(
+              child: CustomButton(
+                text: _submitting ? 'กำลังส่ง…' : 'ยืนยัน',
                 onPressed: _submitting ? null : _submit,
-                style: TextButton.styleFrom(
-                  foregroundColor: _greenText,
-                  padding: EdgeInsets.zero,
-                ),
-                child: Text(
-                  _submitting ? 'กำลังส่ง…' : 'ยืนยัน',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                backgroundColor: const Color(0xFFA6CAFA), // ✅ ใช้สีเดียวกับปุ่มเดิม
+                textColor: const Color.fromARGB(255, 0, 0, 0),
+                fontSize: 15,
               ),
             ),
           ],

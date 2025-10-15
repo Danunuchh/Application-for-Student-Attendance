@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:my_app/components/custom_appbar.dart';
 
 class AddCoursePage extends StatefulWidget {
@@ -9,36 +10,90 @@ class AddCoursePage extends StatefulWidget {
 }
 
 class _AddCoursePageState extends State<AddCoursePage> {
-  // controllers (dummy)
-  final _name = TextEditingController(text: 'DATA MINING');
-  final _code = TextEditingController(text: '11256043');
-  final _credit = TextEditingController(text: '3');
-  final _teacher = TextEditingController(text: 'ดร.รัตติกร สมบัติแก้ว');
-  final _start = TextEditingController(text: '17:00');
-  final _end = TextEditingController(text: '20:00');
-  final _room = TextEditingController(text: 'E107');
+  final _formKey = GlobalKey<FormState>();
+
+  // controllers (ว่างไว้เพื่อเชื่อม PHP)
+  final _name = TextEditingController();
+  final _code = TextEditingController();
+  final _credit = TextEditingController();
+  final _teacher = TextEditingController();
+  final _start = TextEditingController();
+  final _end = TextEditingController();
+  final _room = TextEditingController();
   final _sessions = TextEditingController();
 
-  static const _borderBlue = Color(0xFF88A8E8);
+  bool _canSubmit = false; // ✅ ปุ่มบันทึกจะเปิดเมื่อกรอกครบเท่านั้น
 
-  InputDecoration _inputDec() => InputDecoration(
+  static const _borderBlue = Color(0xFF9CA3AF);
+  static const _hintGrey = Color(0xFF9CA3AF);
+
+  @override
+  void initState() {
+    super.initState();
+    // ฟังการเปลี่ยนแปลงทุกช่อง เพื่อตรวจว่ากรอกครบหรือยัง
+    for (final c in [
+      _name, _code, _credit, _teacher, _start, _end, _room, _sessions
+    ]) {
+      c.addListener(_recalcCanSubmit);
+    }
+  }
+
+  void _recalcCanSubmit() {
+    final ok = _name.text.trim().isNotEmpty &&
+        _code.text.trim().isNotEmpty &&
+        _credit.text.trim().isNotEmpty &&
+        _teacher.text.trim().isNotEmpty &&
+        _start.text.trim().isNotEmpty &&
+        _end.text.trim().isNotEmpty &&
+        _room.text.trim().isNotEmpty &&
+        _sessions.text.trim().isNotEmpty;
+    if (ok != _canSubmit) {
+      setState(() => _canSubmit = ok);
+    }
+  }
+
+  String? _required(String? v, String msg) =>
+      (v == null || v.trim().isEmpty) ? msg : null;
+
+InputDecoration _dec(String label, {String? hint, Widget? suffix}) {
+  return InputDecoration(
+    labelText: label,
+    hintText: hint,
     isDense: true,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
     filled: true,
     fillColor: Colors.white,
+    hintStyle: const TextStyle(color: _hintGrey),
+    labelStyle: const TextStyle(color: Colors.black87),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+
+    // ปกติ
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(10),
       borderSide: const BorderSide(color: _borderBlue, width: 1.5),
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(10),
       borderSide: const BorderSide(color: _borderBlue, width: 1.5),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(10),
       borderSide: const BorderSide(color: _borderBlue, width: 2),
     ),
+
+    // ❌ ซ่อน error ทั้งข้อความและสีกรอบ
+    errorStyle: const TextStyle(height: 0, color: Colors.transparent),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: _borderBlue, width: 2),
+    ),
+
+    suffixIcon: suffix,
   );
+}
 
   @override
   void dispose() {
@@ -53,8 +108,27 @@ class _AddCoursePageState extends State<AddCoursePage> {
     super.dispose();
   }
 
+  Future<void> _pickTime(TextEditingController ctrl) async {
+    final now = TimeOfDay.now();
+    final res = await showTimePicker(
+      context: context,
+      initialTime: now,
+      builder: (c, child) => MediaQuery(
+        data: MediaQuery.of(c!).copyWith(alwaysUse24HourFormat: true),
+        child: child!,
+      ),
+    );
+    if (res != null) {
+      final h = res.hour.toString().padLeft(2, '0');
+      final m = res.minute.toString().padLeft(2, '0');
+      ctrl.text = '$h:$m'; // ✅ ตัว listener จะไปเปิด/ปิดปุ่มให้เอง
+    }
+  }
+
   void _save() {
-    // ส่งค่ากลับไปเพิ่มในลิสต์
+    // ป้องกันซ้ำอีกชั้น: ถ้าไม่ผ่าน validate จะไม่ pop
+    if (!_formKey.currentState!.validate()) return;
+
     Navigator.pop(context, {
       'id': DateTime.now().millisecondsSinceEpoch,
       'name': _name.text.trim(),
@@ -65,190 +139,151 @@ class _AddCoursePageState extends State<AddCoursePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFFFFFFF),
       appBar: const CustomAppBar(title: 'เพิ่มคลาสเรียน'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Card(
-          color: Colors.white,
-          elevation: 3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 1.2),
-          ),
-          child: Padding(
+      body: LayoutBuilder(
+        builder: (context, cons) {
+          final twoCols = cons.maxWidth >= 560;
+          final gap = twoCols ? 14.0 : 10.0;
+
+          Widget colPair(Widget a, Widget b) => twoCols
+              ? Row(children: [Expanded(child: a), SizedBox(width: gap), Expanded(child: b)])
+              : Column(children: [a, SizedBox(height: gap), b]);
+
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _RowField(
-                  label: 'วิชา :',
-                  child: TextField(controller: _name, decoration: _inputDec()),
-                ),
+            child: Card(
+              elevation: 5,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: Color(0xFF88A8E8), width: 1.5),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
+                child: Form(
+                  child: Column(
+                    children: [
+                      // หัวเรื่อง
+                      Row(
+                        children: const [
+                          Icon(Icons.menu_book_outlined, size: 22, color: _borderBlue),
+                          SizedBox(width: 8),
+                          Text('ข้อมูลรายวิชา',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
 
-                const SizedBox(height: 8),
-                // รหัสวิชา + หน่วยกิต (Responsive)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _RowField(
-                        label: 'รหัสวิชา :',
-                        child: TextField(
+                      // วิชา
+                      TextFormField(
+                        controller: _name,
+                        decoration: _dec('วิชา'),
+                        validator: (v) => _required(v, 'กรุณากรอกชื่อวิชา'),
+                      ),
+                      SizedBox(height: gap),
+
+                      // รหัสวิชา + หน่วยกิต
+                      colPair(
+                        TextFormField(
                           controller: _code,
-                          decoration: _inputDec(),
+                          decoration: _dec('รหัสวิชา'),
+                          validator: (v) => _required(v, 'กรุณากรอกรหัสวิชา'),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 140),
-                      child: _RowField(
-                        label: 'หน่วยกิต :',
-                        labelMaxWidth: 72,
-                        child: TextField(
+                        TextFormField(
                           controller: _credit,
-                          decoration: _inputDec(),
+                          decoration: _dec('หน่วยกิต'),
                           keyboardType: TextInputType.number,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          validator: (v) => _required(v, 'กรุณากรอกหน่วยกิต'),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                      SizedBox(height: gap),
 
-                const SizedBox(height: 8),
-                _RowField(
-                  label: 'อาจารย์ผู้สอน :',
-                  child: TextField(
-                    controller: _teacher,
-                    decoration: _inputDec(),
-                  ),
-                ),
+                      // อาจารย์ผู้สอน
+                      TextFormField(
+                        controller: _teacher,
+                        decoration: _dec('อาจารย์ผู้สอน'),
+                        validator: (v) => _required(v, 'กรุณากรอกชื่ออาจารย์ผู้สอน'),
+                      ),
+                      SizedBox(height: gap),
 
-                const SizedBox(height: 8),
-                // เวลาเรียน + ห้องเรียน (Responsive)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: _RowField(
-                        label: 'เวลาเรียน :',
-                        child: Row(
+                      // เวลา + ห้องเรียน
+                      colPair(
+                        Row(
                           children: [
-                            Flexible(
-                              child: TextField(
+                            Expanded(
+                              child: TextFormField(
                                 controller: _start,
-                                decoration: _inputDec(),
+                                readOnly: true,
+                                onTap: () => _pickTime(_start),
                                 textAlign: TextAlign.center,
+                                decoration: _dec('เวลาเริ่ม', hint: 'HH:mm'),
+                                validator: (v) => _required(v, 'เลือกเวลาเริ่ม'),
                               ),
                             ),
-                            const SizedBox(width: 4),
-                            const Text('-', style: TextStyle(fontSize: 16)),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: TextField(
+                            const SizedBox(width: 8),
+                            const Text('—', style: TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextFormField(
                                 controller: _end,
-                                decoration: _inputDec(),
+                                readOnly: true,
+                                onTap: () => _pickTime(_end),
                                 textAlign: TextAlign.center,
+                                decoration: _dec('เวลาสิ้นสุด', hint: 'HH:mm'),
+                                validator: (v) => _required(v, 'เลือกเวลาสิ้นสุด'),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _RowField(
-                        label: 'ห้องเรียน :',
-                        child: TextField(
+                        TextFormField(
                           controller: _room,
-                          decoration: _inputDec(),
+                          decoration: _dec('ห้องเรียน'),
+                          validator: (v) => _required(v, 'กรุณากรอกห้องเรียน'),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                      SizedBox(height: gap),
 
-                const SizedBox(height: 8),
-                _RowField(
-                  label: 'จำนวนครั้งที่ให้นักเรียน :',
-                  child: TextField(
-                    controller: _sessions,
-                    decoration: _inputDec(),
-                    keyboardType: TextInputType.number,
+                      // จำนวนครั้งที่ให้นักศึกษาลาได้
+                      TextFormField(
+                        controller: _sessions,
+                        decoration: _dec('จำนวนครั้งที่ให้นักศึกษาลาได้'),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        validator: (v) => _required(v, 'กรุณากรอกจำนวนครั้ง'),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // ปุ่มล่าง
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          // ✅ ปุ่มบันทึกจะถูก disable จนกรอกครบทุกช่อง
+                          FilledButton.icon(
+                            onPressed: _canSubmit ? _save : null,
+                            icon: const Icon(Icons.check_circle_outline),
+                            label: const Text('บันทึก'),
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              backgroundColor: const Color(0xFF22C55E),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: const Color.fromARGB(255, 161, 220, 182), // สีตอนปุ่มปิด
+                              disabledForegroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {},
-                      tooltip: 'ลบ',
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.orange),
-                      onPressed: () {},
-                      tooltip: 'แก้ไข',
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                        size: 30,
-                      ),
-                      onPressed: _save,
-                      tooltip: 'บันทึก',
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
-    );
-  }
-}
-
-/// แถวมาตรฐาน: "Label : [Widget]" (แก้ overflow ด้วย Flexible + maxWidth)
-class _RowField extends StatelessWidget {
-  final String label;
-  final Widget child;
-
-  /// จำกัดความกว้างสูงสุดของ label เพื่อไม่กินพื้นที่ input มากเกินไป
-  final double labelMaxWidth;
-
-  const _RowField({
-    required this.label,
-    required this.child,
-    this.labelMaxWidth = 110,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Flexible(
-          fit: FlexFit.loose,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: labelMaxWidth),
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.black),
-            ),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(child: child),
-      ],
     );
   }
 }

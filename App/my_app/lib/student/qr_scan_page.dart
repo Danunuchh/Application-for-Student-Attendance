@@ -1,117 +1,230 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:my_app/components/custom_appbar.dart';
-// --------- ถ้าจะเปิดสแกนจริง ให้เอาคอมเมนต์ด้านล่างออก และเพิ่ม dependency ใน pubspec.yaml ---------
-// dependencies:
-//   mobile_scanner: ^6.0.2   // (หรือเวอร์ชันล่าสุด)
-// import 'package:mobile_scanner/mobile_scanner.dart';
-// -------------------------------------------------------------------------------------------------
 
-class QRScanPage extends StatelessWidget {
+class QRScanPage extends StatefulWidget {
   const QRScanPage({super.key});
 
-  // สีฟ้าอ่อนตามตัวอย่าง
+  @override
+  State<QRScanPage> createState() => _QRScanPageState();
+}
+
+class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
   static const Color _blue = Color(0xFFA6CAFA);
+
+  // ✅ สร้าง controller แบบ lazy (หลังอนุญาตค่อยสร้าง)
+  MobileScannerController? _controller;
+
+  bool _handling = false;
+  bool _torchOn = false;
+  bool _permissionGranted = false;
+  bool _checkingPermission = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initPermission();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  // ✅ จัดการ lifecycle: pause/resume กล้องเวลาแอปเข้า/ออก foreground
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final c = _controller;
+    if (c == null) return;
+    if (state == AppLifecycleState.paused) {
+      c.stop();
+    } else if (state == AppLifecycleState.resumed) {
+      // เริ่มใหม่เฉพาะตอนกลับมาและมี permission แล้ว
+      if (_permissionGranted) c.start();
+    }
+  }
+
+  Future<void> _initPermission() async {
+    // ขอสิทธิ์กล้อง
+    final status = await Permission.camera.request();
+
+    if (!mounted) return;
+    _permissionGranted = status.isGranted;
+    _checkingPermission = false;
+
+    // ถ้าให้สิทธิ์แล้ว "ค่อย" สร้าง controller
+    if (_permissionGranted) {
+      _controller = MobileScannerController(
+        detectionSpeed: DetectionSpeed.noDuplicates,
+        facing: CameraFacing.back,
+        torchEnabled: false,
+      );
+    } else {
+      // ถ้าไม่ให้สิทธิ์ แจ้งเตือนครั้งเดียวพอ
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('กรุณาอนุญาตการใช้กล้องเพื่อสแกน QR')),
+      );
+    }
+
+    if (mounted) setState(() {});
+  }
+
+  String? _firstRawValue(BarcodeCapture capture) {
+    if (capture.barcodes.isEmpty) return null;
+    for (final b in capture.barcodes) {
+      final v = b.rawValue;
+      if (v != null && v.isNotEmpty) return v;
+    }
+    return null;
+  }
+
+  void _onDetect(BarcodeCapture capture) async {
+    if (_handling) return;
+    _handling = true;
+
+    try {
+      final code = _firstRawValue(capture);
+      if (code != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('สแกนสำเร็จ: $code')),
+        );
+        await Future.delayed(const Duration(milliseconds: 800));
+        // Navigator.pop(context, code);
+      }
+    } finally {
+      _handling = false;
+    }
+  }
+
+  Future<void> _toggleTorch() async {
+    final c = _controller;
+    if (c == null) return;
+    try {
+      await c.toggleTorch();
+      if (!mounted) return;
+      setState(() => _torchOn = !_torchOn);
+    } catch (_) {
+      // ถ้าอุปกรณ์ไม่มีแฟลช จะโยน error มา — เงียบไว้หรือจะแจ้งเตือนก็ได้
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ไม่สามารถเปิดไฟฉายได้บนอุปกรณ์นี้')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // ======== โหมด UI อย่างเดียว (ยังไม่เปิดกล้อง) ========
+    final c = _controller;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: const CustomAppBar(title: ''),
-      body: LayoutBuilder(
-        builder: (context, c) {
-          final double boxSize = c.maxWidth * 0.74; // กรอบ ~3/4 ของความกว้าง
-          final double topSpacing = c.maxHeight * 0.10; // ระยะจากบนลงมาให้โปร่ง
-
-          return Column(
-            children: [
-              SizedBox(height: topSpacing),
-              Center(
-                child: SizedBox(
-                  width: boxSize,
-                  height: boxSize,
-                  child: CustomPaint(
-                    painter: _ScanFramePainter(
-                      color: _blue,
-                      cornerStroke: 9, // ความหนาเส้นตามมุม
-                      laserStroke: 6, // ความหนาเส้นกลาง
-                      cornerLen: 54, // ความยาวแขนมุม
-                      inset: 18, // ระยะห่างจากขอบกรอบ
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-
-      // ======== (ทางเลือก) เปิดกล้องสแกนจริง — คอมเมนต์ไว้ให้พร้อมใช้งาน ========
-      /*
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // 1) พื้นหลังเป็นกล้อง
-          MobileScanner(
-            controller: MobileScannerController(
-              detectionSpeed: DetectionSpeed.noDuplicates,
-              facing: CameraFacing.back,
-              torchEnabled: false,
-            ),
-            onDetect: (capture) {
-              final codes = capture.barcodes;
-              if (codes.isNotEmpty) {
-                final value = codes.first.rawValue;
-                if (value != null) {
-                  // TODO: ทำสิ่งที่ต้องการเมื่อสแกนสำเร็จ เช่น:
-                  // Navigator.pop(context, value);
-                }
-              }
-            },
+      backgroundColor: Colors.black,
+      appBar: CustomAppBar(
+        title: 'สแกน QR',
+        actions: [
+          IconButton(
+            tooltip: 'สลับกล้อง',
+            icon: const Icon(Icons.cameraswitch, color: Colors.white),
+            onPressed: c == null ? null : () => c.switchCamera(),
           ),
-          // 2) วาดกรอบทับกล้อง
-          IgnorePointer(
-            child: LayoutBuilder(
-              builder: (context, c) {
-                final double boxSize = c.maxWidth * 0.74;
-                final double topSpacing = c.maxHeight * 0.10;
-                return Column(
-                  children: [
-                    SizedBox(height: topSpacing),
-                    Center(
-                      child: SizedBox(
-                        width: boxSize,
-                        height: boxSize,
-                        child: CustomPaint(
-                          painter: _ScanFramePainter(
-                            color: _blue,
-                            cornerStroke: 9,
-                            laserStroke: 6,
-                            cornerLen: 54,
-                            inset: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
+          IconButton(
+            tooltip: 'ไฟฉาย',
+            icon: Icon(
+              _torchOn ? Icons.flash_on : Icons.flash_off,
+              color: _torchOn ? Colors.yellowAccent : Colors.white,
             ),
+            onPressed: c == null ? null : _toggleTorch,
           ),
         ],
       ),
-      */
+      body: _checkingPermission
+          ? const Center(child: CircularProgressIndicator(color: Colors.white))
+          : !_permissionGranted
+              ? _PermissionDeniedView(onOpenSettings: () => openAppSettings())
+              : c == null
+                  ? const Center(
+                      child: Text('ไม่สามารถเริ่มกล้องได้',
+                          style: TextStyle(color: Colors.white)))
+                  : Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // ✅ แสดงกล้องหลังอนุญาตเท่านั้น
+                        MobileScanner(
+                          controller: c,
+                          onDetect: _onDetect,
+                          fit: BoxFit.cover,
+                        ),
+                        IgnorePointer(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final double boxSize =
+                                  constraints.maxWidth * 0.74;
+                              final double topSpacing =
+                                  constraints.maxHeight * 0.10;
+                              return Column(
+                                children: [
+                                  SizedBox(height: topSpacing),
+                                  Center(
+                                    child: SizedBox(
+                                      width: boxSize,
+                                      height: boxSize,
+                                      child: CustomPaint(
+                                        painter: _ScanFramePainter(
+                                          color: _blue,
+                                          cornerStroke: 9,
+                                          laserStroke: 6,
+                                          cornerLen: 54,
+                                          inset: 18,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
     );
   }
 }
 
-/// วาดมุม L ทั้งสี่ + เส้นแนวนอนกลาง ให้โทนเดียวกับภาพตัวอย่าง
+class _PermissionDeniedView extends StatelessWidget {
+  final VoidCallback onOpenSettings;
+  const _PermissionDeniedView({required this.onOpenSettings});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.camera_alt_outlined, color: Colors.white70, size: 56),
+          const SizedBox(height: 12),
+          const Text(
+            'ไม่ได้รับอนุญาตให้ใช้กล้อง',
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: onOpenSettings,
+            child: const Text('เปิดการตั้งค่า'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ScanFramePainter extends CustomPainter {
   final Color color;
-  final double cornerStroke; // ความหนามุม
-  final double laserStroke; // ความหนาเส้นกลาง
-  final double cornerLen; // ความยาวแขนมุม
-  final double inset; // ระยะร่นจากขอบกรอบ
+  final double cornerStroke;
+  final double laserStroke;
+  final double cornerLen;
+  final double inset;
 
   _ScanFramePainter({
     required this.color,
@@ -123,41 +236,37 @@ class _ScanFramePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint pCorner = Paint()
+    final pCorner = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = cornerStroke
       ..strokeCap = StrokeCap.round;
 
-    final Paint pLaser = Paint()
+    final pLaser = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = laserStroke
       ..strokeCap = StrokeCap.round;
 
-    final double w = size.width;
-    final double h = size.height;
+    final w = size.width;
+    final h = size.height;
 
-    // กำหนดจุดอ้างอิง (ล-ซ้าย, ข-ขวา, บ-บน, ล่-ล่าง)
-    final double l = inset;
-    final double r = w - inset;
-    final double t = inset;
-    final double b = h - inset;
+    final l = inset;
+    final r = w - inset;
+    final t = inset;
+    final b = h - inset;
 
-    // helper วาดแขนมุม (แนวนอน + แนวตั้ง) ด้วยปลายมน
     void drawCorner({
       required Offset hStart,
-      required bool toRight, // แนวนอน: true=ขวา, false=ซ้าย
+      required bool toRight,
       required Offset vStart,
-      required bool toDown, // แนวตั้ง: true=ลง, false=ขึ้น
+      required bool toDown,
     }) {
-      // แนวนอน
       canvas.drawLine(
         hStart,
         hStart + Offset(toRight ? cornerLen : -cornerLen, 0),
         pCorner,
       );
-      // แนวตั้ง
       canvas.drawLine(
         vStart,
         vStart + Offset(0, toDown ? cornerLen : -cornerLen),
@@ -165,37 +274,12 @@ class _ScanFramePainter extends CustomPainter {
       );
     }
 
-    // มุมซ้ายบน
-    drawCorner(
-      hStart: Offset(l, t),
-      toRight: true,
-      vStart: Offset(l, t),
-      toDown: true,
-    );
-    // มุมขวาบน
-    drawCorner(
-      hStart: Offset(r, t),
-      toRight: false,
-      vStart: Offset(r, t),
-      toDown: true,
-    );
-    // มุมซ้ายล่าง
-    drawCorner(
-      hStart: Offset(l, b),
-      toRight: true,
-      vStart: Offset(l, b),
-      toDown: false,
-    );
-    // มุมขวาล่าง
-    drawCorner(
-      hStart: Offset(r, b),
-      toRight: false,
-      vStart: Offset(r, b),
-      toDown: false,
-    );
+    drawCorner(hStart: Offset(l, t), toRight: true,  vStart: Offset(l, t), toDown: true);
+    drawCorner(hStart: Offset(r, t), toRight: false, vStart: Offset(r, t), toDown: true);
+    drawCorner(hStart: Offset(l, b), toRight: true,  vStart: Offset(l, b), toDown: false);
+    drawCorner(hStart: Offset(r, b), toRight: false, vStart: Offset(r, b), toDown: false);
 
-    // เส้นเลเซอร์ตรงกลาง (แนวนอน)
-    final double midY = h / 2;
+    final midY = h / 2;
     canvas.drawLine(Offset(l, midY), Offset(r, midY), pLaser);
   }
 

@@ -1,210 +1,226 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/components/custom_appbar.dart';
+import 'package:my_app/components/textbox.dart';
 import 'package:my_app/teacher/teacher_approval_detail_page.dart';
 
 enum ApprovalStatus { approved, rejected, pending }
 
+/// ไอเท็มในลิสต์หน้า Pending (ต้องมี id เพื่อเปิดรายละเอียด)
 class ApprovalItem {
+  final String id;           // ไอดีเอกสาร
   final DateTime date;
-  final String title;
+  final String title;        // ชื่อวิชา/หัวข้อ
   final ApprovalStatus status;
 
   const ApprovalItem({
+    required this.id,
     required this.date,
     required this.title,
     required this.status,
   });
-}
 
-class PendingApprovalsPage extends StatelessWidget {
-  const PendingApprovalsPage({super.key});
+  // ✅ แปลง JSON → ApprovalItem (รองรับหลายฟอร์แมต)
+  factory ApprovalItem.fromJson(Map<String, dynamic> json) {
+    // แปลง status string → enum
+    ApprovalStatus parseStatus(dynamic raw) {
+      final s = (raw ?? '').toString().toLowerCase().trim();
+      switch (s) {
+        case 'approved':
+        case 'อนุมัติ':
+          return ApprovalStatus.approved;
+        case 'rejected':
+        case 'ไม่อนุมัติ':
+          return ApprovalStatus.rejected;
+        default:
+          return ApprovalStatus.pending;
+      }
+    }
 
-  // โทนสีให้เหมือนภาพ
-  static const _ink = Color(0xFF1F2937);
-  static const _sub = Color(0xFF9CA3AF);
-  static const _border = Color(0xFF9DBAF6); // ฟ้าอ่อนขอบการ์ด
-  static const _green = Color(0xFF20A445);
-  static const _red = Color(0xFFE53935);
+    // แปลง date (รองรับ ISO string หรือ milliseconds)
+    DateTime parseDate(dynamic raw) {
+      if (raw == null) return DateTime.now();
+      if (raw is int) {
+        // สมมติเป็น millisecondsSinceEpoch
+        return DateTime.fromMillisecondsSinceEpoch(raw);
+      }
+      final s = raw.toString();
+      return DateTime.tryParse(s) ?? DateTime.now();
+    }
 
-  // --------- ดัมมี่ดาต้า ----------
-  List<ApprovalItem> _items() => [
-    ApprovalItem(
-      date: DateTime(2025, 8, 1),
-      title: 'DATA WAREHOUSE',
-      status: ApprovalStatus.approved,
-    ),
-    ApprovalItem(
-      date: DateTime(2025, 8, 1),
-      title: 'DATA WAREHOUSE',
-      status: ApprovalStatus.approved,
-    ),
-    ApprovalItem(
-      date: DateTime(2025, 8, 1),
-      title: 'DATA WAREHOUSE',
-      status: ApprovalStatus.approved,
-    ),
-    ApprovalItem(
-      date: DateTime(2025, 8, 1),
-      title: 'DATA WAREHOUSE',
-      status: ApprovalStatus.rejected,
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final items = _items();
-
-    return Scaffold(
-      appBar: const CustomAppBar(title: 'เอกสารที่รออนุมัติ'),
-      backgroundColor: Colors.white,
-      body: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        itemBuilder: (_, i) => _ApprovalCard(
-          item: items[i],
-          onTap: () {
-            final details = <ApprovalDetail>[
-              ApprovalDetail(
-                date: items[i].date,
-                subject: items[i].title,
-                students: '65200128 ณนุช & 65200020 กวิสรา',
-                leaveType: 'ลาหยุด',
-                reason: 'อยากพักผ่อน',
-                status: items[i].status,
-              ),
-              ApprovalDetail(
-                date: items[i].date,
-                subject: items[i].title,
-                students: '65123456 ธนกร & 65112233 ณัฐวุฒิ',
-                leaveType: 'ลากิจ',
-                reason: 'ไปทำธุระครอบครัว',
-                status: items[i].status,
-              ),
-              ApprovalDetail(
-                date: items[i].date,
-                subject: items[i].title,
-                students: '65200999 ภูริ & 65200888 วัชระ',
-                leaveType: 'ลาป่วย',
-                reason: 'มีไข้',
-                status: items[i].status,
-              ),
-              ApprovalDetail(
-                date: items[i].date,
-                subject: items[i].title,
-                students: '65200001 ศุภชัย',
-                leaveType: 'ลาหยุด',
-                reason: 'ธุระส่วนตัว',
-                status: items[i].status,
-              ),
-            ];
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    ApprovalDetailPage(detail: details[i % details.length]),
-              ),
-            );
-          },
-        ),
-        separatorBuilder: (_, __) => const SizedBox(height: 16),
-        itemCount: items.length,
-      ),
+    return ApprovalItem(
+      id: json['id']?.toString() ?? '',
+      date: parseDate(json['date']),
+      title: json['title']?.toString() ?? '-',
+      status: parseStatus(json['status']),
     );
   }
 
-  // แปลงวันที่เป็นรูปแบบ `วันที่ 1/8/68` (พ.ศ. 2568 → 68)
+  // (เผื่อส่งกลับไป server)
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'date': date.toIso8601String(),
+        'title': title,
+        'status': status.name, // 'approved' | 'rejected' | 'pending'
+      };
+}
+
+class PendingApprovalsPage extends StatefulWidget {
+  const PendingApprovalsPage({
+    super.key,
+    required this.userId,
+    required this.loadList,     // โหลดลิสต์จาก backend
+    required this.loadDetail,   // โหลดรายละเอียดจาก backend
+    this.onApprove,             // อนุมัติ
+    this.onReject,              // ไม่อนุมัติ
+  });
+
+  final String userId;
+
+  /// คืนรายการที่ต้องแสดงบนลิสต์
+  final Future<List<ApprovalItem>> Function(String userId) loadList;
+
+  /// คืนรายละเอียดสำหรับหน้า Detail
+  final Future<ApprovalDetail> Function(String approvalId) loadDetail;
+
+  final Future<bool> Function(String approvalId)? onApprove;
+  final Future<bool> Function(String approvalId)? onReject;
+
+  @override
+  State<PendingApprovalsPage> createState() => _PendingApprovalsPageState();
+
+  // โทนสี
+  static const _ink = Color(0xFF1F2937);
+  static const _sub = Color(0xFF9CA3AF);
+
+  // วันที่ไทยสั้น
   static String thShortDate(DateTime d) {
     final buddhistYear = d.year + 543;
     final yy = buddhistYear % 100;
     return 'วันที่ ${d.day}/${d.month}/$yy';
   }
 
-  // แปลงสถานะ → ข้อความ+สี
+  // label + สีของสถานะ (ใช้กับ TextBox.status)
   static (String, Color) statusLabel(ApprovalStatus s) {
     switch (s) {
       case ApprovalStatus.approved:
-        return ('อนุมัติ', _green);
+        return ('อนุมัติ', const Color(0xFF20A445));
       case ApprovalStatus.rejected:
-        return ('ไม่อนุมัติ', _red);
+        return ('ไม่อนุมัติ', const Color(0xFFE53935));
       case ApprovalStatus.pending:
         return ('รอดำเนินการ', _sub);
     }
   }
 }
 
-class _ApprovalCard extends StatelessWidget {
-  final ApprovalItem item;
-  final VoidCallback? onTap;
+class _PendingApprovalsPageState extends State<PendingApprovalsPage> {
+  late Future<List<ApprovalItem>> _future;
 
-  const _ApprovalCard({required this.item, this.onTap});
+  @override
+  void initState() {
+    super.initState();
+    _future = widget.loadList(widget.userId);
+  }
+
+  Future<void> _refresh() async {
+    setState(() {
+      _future = widget.loadList(widget.userId);
+    });
+    await _future;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final (label, color) = PendingApprovalsPage.statusLabel(item.status);
+    return Scaffold(
+      appBar: const CustomAppBar(title: 'เอกสารที่รออนุมัติ'),
+      backgroundColor: Colors.white,
+      body: FutureBuilder<List<ApprovalItem>>(
+        future: _future,
+        builder: (context, snap) {
+          if (snap.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snap.hasError) {
+            return _errorState('โหลดข้อมูลไม่สำเร็จ', onRetry: _refresh);
+          }
 
-    return Material(
-      color: Colors.white,
-      elevation: 3,
-      shadowColor: Colors.black12,
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: PendingApprovalsPage._border, width: 1),
-          ),
-          child: Row(
-            children: [
-              // ซ้าย: วันที่ + ชื่อรายวิชา
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      PendingApprovalsPage.thShortDate(item.date),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: PendingApprovalsPage._ink,
-                      ),
+          final items = snap.data ?? const <ApprovalItem>[];
+          if (items.isEmpty) {
+            return RefreshIndicator(
+              onRefresh: _refresh,
+              child: ListView(
+                padding: const EdgeInsets.all(24),
+                children: const [
+                  SizedBox(height: 80),
+                  Center(
+                    child: Text(
+                      'ยังไม่มีเอกสาร',
+                      style: TextStyle(color: PendingApprovalsPage._sub),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      item.title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: PendingApprovalsPage._ink,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // ขวา: สถานะ + ลูกศร
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: color,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Icon(
-                    Icons.chevron_right,
-                    size: 20,
-                    color: Color(0xFFBDBDBD),
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: _refresh,
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, i) {
+                final it = items[i];
+                final (label, color) =
+                    PendingApprovalsPage.statusLabel(it.status);
+
+                return TextBox(
+                  title: it.title,                                      // ชื่อวิชา/หัวข้อ
+                  subtitle: PendingApprovalsPage.thShortDate(it.date),  // วันที่ไทยสั้น
+                  status: label,                                        // สถานะ
+                  statusColor: color,
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    size: 22,
+                    color: Color(0xFF9CA3AF),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ApprovalDetailPage(
+                          approvalId: it.id,
+                          loadDetail: widget.loadDetail,
+                          onApprove: widget.onApprove,
+                          onReject: widget.onReject,
+                        ),
+                      ),
+                    ).then((res) {
+                      // อัปเดตรายการเมื่อกลับจากหน้ารายละเอียด (ถ้ามีการเปลี่ยนสถานะ)
+                      if (res is Map &&
+                          (res['approved'] == true || res['rejected'] == true)) {
+                        _refresh();
+                      }
+                    });
+                  },
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _errorState(String msg, {VoidCallback? onRetry}) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(msg, style: const TextStyle(color: PendingApprovalsPage._sub)),
+          const SizedBox(height: 8),
+          if (onRetry != null)
+            OutlinedButton(onPressed: onRetry, child: const Text('ลองใหม่')),
+        ],
       ),
     );
   }

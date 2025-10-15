@@ -1,30 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/components/custom_appbar.dart';
+import 'package:my_app/components/textbox.dart';
 import 'teacher_qr_page.dart';
 import 'addcourse_page.dart';
 import 'course_detail_page.dart';
 
 class CoursesPage extends StatefulWidget {
-  const CoursesPage({super.key});
+  final String userId; 
+  const CoursesPage({super.key, required this.userId});
 
   @override
   State<CoursesPage> createState() => _CoursesPageState();
 }
 
 class _CoursesPageState extends State<CoursesPage> {
-  // ดัมมี่คอร์ส (แก้ไขได้)
-  final List<Map<String, dynamic>> _courses = [
-    {'id': 1, 'name': 'DATA MINING', 'code': '11256043'},
-    {
-      'id': 2,
-      'name': 'INTERNET OF THINGS AND SMART SYSTEMS',
-      'code': '11256043',
-    },
-  ];
 
-  // ไปหน้า “รายละเอียดวิชา”
-  void _goToDetail(Map<String, dynamic> c) {
-    Navigator.push(
+  // ✅ ลิสต์รายวิชาเริ่ม "ว่าง" เพื่อรอรับจากหน้าเพิ่มวิชา / PHP
+  final List<Map<String, dynamic>> _courses = [];
+
+  // ---------------- Actions ----------------
+
+  // ไปหน้า “รายละเอียดวิชา” (และรอฟังผลลบ)
+  Future<void> _goToDetail(Map<String, dynamic> c) async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => CourseDetailPage(
@@ -33,9 +31,20 @@ class _CoursesPageState extends State<CoursesPage> {
         ),
       ),
     );
+
+    // ถ้าหน้ารายละเอียดส่งสัญญาณลบกลับมา → ลบจากลิสต์นี้
+    if (result is Map && result['deleteCourse'] == true) {
+      setState(() {
+        _courses.removeWhere((x) => x['code'] == result['courseCode']);
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ลบรายวิชาเรียบร้อย')),
+      );
+    }
   }
 
-  // (ถ้าอยากยังใช้หน้า QR ก็เรียกฟังก์ชันนี้ได้ เช่น long-press)
+  // ไปหน้า QR
   void _goToQR(Map<String, dynamic> c) {
     Navigator.push(
       context,
@@ -48,25 +57,29 @@ class _CoursesPageState extends State<CoursesPage> {
     );
   }
 
-  // ปุ่ม + เพิ่มคอร์ส
+  // เพิ่มคอร์ส (รับค่าจากหน้า AddCoursePage)
   Future<void> _onAddCourse() async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(builder: (_) => const AddCoursePage()),
     );
+
     if (result != null) {
       setState(() {
         _courses.add({
-          'id': result['id'],
-          'name': result['name'],
-          'code': result['code'],
+          'id': result['id'],         // ควรเป็น int (เช่น timestamp)
+          'name': result['name'],     // String
+          'code': result['code'],     // String
         });
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('เพิ่มวิชาเรียบร้อย')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('เพิ่มวิชาเรียบร้อย')),
+      );
     }
   }
+
+  // ---------------- UI ----------------
 
   @override
   Widget build(BuildContext context) {
@@ -82,45 +95,53 @@ class _CoursesPageState extends State<CoursesPage> {
           const SizedBox(width: 6),
         ],
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-        itemCount: _courses.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (_, i) {
-          final c = _courses[i];
-          return Card(
-            color: Colors.white,
-            elevation: 2, //เงาของกล่องข้อความ
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 0.5),  //ขอบของกล่องข้อความ
+      body: _courses.isEmpty
+          ? _emptyState()
+          : ListView.separated(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+              itemCount: _courses.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, i) {
+                final c = _courses[i];
+                return TextBox(
+                  title: c['name'],           // ชื่อวิชา
+                  subtitle: c['code'],        // รหัสวิชา
+                  onTap: () => _goToDetail(c),
+                  // ไอคอนทางขวา: ไปหน้า QR (หรือจะเปลี่ยนเป็น chevron ก็ได้)
+                  trailing: IconButton(
+                    icon: const Icon(Icons.qr_code_2, color: Color(0xFF9CA3AF)),
+                    onPressed: () => _goToQR(c),
+                    tooltip: 'QR เช็กชื่อ',
+                  ),
+                );
+              },
             ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 10,
-              ),
-              title: Text(
-                c['name'] as String,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: .2,
-                ),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  c['code'] as String,
-                  style: const TextStyle(color: Colors.black54),
-                ),
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _goToDetail(c), // แตะแล้วไปหน้า “รายละเอียดวิชา”
-              // onLongPress: () => _goToQR(c), // (ตัวเลือก) กดค้างไปหน้า QR
+    );
+  }
+
+  // หน้าว่างเมื่อยังไม่มีรายวิชา
+  Widget _emptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.menu_book_outlined, size: 72, color: Color(0xFF88A8E8)),
+            const SizedBox(height: 12),
+            const Text(
+              'ยังไม่มีรายวิชา',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
-          );
-        },
+            const SizedBox(height: 8),
+            const Text(
+              'กดปุ่ม + มุมขวาบนเพื่อเพิ่มรายวิชาใหม่',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFF6B7280)),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

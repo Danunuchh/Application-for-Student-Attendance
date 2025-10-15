@@ -3,9 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 // --- Admin side ---
 import 'package:my_app/admin/admin_home_page.dart';
-import 'package:my_app/admin/admin_student_page.dart'; //  หน้า "จัดการนักศึกษา"
-import 'package:my_app/admin/admin_add_student_page.dart'; // หน้าเพิ่มนักศึกษา
-import 'package:my_app/admin/admin_class_page.dart'; // หน้าคลาสเรียน
+import 'package:my_app/admin/admin_student_page.dart';
+import 'package:my_app/admin/admin_add_student_page.dart';
+import 'package:my_app/admin/admin_class_page.dart';
 import 'package:my_app/admin/admin_history_page.dart';
 
 // --- Student side ---
@@ -20,9 +20,9 @@ import 'package:my_app/teacher/teacher_qr_page.dart';
 import 'package:my_app/teacher/teacher_attendancehistory_page.dart';
 
 // --- Auth / Misc ---
-import './pages/login_page.dart';
-import './pages/signup.dart';
-import './pages/splash_screen.dart';
+import 'package:my_app/pages/login_page.dart';
+import 'package:my_app/pages/signup.dart';
+import 'package:my_app/pages/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,9 +37,10 @@ class MyApp extends StatelessWidget {
       title: 'Uni Check',
       debugShowCheckedModeBanner: false,
 
-      // ===== หน้าเริ่มต้น =====
-      initialRoute: '/admin_home', // student_home, teacher_home
-      // ===== Localization (ไทย/อังกฤษ) =====
+      // หน้าแรก: Splash เพื่อตรวจ token/role
+      initialRoute: '/student_home',
+
+      // ภาษาที่รองรับ
       locale: const Locale('th'),
       supportedLocales: const [Locale('th'), Locale('en')],
       localizationsDelegates: const [
@@ -48,39 +49,65 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
 
-      // ===== เส้นทางหลักทั้งหมด =====
+      // ======= Static Routes =======
       routes: {
-        // Public/Auth
-        '/': (context) => const LoginPage(), // เผื่อสลับกลับมาใช้หน้า Login
-        '/splash': (context) => const SplashScreenPage(),
+        // 🔹 Auth Pages
+        '/': (context) => const LoginPage(),
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignUpPage(),
+        '/splash': (context) => const SplashScreenPage(),
 
-        // Student
-        '/student_home': (context) => const StudentHomePage(),
+        // 🔹 Student Pages (ไม่ใช้ const เพราะต้องอ่าน arguments)
+        '/student_home': (context) {
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
+          final userId = args?['userId'] as String?;
+          if (userId == null || userId.isEmpty) {
+            // ถ้าไม่มี userId ให้ย้อนกลับไปหน้า login (หรือ splash ตามที่ต้องการ)
+            return const LoginPage();
+          }
+          return StudentHomePage(userId: userId);
+        },
         '/scan': (context) => const StudentScanPage(),
         '/leave_upload': (context) => const LeaveUploadPage(),
 
-        // Teacher
-        '/teacher_home': (context) => const TeacherHomePage(),
-        '/courses': (context) => const CoursesPage(),
+        // 🔹 Teacher Pages (ไม่ใช้ const เพราะต้องอ่าน arguments)
+        '/teacher_home': (context) {
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
+          final userId = args?['userId'] as String?;
+          if (userId == null || userId.isEmpty) {
+            return const LoginPage();
+          }
+          return TeacherHomePage(userId: userId);
+        },
+        '/courses': (context) {
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
+          final userId = args?['userId'] as String?;
+          if (userId == null || userId.isEmpty) {
+            return const LoginPage(); // หรือย้อนกลับหน้า teacher_home ก็ได้
+          }
+          return CoursesPage(userId: userId);
+        },
         '/teacher_attendancehistory': (context) =>
             const AttendanceHistoryPage(),
 
-        // Admin
-        '/admin_home': (context) => const AdminHomePage(), // หน้าแอดมินหลัก
-        '/admin_student': (context) =>
-            const AdminStudentPage(), //  หน้าจัดการนักศึกษา
-        '/add_student': (context) =>
-            const AddStudentPage(), // หน้าเพิ่มนักศึกษา
+        // 🔹 Admin Pages
+        '/admin_home': (context) => const AdminHomePage(),
+        '/admin_student': (context) => const AdminStudentPage(),
+        '/add_student': (context) => const AddStudentPage(),
         '/admin_history': (context) => const AdminHistoryPage(),
       },
 
-      // ===== เส้นทางที่ต้องใช้ arguments =====
+      // ======= Dynamic Routes =======
       onGenerateRoute: (settings) {
         if (settings.name == '/teacher_qr') {
           final args = settings.arguments;
-          if (args is Map) {
+          if (args is Map<String, dynamic>) {
             final courseId = args['courseId'] as int?;
             final courseName = args['courseName'] as String?;
             if (courseId != null && courseName != null) {
@@ -91,20 +118,22 @@ class MyApp extends StatelessWidget {
               );
             }
           }
-          // ถ้า args ไม่ครบ กลับไปหน้า Courses
-          return MaterialPageRoute(builder: (_) => const CoursesPage());
+          // ❌ อย่ากลับไป CoursesPage แบบไม่ส่ง userId อีกแล้ว
+          return MaterialPageRoute(builder: (_) => const LoginPage());
         }
         return null;
       },
 
-      // ===== กันหลงทาง =====
+      // กันหลงทาง
       onUnknownRoute: (_) =>
           MaterialPageRoute(builder: (_) => const LoginPage()),
 
-      // ===== ธีม =====
+      // ธีมหลัก
       theme: ThemeData(
         useMaterial3: true,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+        colorSchemeSeed: const Color(0xFF4A86E8),
+        scaffoldBackgroundColor: Colors.white,
+        fontFamily: 'Prompt',
       ),
     );
   }

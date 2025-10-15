@@ -50,6 +50,7 @@ CREATE TABLE `users` (
   `role_id`             ENUM('student','teacher','admin') DEFAULT 'student',
   `hash_password`       VARCHAR(60),              
   `student_id`          VARCHAR(255),
+  `teacher_id`          VARCHAR(255),
   `gender_id`           INT,
   `prefix_id`           INT,
   PRIMARY KEY (`user_id`),

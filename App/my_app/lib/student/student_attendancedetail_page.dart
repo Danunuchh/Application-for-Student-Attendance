@@ -1,25 +1,52 @@
+// lib/student/student_attendancedetail_page.dart
 import 'package:flutter/material.dart';
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+/// โมเดลบันทึกการเข้าเรียน
 class AttendanceRecord {
   final DateTime date;
   final String studentId;
   final String studentName;
   final bool present;
   final String? checkTime;
-  AttendanceRecord({
+
+  const AttendanceRecord({
     required this.date,
     required this.studentId,
     required this.studentName,
     required this.present,
     this.checkTime,
   });
+
+  factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
+    return AttendanceRecord(
+      date: DateTime.parse(json['date'] as String),
+      studentId: json['studentId'] as String,
+      studentName: json['studentName'] as String,
+      present: json['present'] as bool,
+      checkTime: json['checkTime'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'date': date.toIso8601String(),
+        'studentId': studentId,
+        'studentName': studentName,
+        'present': present,
+        'checkTime': checkTime,
+      };
 }
 
 class AttendanceDetailPage extends StatefulWidget {
   final String courseName;
-  const AttendanceDetailPage({super.key, required this.courseName});
+  final List<AttendanceRecord> records; // ✅ รับรายการจริงจากภายนอก
+
+  const AttendanceDetailPage({
+    super.key,
+    required this.courseName,
+    required this.records,
+  });
 
   @override
   State<AttendanceDetailPage> createState() => _AttendanceDetailPageState();
@@ -29,38 +56,16 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  late final List<AttendanceRecord> _all;
-  late final Map<DateTime, List<AttendanceRecord>> _byDay;
+  late Map<DateTime, List<AttendanceRecord>> _byDay;
 
   @override
   void initState() {
     super.initState();
-    _all = [
-      AttendanceRecord(
-        date: DateTime(DateTime.now().year, 10, 10),
-        studentId: '65200020',
-        studentName: 'กวิสรา แซ่เชี่ย',
-        present: true,
-        checkTime: '10.00 น.',
-      ),
-      AttendanceRecord(
-        date: DateTime(DateTime.now().year, 10, 8),
-        studentId: '65200020',
-        studentName: 'กวิสรา แซ่เชี่ย',
-        present: false,
-      ),
-    ];
-    _byDay = _groupByDay(_all);
-    _selectedDay = DateTime(
-      _focusedDay.year,
-      _focusedDay.month,
-      _focusedDay.day,
-    );
+    _byDay = _groupByDay(widget.records);
+    _selectedDay = DateTime(_focusedDay.year, _focusedDay.month, _focusedDay.day);
   }
 
-  Map<DateTime, List<AttendanceRecord>> _groupByDay(
-    List<AttendanceRecord> list,
-  ) {
+  Map<DateTime, List<AttendanceRecord>> _groupByDay(List<AttendanceRecord> list) {
     final map = <DateTime, List<AttendanceRecord>>{};
     for (final r in list) {
       final k = DateTime(r.date.year, r.date.month, r.date.day);
@@ -76,8 +81,8 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final outline = const Color(0xFFCDE0F9);
-    final primary = const Color(0xFF4A86E8);
+    const outline = Color(0xFFCDE0F9);
+    const primary = Color(0xFF4A86E8);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -94,6 +99,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
               ),
             ),
           ),
+
           // Header เดือน
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -103,31 +109,20 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                 icon: const Icon(Icons.chevron_left_rounded),
                 onPressed: () {
                   setState(() {
-                    _focusedDay = DateTime(
-                      _focusedDay.year,
-                      _focusedDay.month - 1,
-                      1,
-                    );
+                    _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1, 1);
                   });
                 },
               ),
               Text(
                 _monthName(_focusedDay.month),
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
               ),
               IconButton(
                 splashRadius: 20,
                 icon: const Icon(Icons.chevron_right_rounded),
                 onPressed: () {
                   setState(() {
-                    _focusedDay = DateTime(
-                      _focusedDay.year,
-                      _focusedDay.month + 1,
-                      1,
-                    );
+                    _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1, 1);
                   });
                 },
               ),
@@ -136,9 +131,21 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
 
           // ===== ปฏิทิน =====
           Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: outline, width: 1.5),
+            decoration: BoxDecoration(  //ตกแต่งปฏิทิน
+              color: Colors.white,
+              border: Border.all(
+                color: const Color(0xFFA6CAFA),
+                width: 1.5, // ✅ เส้นขอบหนา 2
+              ),
               borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 6,
+                  spreadRadius: 2, // ✅ เงาชัดขึ้น
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             padding: const EdgeInsets.all(6),
             child: TableCalendar<AttendanceRecord>(
@@ -148,26 +155,41 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
               headerVisible: false,
               calendarFormat: CalendarFormat.month,
               startingDayOfWeek: StartingDayOfWeek.sunday,
-              selectedDayPredicate: (d) =>
-                  _selectedDay != null && isSameDay(d, _selectedDay),
+              selectedDayPredicate: (d) => _selectedDay != null && isSameDay(d, _selectedDay),
               onPageChanged: (f) => setState(() => _focusedDay = f),
               onDaySelected: (sel, foc) => setState(() {
                 _selectedDay = sel;
                 _focusedDay = foc;
               }),
               availableGestures: AvailableGestures.horizontalSwipe,
-              eventLoader: (_) => const [],
+              eventLoader: (d) => _recordsOf(d),
 
-              // ---- ลบเงาสี่เหลี่ยมด้วยการ custom cell ----
+              // custom cell (ไม่มีเงาสี่เหลี่ยม)
               calendarBuilders: CalendarBuilders(
-                defaultBuilder: (context, day, focusedDay) =>
-                    _buildDayCell(day, Colors.black87),
-                outsideBuilder: (context, day, focusedDay) =>
-                    _buildDayCell(day, Colors.black38),
-                todayBuilder: (context, day, focusedDay) =>
+                defaultBuilder: (context, day, _) => _buildDayCell(day, Colors.black87),
+                outsideBuilder: (context, day, _) => _buildDayCell(day, Colors.black38),
+                todayBuilder: (context, day, _) =>
                     _buildDayCell(day, Colors.black87, borderColor: outline),
-                selectedBuilder: (context, day, focusedDay) =>
+                selectedBuilder: (context, day, _) =>
                     _buildDayCell(day, Colors.white, bgColor: primary),
+                markerBuilder: (context, day, events) {
+                  if (events.isEmpty) return const SizedBox.shrink();
+                  // จุดบอกว่ามีข้อมูลเช็คชื่อ
+                  return Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF4A86E8),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
 
               daysOfWeekStyle: const DaysOfWeekStyle(
@@ -184,7 +206,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
     );
   }
 
-  // === cell custom แบบไม่มีเงา ===
+  // === cell แบบวงกลม ===
   Widget _buildDayCell(
     DateTime day,
     Color textColor, {
@@ -200,19 +222,13 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
             ? BoxDecoration(
                 color: bgColor,
                 shape: BoxShape.circle,
-                border: borderColor != null
-                    ? Border.all(color: borderColor, width: 1.5)
-                    : null,
+                border: borderColor != null ? Border.all(color: borderColor, width: 1.5) : null,
               )
             : const BoxDecoration(),
         alignment: Alignment.center,
         child: Text(
           '${day.day}',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.w500,
-            fontSize: 15,
-          ),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.w500, fontSize: 15),
         ),
       ),
     );
@@ -224,10 +240,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
       return [
         const SizedBox(height: 8),
         Center(
-          child: Text(
-            'ไม่มีข้อมูลการเช็คชื่อในวันนี้',
-            style: TextStyle(color: Colors.grey.shade600),
-          ),
+          child: Text('ไม่มีข้อมูลการเช็คชื่อในวันนี้', style: TextStyle(color: Colors.grey.shade600)),
         ),
       ];
     }
@@ -243,36 +256,27 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
               border: Border.all(color: outline, width: 1.2),
               borderRadius: BorderRadius.circular(16),
               boxShadow: const [
-                BoxShadow(
-                  color: Color(0x14000000),
-                  blurRadius: 8,
-                  offset: Offset(0, 3),
-                ),
+                BoxShadow(color: Color(0x14000000), blurRadius: 8, offset: Offset(0, 3)),
               ],
             ),
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ซ้าย: วันที่ + รายชื่อนักศึกษา
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _thaiShortDate(r.date),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      Text(_thaiShortDate(r.date),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 6),
-                      Text(
-                        '${r.studentId} ${r.studentName}',
-                        style: const TextStyle(fontSize: 14.5),
-                      ),
+                      Text('${r.studentId} ${r.studentName}',
+                          style: const TextStyle(fontSize: 14.5)),
                     ],
                   ),
                 ),
+                // ขวา: เวลา หรือ “ไม่ได้เช็คชื่อ”
                 Text(
                   r.present ? (r.checkTime ?? '') : 'ไม่ได้เช็คชื่อ',
                   style: TextStyle(

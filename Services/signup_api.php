@@ -25,24 +25,50 @@ try {
     $json = file_get_contents('php://input');
     $data = json_decode($json, true);
 
-    // ตรวจสอบข้อมูลที่จำเป็น
     if (!$data) {
         throw new Exception('Invalid JSON data');
     }
 
-    $required_fields = ['prefix', 'full_name', 'gender', 'email', 'password'];
+    // ===== ตรวจสอบข้อมูลที่จำเป็น (ไม่ต้องมี role) =====
+    $required_fields = ['prefix', 'full_name', 'email', 'password'];
     foreach ($required_fields as $field) {
         if (empty($data[$field])) {
             throw new Exception("Field '$field' is required");
         }
     }
 
-    // ตรวจสอบรูปแบบอีเมล
-    if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+    // ===== ตรวจสอบรูปแบบอีเมล และแยก role จากอีเมล =====
+    $email = trim($data['email']);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         throw new Exception('รูปแบบอีเมลไม่ถูกต้อง');
     }
 
-    // การเชื่อมต่อฐานข้อมูล
+    // แยก local part และ domain (ไม่สนใจตัวพิมพ์ใหญ่เล็ก)
+    $emailLower = strtolower($email);
+    [$local, $domain] = explode('@', $emailLower, 2);
+
+    // ต้องเป็นโดเมน kmitl.ac.th เท่านั้น
+    if ($domain !== 'kmitl.ac.th') {
+        throw new Exception('กรุณาใช้อีเมลโดเมน @kmitl.ac.th');
+    }
+
+    // นักศึกษา: local เป็นตัวเลขล้วน (เช่น 6407xxxx)
+    // อาจารย์: local เป็นตัวอักษร a-z และอาจมีจุดคั่น (เช่น somchai หรือ somchai.s)
+    if (preg_match('/^\d+$/', $local)) {
+        $role = 'student';
+    } elseif (preg_match('/^[a-z]+(?:\.[a-z]+)*$/', $local)) {
+        $role = 'teacher';
+    } else {
+        // กันกรณีรูปแบบอื่น ๆ ที่ไม่แน่ใจ
+        throw new Exception('อีเมลนี้ไม่ตรงตามรูปแบบนักศึกษา/อาจารย์ของ KMITL');
+    }
+
+    // // (ออปชัน) ตรวจสอบความยาวรหัสผ่านขั้นต่ำ
+    // if (strlen($data['password']) <= 6) {
+    //     throw new Exception('รหัสผ่านควรมีความยาวอย่างน้อย 6 ตัวอักษร');
+    // }
+
+    // ===== การเชื่อมต่อฐานข้อมูล =====
     $host = 'db';
     $dbname = 'Application_attendance';
     $username = 'Admin';
@@ -53,8 +79,7 @@ try {
 
     // ตรวจสอบว่าอีเมลซ้ำหรือไม่
     $check_stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
-    $check_stmt->execute([$data['email']]);
-
+    $check_stmt->execute([$email]);
     if ($check_stmt->fetchColumn() > 0) {
         throw new Exception('อีเมลนี้ถูกใช้แล้ว');
     }
@@ -62,25 +87,24 @@ try {
     // เข้ารหัสรหัสผ่าน
     $hashed_password = password_hash($data['password'], PASSWORD_DEFAULT);
 
-    // เตรียม SQL สำหรับบันทึกข้อมูล
+    // ===== บันทึกข้อมูล (role มาจากการตรวจอีเมล ไม่รับจากผู้ใช้) =====
     $stmt = $pdo->prepare("
-        INSERT INTO users (prefix , full_name, gender , email, hash_password, created_at) 
+        INSERT INTO users (prefix, full_name, email, role_id, hash_password, created_at)
         VALUES (?, ?, ?, ?, ?, NOW())
     ");
 
-    // บันทึกข้อมูล
     $stmt->execute([
         $data['prefix'],
         $data['full_name'],
-        $data['gender'],
-        $data['email'],
+        $email,
+        $role,               // ใช้ค่า role ที่ตรวจได้จากอีเมล
         $hashed_password
     ]);
 
-    // ส่งผลลัพธ์กลับไป
     echo json_encode([
         'success' => true,
         'message' => 'สมัครสมาชิกสำเร็จ',
+        'role'    => $role,
         'user_id' => $pdo->lastInsertId()
     ]);
 } catch (PDOException $e) {

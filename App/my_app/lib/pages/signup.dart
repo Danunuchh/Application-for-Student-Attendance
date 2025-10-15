@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/components/button.dart';
 import './login_page.dart';
-
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -12,29 +12,25 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  // สีโทนเดียวกับภาพ
-  static const Color kPrimary = Color(0xFF84A9EA); //ปุ่มลงทะเบียน
+  static const Color kPrimary = Color(0xFF84A9EA);
   static const Color kPrimaryLight = Color(0xFF84A9EA);
   static const Color kShadow = Color(0x1A000000);
-  static const Color kBorder = Color(0xFF84A9EA); // เส้นกรอบช่อง
-  static const Color kFocused = Color(0xFF88A8E8); //โฟกัสเมื่อกดที่ช่อง
-  static const Color kBtn = Color(0xFF84A9EA); // ปุ่ม login
-  static const Color kBottom = Color(0xFFA6CAFA); // แถบล่าง
+  static const Color kBorder = Color(0xFF84A9EA);
+  static const Color kFocused = Color(0xFF88A8E8);
+  static const Color kBtn = Color(0xFF84A9EA);
+  static const Color kBottom = Color(0xFFA6CAFA);
 
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   final _customTitleCtrl = TextEditingController();
 
-  // ฟอร์มเพิ่มเติม
   static const String kOtherTitle = 'อื่นๆ (ระบุ)';
   final List<String> _titles = const ['นาย', 'นางสาว', kOtherTitle];
-  String? _prefix; // คำนำหน้า
-  String? _gender; // 'ชาย' หรือ 'หญิง'
+  String? _prefix;
   bool _obscure1 = true;
   bool _obscure2 = true;
   bool _signingUp = false;
@@ -53,7 +49,7 @@ class _SignUpPageState extends State<SignUpPage> {
     hintText: hint,
     isDense: true,
     filled: true,
-    fillColor: Colors.white, //สีกล่องข้อความทั้งหมด
+    fillColor: Colors.white,
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
@@ -69,15 +65,11 @@ class _SignUpPageState extends State<SignUpPage> {
     ),
   );
 
-  // ฟังก์ชันส่งข้อมูลไป PHP
   Future<void> _sendToServer() async {
-    final url = Uri.parse(
-      'http://10.0.2.2:8000/signup_api.php', //10.0.2.2 เป็น localhost ของโทรศัพท์
-    ); // เปลี่ยนเป็น URL ของคุณ
+    final url = Uri.parse('http://10.0.2.0:8000/signup_api.php');
     final data = {
       'prefix': _prefix == kOtherTitle ? _customTitleCtrl.text.trim() : _prefix,
       'full_name': _nameCtrl.text.trim(),
-      'gender': _gender,
       'email': _emailCtrl.text.trim(),
       'password': _passwordCtrl.text.trim(),
     };
@@ -91,7 +83,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
       if (response.statusCode == 200) {
         final result = json.decode(response.body);
-        // result ขึ้นอยู่กับ php response
         if (result['success'] == true) {
           ScaffoldMessenger.of(
             context,
@@ -106,9 +97,9 @@ class _SignUpPageState extends State<SignUpPage> {
           );
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('อีเมลนี้ถูกใช้งานแล้ว')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('อีเมลนี้ถูกใช้งานแล้ว')));
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -122,7 +113,7 @@ class _SignUpPageState extends State<SignUpPage> {
     final needCustom = _prefix == kOtherTitle;
     final customOk = !needCustom || _customTitleCtrl.text.trim().isNotEmpty;
 
-    if (!formOk || _gender == null || !customOk) {
+    if (!formOk || !customOk) {
       setState(() {});
       return;
     }
@@ -155,12 +146,10 @@ class _SignUpPageState extends State<SignUpPage> {
                           aspectRatio: 16 / 10,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(24),
-                            child: Container(
-                              child: Image.asset(
-                                'assets/signup.png',
-                                height: 230,
-                                fit: BoxFit.contain,
-                              ),
+                            child: Image.asset(
+                              'assets/signup.png',
+                              height: 230,
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ),
@@ -185,8 +174,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       vertical: 12,
                                     ),
                                   ),
-                                  dropdownColor: Colors
-                                      .white, // ทำให้พื้นหลัง dropdown เป็นสีขาว
+                                  dropdownColor: Colors.white,
                                   items: _titles
                                       .map(
                                         (t) => DropdownMenuItem(
@@ -218,9 +206,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   textInputAction: TextInputAction.next,
                                   decoration: _deco('ชื่อ-นามสกุล'),
                                   validator: (v) =>
-                                      (v == null ||
-                                          v.trim().length <
-                                              3) //ให้กรอกชื่อมากกว่า 3
+                                      (v == null || v.trim().length < 3)
                                       ? 'กรุณากรอกชื่อ'
                                       : null,
                                 ),
@@ -243,54 +229,6 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                           ],
                           const SizedBox(height: 14),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: Text(
-                                'เพศ',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ),
-                          ),
-                          Wrap(
-                            spacing: 12,
-                            runSpacing: 8,
-                            children: [
-                              ChoiceChip(
-                                label: const Text('ชาย'),
-                                selected: _gender == 'ชาย',
-                                onSelected: (_) =>
-                                    setState(() => _gender = 'ชาย'),
-                                selectedColor: const Color(0xFFA6CAFA),
-                                backgroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: const BorderSide(color: kBorder),
-                                ),
-                              ),
-                              ChoiceChip(
-                                label: const Text('หญิง'),
-                                selected: _gender == 'หญิง',
-                                onSelected: (_) =>
-                                    setState(() => _gender = 'หญิง'),
-                                selectedColor: const Color(0xFFA6CAFA),
-                                backgroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: const BorderSide(color: kBorder),
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (_gender == null)
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                              ),
-                            ),
-                          const SizedBox(height: 14),
                           TextFormField(
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
@@ -302,12 +240,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                   RegExp(
                                     r'^[^@]+@[^@]+\.[^@]+',
                                   ).hasMatch(v.trim()) &&
-                                  v.trim().endsWith(
-                                    '@kmitl.ac.th',
-                                  ); //ตรวจสอบ email และเพิ่มเงื่อนไข
-                              return ok
-                                  ? null
-                                  : 'กรุณากรอกอีเมลที่รูปแบบที่ถูกต้อง @kmitl.ac.th';
+                                  v.trim().endsWith('@kmitl.ac.th');
+                              return ok ? null : 'กรุณากรอกอีเมล @kmitl.ac.th';
                             },
                           ),
                           const SizedBox(height: 14),
@@ -349,34 +283,14 @@ class _SignUpPageState extends State<SignUpPage> {
                                 ? null
                                 : 'รหัสผ่านไม่ตรงกัน',
                           ),
-                          // เพิ่ม SizedBox เพื่อเพิ่มระยะห่าง
                           const SizedBox(height: 24),
                           Center(
-                            child: ElevatedButton(
+                            child: CustomButton(
+                              text: 'ลงทะเบียน',
                               onPressed: _onSignUp,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: kPrimary,
-                                elevation: 6,
-                                shadowColor: kPrimary.withOpacity(0.6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    24,
-                                  ), // มุมโค้ง
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 26, // ระยะรอบข้อความ
-                                  vertical: 10,
-                                ),
-                              ),
-                              child: const Text(
-                                'ลงทะเบียน',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 1,
-                                  color: Colors.white,
-                                ),
-                              ),
+                              backgroundColor: kPrimary, // ใช้สีหลักของแอป
+                              textColor: Colors.white, // ตัวอักษรสีขาว
+                              fontSize: 16,
                             ),
                           ),
                         ],
@@ -387,7 +301,6 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
             ),
             Container(
-              //แถบล่าง
               padding: const EdgeInsets.symmetric(
                 horizontal: 140,
                 vertical: 30,
@@ -403,7 +316,9 @@ class _SignUpPageState extends State<SignUpPage> {
                 top: false,
                 child: SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  // ✅ เปลี่ยนจาก ElevatedButton → CustomButton
+                  child: CustomButton(
+                    text: 'เข้าสู่ระบบ',
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
@@ -412,24 +327,9 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: kPrimary,
-                      elevation: 4,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    child: const Text(
-                      'เข้าสู่ระบบ',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+                    backgroundColor: kPrimary, // สีหลักของแอป
+                    textColor: Colors.white,
+                    fontSize: 16,
                   ),
                 ),
               ),

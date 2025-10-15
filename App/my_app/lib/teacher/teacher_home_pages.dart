@@ -1,5 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http/http.dart' as http;
+import 'package:my_app/components/custom_bar.dart';
+import 'package:my_app/pages/login_page.dart';
+import 'package:my_app/components/menu_title.dart';
+
 import 'package:my_app/teacher/teacher_attendancehistory_page.dart';
 import 'package:my_app/teacher/calendar_page.dart';
 import 'package:my_app/teacher/courses_page.dart';
@@ -21,7 +27,8 @@ class MenuItemData {
 }
 
 class TeacherHomePage extends StatelessWidget {
-  const TeacherHomePage({super.key});
+  final String userId; // ✅ รหัสอาจารย์ที่ล็อกอินอยู่
+  const TeacherHomePage({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -35,98 +42,45 @@ class TeacherHomePage extends StatelessWidget {
     final topRow = items.sublist(0, 2);
     final bottomRow = items.sublist(2);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return CustomBottomBarWithFab(
+      role: 'teacher',
+      onHome: () {},
+      onLogout: () {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+          (route) => false,
+        );
+      },
+      onFabTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => CoursesPage(userId: userId)),
+        );
+        if (result != null) debugPrint('QR Result: $result');
+      },
 
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Container(
-        padding: const EdgeInsets.all(5),
-        decoration: const BoxDecoration(
-          color: AppColors.fabRing,
-          shape: BoxShape.circle,
-        ),
-        child: SizedBox(
-          width: 84,
-          height: 84,
-          child: FloatingActionButton(
-            elevation: 2,
-            backgroundColor: Colors.white,
-            foregroundColor: AppColors.ink,
-            shape: const CircleBorder(),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const CoursesPage()),
-              );
-            },
-            child: SvgPicture.asset(
-              'assets/qr_code.svg',
-              width: 40,
-              height: 40,
-            ),
-          ),
-        ),
-      ),
-
-      // ===== Bottom Bar =====
-      bottomNavigationBar: Container(
-        height: 50,
-        color: AppColors.fabRing,
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: () {},
-              icon: SvgPicture.asset(
-                "assets/home.svg",
-                width: 26,
-                height: 26,
-                colorFilter: const ColorFilter.mode(
-                  Colors.black,
-                  BlendMode.srcIn,
-                ),
-              ),
-              splashRadius: 24,
-            ),
-            IconButton(
-              onPressed: () {
-                // TODO: logout
-              },
-              icon: SvgPicture.asset(
-                "assets/logout.svg",
-                width: 26,
-                height: 26,
-                colorFilter: const ColorFilter.mode(
-                  Colors.black,
-                  BlendMode.srcIn,
-                ),
-              ),
-              splashRadius: 24,
-            ),
-          ],
-        ),
-      ),
-
-      // ✅ ทุกอย่างอยู่ใน body → Column เดียว
+      // ===== Body =====
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔹 Top icons
+            // 🔹 Top icons (โปรไฟล์)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  SvgPicture.asset("assets/bell.svg", width: 22, height: 22),
                   InkWell(
                     borderRadius: BorderRadius.circular(50),
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const EditProfilePage(),
+                          builder: (_) => EditProfilePage(
+                            userId: userId,
+                            role: 'teacher',
+                          ),
                         ),
                       );
                     },
@@ -140,7 +94,7 @@ class TeacherHomePage extends StatelessWidget {
               ),
             ),
 
-            // โลโก้
+            // 🔹 โลโก้
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Center(
@@ -160,6 +114,7 @@ class TeacherHomePage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
+            // 🔹 หัวข้อเมนู
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 26),
               child: Text(
@@ -173,13 +128,19 @@ class TeacherHomePage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // เมนู
+            // 🔹 เมนูกริด
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 80),
+                padding: EdgeInsets.fromLTRB(
+                  24,
+                  8,
+                  24,
+                  kBottomNavigationBarHeight,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
+                    // แถวบน
                     Row(
                       children: [
                         Expanded(
@@ -187,12 +148,12 @@ class TeacherHomePage extends StatelessWidget {
                             title: topRow[0].title,
                             svgPath: topRow[0].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF000000),
+                            iconColor: Colors.black,
                             textColor: Colors.black,
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const CoursesPage(),
+                                builder: (_) => CoursesPage(userId: userId),
                               ),
                             ),
                           ),
@@ -203,12 +164,12 @@ class TeacherHomePage extends StatelessWidget {
                             title: topRow[1].title,
                             svgPath: topRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF000000),
+                            iconColor: Colors.black,
                             textColor: Colors.black,
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const CalendarPage(),
+                                builder: (_) => CalendarPage(userId: userId),
                               ),
                             ),
                           ),
@@ -216,51 +177,102 @@ class TeacherHomePage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
+
+                    // แถวล่าง
                     Row(
                       children: [
+                        // ✅ เอกสารรออนุมัติ
                         Expanded(
                           child: MenuTitle(
                             title: bottomRow[0].title,
                             svgPath: bottomRow[0].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF000000),
+                            iconColor: Colors.black,
                             textColor: Colors.black,
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const PendingApprovalsPage(),
+                                builder: (_) => PendingApprovalsPage(
+                                  userId: userId,
+                                  loadList: (uid) async {
+                                    final res = await http.get(Uri.parse(
+                                        'https://yourserver.com/api/get_pending.php?teacher_id=$uid'));
+                                    final data =
+                                        jsonDecode(res.body) as List<dynamic>;
+                                    return data
+                                        .map((e) => ApprovalItem.fromJson(e))
+                                        .toList();
+                                  },
+                                  loadDetail: (reqId) async {
+                                    final res = await http.get(Uri.parse(
+                                        'https://yourserver.com/api/get_pending_detail.php?id=$reqId'));
+                                    return jsonDecode(res.body);
+                                  },
+                                ),
                               ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 16),
+
+                        // ✅ ประวัติการเข้าเรียน
                         Expanded(
                           child: MenuTitle(
                             title: bottomRow[1].title,
                             svgPath: bottomRow[1].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF000000),
+                            iconColor: Colors.black,
                             textColor: Colors.black,
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const AttendanceHistoryPage(),
+                                builder: (_) => AttendanceHistoryPage(
+                                 
+                                ),
                               ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 16),
+
+                        // ✅ แดชบอร์ด — ดึงข้อมูลจริงจาก API
                         Expanded(
                           child: MenuTitle(
                             title: bottomRow[2].title,
                             svgPath: bottomRow[2].svgPath,
                             iconBg: const Color(0xFFCDE0F9),
-                            iconColor: const Color(0xFF000000),
+                            iconColor: Colors.black,
                             textColor: Colors.black,
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const DashboardPage(),
+                                builder: (_) => DashboardPage(
+                                  userId: userId,
+                                  loadCourses: (id) async {
+                                    final res = await http.get(Uri.parse(
+                                        'https://yourserver.com/api/get_courses.php?teacher_id=$id'));
+                                    final data =
+                                        jsonDecode(res.body) as List<dynamic>;
+                                    return data
+                                        .map((e) => CourseOption(
+                                              id: e['course_id'].toString(),
+                                              name:
+                                                  e['course_name'].toString(),
+                                            ))
+                                        .toList();
+                                  },
+                                  loadDashboard: ({
+                                    required userId,
+                                    required courseId,
+                                    required range,
+                                  }) async {
+                                    final res = await http.get(Uri.parse(
+                                        'https://yourserver.com/api/get_dashboard.php?teacher_id=$userId&course_id=$courseId&range=$range'));
+                                    final json =
+                                        jsonDecode(res.body) as Map<String, dynamic>;
+                                    return DashboardData.fromJson(json);
+                                  },
+                                ),
                               ),
                             ),
                           ),
@@ -272,81 +284,6 @@ class TeacherHomePage extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class MenuTitle extends StatelessWidget {
-  final String title;
-  final String svgPath;
-  final Color iconBg;
-  final Color iconColor;
-  final Color textColor;
-  final VoidCallback? onTap;
-
-  const MenuTitle({
-    super.key,
-    required this.title,
-    required this.svgPath,
-    required this.iconBg,
-    required this.iconColor,
-    required this.textColor,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 6,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                alignment: Alignment.center,
-                child: SvgPicture.asset(
-                  svgPath,
-                  width: 28,
-                  height: 28,
-                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 11,
-                  height: 1.15,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
         ),
       ),
     );

@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/components/custom_appbar.dart';
+import 'package:my_app/components/textbox.dart';
 import 'student_attendancedetail_page.dart';
 
 class AttendanceHistoryPage extends StatelessWidget {
-  const AttendanceHistoryPage({super.key});
+  final List<Map<String, String>> courses; // ✅ รับพารามิเตอร์จากภายนอก
+
+  const AttendanceHistoryPage({
+    super.key,
+    required this.courses,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final courses = const [
-      _CourseItem(name: "DATA MINING", code: "11256043"),
-      _CourseItem(name: "DATABASE SYSTEMS", code: "11256016"),
-    ];
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CustomAppBar(title: 'ประวัติการเข้าเรียน'),
@@ -21,14 +22,20 @@ class AttendanceHistoryPage extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, i) {
           final c = courses[i];
-          return _CourseCard(
-            courseName: c.name,
-            courseCode: c.code,
+          final name = c['name'] ?? '-';  //ชื่อวิชา
+          final code = c['code'] ?? '-';  //รหัสวิชา
+
+          return TextBox(
+            text: name,
+            subtitle: code,
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => AttendanceDetailPage(courseName: c.name),
+                  builder: (_) => AttendanceDetailPage(
+                    courseName: name,
+                    records: const [], // ส่งข้อมูลเช็คชื่อของรายวิชานั้น
+                  ),
                 ),
               );
             },
@@ -37,69 +44,4 @@ class AttendanceHistoryPage extends StatelessWidget {
       ),
     );
   }
-}
-
-/// ---- UI Card ----
-class _CourseCard extends StatelessWidget {
-  final String courseName;
-  final String courseCode;
-  final VoidCallback? onTap;
-
-  const _CourseCard({
-    required this.courseName,
-    required this.courseCode,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      elevation: 1,
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      courseName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      courseCode,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CourseItem {
-  final String name;
-  final String code;
-  const _CourseItem({required this.name, required this.code});
 }
