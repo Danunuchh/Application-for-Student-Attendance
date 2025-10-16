@@ -77,7 +77,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: const Color(0xFF84A9EA)),
+        borderSide: BorderSide(color: const Color(0xFF84A9EA), width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -111,7 +111,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       ),
                       child: Center(
                         child: Image.asset(
-                          'assets/unicheck.png',
+                          'assets/forgot1.png',
                           height: 230,
                           fit: BoxFit.contain,
                           errorBuilder: (_, __, ___) =>

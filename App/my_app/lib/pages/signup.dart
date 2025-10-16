@@ -147,7 +147,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(24),
                             child: Image.asset(
-                              'assets/signup.png',
+                              'assets/signup1.png',
                               height: 230,
                               fit: BoxFit.contain,
                             ),
@@ -155,7 +155,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 18),
                     Form(
                       key: _formKey,
                       child: Column(

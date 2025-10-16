@@ -49,9 +49,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/login.png
-    - assets/signup.png
-    - assets/unicheck.png
+    - assets/login1.png
+    - assets/signup1.png
+    - assets/unicheck1.png
+    - assets/forgot1.png
     - assets/loader.json
     - assets/bell.svg
     - assets/check.svg

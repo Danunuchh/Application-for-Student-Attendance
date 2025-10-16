@@ -144,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: Center(
                         child: Image.asset(
-                          'assets/login.png',
+                          'assets/login1.png',
                           height: 230,
                           fit: BoxFit.contain,
                           errorBuilder: (_, __, ___) =>
@@ -152,7 +152,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
                     TextField(
                       controller: _emailCtrl, // NEW
                       keyboardType: TextInputType.emailAddress,
