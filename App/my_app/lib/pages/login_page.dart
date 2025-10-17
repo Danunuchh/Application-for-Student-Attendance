@@ -7,6 +7,7 @@ import 'package:my_app/teacher/teacher_home_pages.dart';
 import 'package:my_app/student/student_home_pages.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -42,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: kFocused, width: 2),
+      borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
     ),
   );
 
@@ -61,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = true);
 
     try {
-      final url = Uri.parse('http://10.0.2.2:8000/login_api.php');
+      final url = Uri.parse('http://localhost:8000/login_api.php');  //10.0.2.2
       final res = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -70,33 +71,27 @@ class _LoginPageState extends State<LoginPage> {
 
       final data = jsonDecode(res.body);
 
-      if (data['success'] == true) {
-        final role = data['role_id'];
-        final userId = data['user_id'];
+    if (data['success'] == true) {
+      final role = data['role_id'];
+      final userId = data['user_id'];
 
-        // ✅ แยกหน้าแสดงผลตาม role
-        if (role == 'student') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => StudentHomePage(userId: userId.toString()),
-            ),
-          );
-        } else if (role == 'teacher') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => TeacherHomePage(userId: userId.toString()),
-            ),
-          );
-        } else if (role == 'admin') {
-          Navigator.pushReplacementNamed(
-            context,
-            '/admin_home',
-            arguments: {'userId': userId.toString()},
-          );
-        }
-      } else {
+      // เก็บสำหรับนำทาง/UI
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', userId.toString());
+      await prefs.setString('role', role.toString());
+
+      // นำทางตาม role (ของคุณถูกแล้ว)
+      if (role == 'student') {
+        Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (_) => StudentHomePage(userId: userId.toString())));
+      } else if (role == 'teacher') {
+        Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (_) => TeacherHomePage(userId: userId.toString())));
+      } else if (role == 'admin') {
+        Navigator.pushReplacementNamed(context, '/admin_home',
+          arguments: {'userId': userId.toString()});
+      }
+    } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['message'] ?? 'เข้าสู่ระบบไม่สำเร็จ')),
         );

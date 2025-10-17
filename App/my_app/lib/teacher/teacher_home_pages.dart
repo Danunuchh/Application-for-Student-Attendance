@@ -104,7 +104,8 @@ class TeacherHomePage extends StatelessWidget {
                     minHeight: 120,
                   ),
                   child: Image.asset(
-                    'assets/unicheck.png',
+                    'assets/unicheck1.png',
+                    height: 230,
                     fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) =>
                         const Icon(Icons.image, size: 80, color: AppColors.sub),

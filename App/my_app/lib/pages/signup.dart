@@ -61,12 +61,12 @@ class _SignUpPageState extends State<SignUpPage> {
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: kFocused, width: 2),
+      borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
     ),
   );
 
   Future<void> _sendToServer() async {
-    final url = Uri.parse('http://10.0.2.0:8000/signup_api.php');
+    final url = Uri.parse('http://localhost:8000/signup_api.php'); //10.0.2.2
     final data = {
       'prefix': _prefix == kOtherTitle ? _customTitleCtrl.text.trim() : _prefix,
       'full_name': _nameCtrl.text.trim(),

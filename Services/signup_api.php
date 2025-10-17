@@ -43,6 +43,12 @@ try {
         throw new Exception('รูปแบบอีเมลไม่ถูกต้อง');
     }
 
+    $student_id = trim($data['email']);
+    $student_id = explode('@', $student_id)[0];
+    if ($student_id >= 99999999) {
+        $student_id = '';
+    }
+
     // แยก local part และ domain (ไม่สนใจตัวพิมพ์ใหญ่เล็ก)
     $emailLower = strtolower($email);
     [$local, $domain] = explode('@', $emailLower, 2);
@@ -89,14 +95,15 @@ try {
 
     // ===== บันทึกข้อมูล (role มาจากการตรวจอีเมล ไม่รับจากผู้ใช้) =====
     $stmt = $pdo->prepare("
-        INSERT INTO users (prefix, full_name, email, role_id, hash_password, created_at)
-        VALUES (?, ?, ?, ?, ?, NOW())
+        INSERT INTO users (prefix, full_name, email, student_id, role_id, hash_password, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, NOW())
     ");
 
     $stmt->execute([
         $data['prefix'],
         $data['full_name'],
         $email,
+        $student_id,
         $role,               // ใช้ค่า role ที่ตรวจได้จากอีเมล
         $hashed_password
     ]);

@@ -37,7 +37,7 @@ try {
     $admin = 'Admin' ;
     $superuser = 'Superuser';
 
-    if ($email ===  $admin || $password === $superuser) {
+    if ($email ===  $admin && $password === $superuser) {
         $admin = 'admin' ;
         echo json_encode([
         'success' => true,

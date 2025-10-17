@@ -1,9 +1,10 @@
-// lib/pages/edit_profile_page.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:my_app/components/button.dart';
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/models/user_profile.dart';
 import 'package:my_app/services/profile_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfilePage extends StatefulWidget {
   final String userId;
@@ -21,6 +22,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String? _error;
   bool _isEditing = false;
 
+  String? _resolvedUserId; // ✅ userId ที่ใช้จริงหลังเช็ค/ดึงจาก prefs
+
   // controllers
   final _username = TextEditingController();
   final _email = TextEditingController();
@@ -34,7 +37,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    _fetch(); // โหลดข้อมูลจริง
+    _init(); // ✅ resolve userId แล้วค่อยโหลดข้อมูล
   }
 
   @override
@@ -50,11 +53,44 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.dispose();
   }
 
+  // ✅ ดึง userId จาก constructor หรือ SharedPreferences
+  Future<void> _init() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      var uid = widget.userId.trim();
+
+      // ถ้าไม่ได้ส่งมาจากหน้า Home (กรณี hot restart / ไม่มีพารามิเตอร์)
+      if (uid.isEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        uid = (prefs.getString('userId') ?? '').trim();
+      }
+
+      if (uid.isEmpty) {
+        throw Exception('ไม่พบ userId (กรุณาเข้าสู่ระบบใหม่)');
+      }
+
+      _resolvedUserId = uid;
+      await _fetch(); // โหลดข้อมูลโปรไฟล์จริง
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   Future<void> _fetch() async {
-    setState(() { _loading = true; _error = null; });
+    if (_resolvedUserId == null) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final p = await ProfileService.fetchProfile(
-        userId: widget.userId,
+        userId: _resolvedUserId!,
         role: widget.role,
       );
       _username.text = p.username;
@@ -74,10 +110,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() { _loading = true; _error = null; });
+    if (_resolvedUserId == null) {
+      setState(() => _error = 'ไม่พบ userId สำหรับบันทึก');
+      return;
+    }
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final payload = UserProfile(
-        id: widget.userId,
+        id: _resolvedUserId!,
         username: _username.text.trim(),
         email: _email.text.trim(),
         firstName: _firstName.text.trim(),
@@ -87,16 +130,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
         studentId: widget.role == 'student' ? _studentId.text.trim() : null,
         teacherCode: widget.role == 'teacher' ? _teacherCode.text.trim() : null,
       );
+
       await ProfileService.updateProfile(
-        userId: widget.userId,
+        userId: _resolvedUserId!,
         role: widget.role,
         payload: payload,
       );
+
       if (!mounted) return;
       setState(() => _isEditing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('บันทึกข้อมูลสำเร็จ')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('บันทึกข้อมูลสำเร็จ')));
     } catch (e) {
       setState(() => _error = e.toString());
     } finally {
@@ -143,19 +188,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
       backgroundColor: const Color(0xFFF6F8FF),
       appBar: CustomAppBar(
         title: 'แก้ไขโปรไฟล์',
-        // ปุ่มแก้ไข/ยืนยัน อยู่ที่ AppBar ก็ได้
-        actions: [
-          if (!_isEditing)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => setState(() => _isEditing = true),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.check),
-              onPressed: _save,
-            ),
-        ],
+        // actions: [
+        //   if (!_isEditing)
+        //     IconButton(
+        //       icon: const Icon(Icons.edit),
+        //       onPressed: () => setState(() => _isEditing = true),
+        //     )
+        //   else
+        //     IconButton(
+        //       icon: const Icon(Icons.check),
+        //       onPressed: _save,
+        //     ),
+        // ],
       ),
       body: SafeArea(
         child: Form(
@@ -165,12 +209,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _title('Username'),
-                TextFormField(
-                  controller: _username,
-                  readOnly: !_isEditing,
-                  decoration: _field('Username'),
-                ),
                 _title('Email'),
                 TextFormField(
                   controller: _email,
@@ -228,37 +266,33 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
 
                 const SizedBox(height: 24),
-
-                // ปุ่มล่างทางเลือก (ถ้าไม่ใช้ปุ่มบน AppBar)
-                if (_isEditing) ...[
-                  SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: _save,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF9BBDF9),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: const Text(
-                        'บันทึกข้อมูล',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: CustomButton(
+                        text: 'แก้ไขโปรไฟล์',
+                        onPressed: () => setState(() => _isEditing = true),
+                        backgroundColor: const Color(0xFF84A9EA),
+                        textColor: Colors.white,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: () {
-                      setState(() => _isEditing = false);
-                      _fetch(); // โหลดทับคืนค่าเดิม
-                    },
-                    child: const Text('ยกเลิกการแก้ไข'),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: CustomButton(
+                        text: 'บันทึกข้อมูล',
+                        onPressed: () async {
+                          await _save(); // ✅ บันทึกข้อมูล
+                          setState(
+                            () => _isEditing = false,
+                          ); // ✅ ออกจากโหมดแก้ไข
+                        },
+                        backgroundColor: const Color(0xFF9BBDF9),
+                        textColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
