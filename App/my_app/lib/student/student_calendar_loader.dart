@@ -43,6 +43,7 @@ class _StudentCalendarLoaderState extends State<StudentCalendarLoader> {
 
       final date = _normalizeDay(DateTime.parse(dateStr));
       final subject = Subject(
+        id: (raw['id'] ?? '').toString(),
         title: (raw['title'] ?? '').toString(),
         code: (raw['code'] ?? '').toString(),
         credits: (raw['credits'] ?? '').toString(),

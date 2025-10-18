@@ -53,14 +53,14 @@ class CustomBottomBarWithFab extends StatelessWidget {
       // ===== FAB (มีวงแหวน) =====
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
-        padding: const EdgeInsets.all(5),
+        padding: const EdgeInsets.all(4),
         decoration: const BoxDecoration(
           color: fabRing, // วงแหวนรอบ FAB
           shape: BoxShape.circle,
         ),
         child: SizedBox(
-          width: 84,
-          height: 84,
+          width: 80,
+          height: 80,
           child: FloatingActionButton(
             elevation: 2,
             backgroundColor: _getFabColor(),
@@ -86,10 +86,10 @@ class CustomBottomBarWithFab extends StatelessWidget {
         color: fabRing,
         shape: const CircularNotchedRectangle(),
         notchMargin: 4,
-        height: 42,
-        padding: const EdgeInsets.symmetric(horizontal: 54),
+        height: 58, //ความสูงของแทบสีฟ้า
+        padding: const EdgeInsets.symmetric(horizontal: 46),
         child: Transform.translate(
-          offset: const Offset(0, 8), // ✅ ขยับลง 6px (ปรับได้ 4–10 ตามความพอดี)
+          offset: const Offset(0, 1), // ✅ ขยับลง 6px (ปรับได้ 4–10 ตามความพอดี) ความสูงของไอคอน
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,

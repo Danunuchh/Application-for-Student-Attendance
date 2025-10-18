@@ -1,5 +1,6 @@
 // lib/models/subject.dart
 class Subject {
+  final String id;
   final String title;
   final String code;
   final String credits;
@@ -8,6 +9,7 @@ class Subject {
   final String room;
 
   const Subject({
+    required this.id,
     required this.title,
     required this.code,
     required this.credits,
@@ -18,6 +20,7 @@ class Subject {
 
   // ดึงจาก JSON (API/DB)
   factory Subject.fromJson(Map<String, dynamic> json) => Subject(
+        id: (json['id'] ?? '').toString(),
         title: (json['title'] ?? '').toString(),
         code: (json['code'] ?? '').toString(),
         credits: (json['credits'] ?? '').toString(),
@@ -28,6 +31,7 @@ class Subject {
 
   // แปลงเป็น JSON (ส่งกลับ API/DB)
   Map<String, dynamic> toJson() => {
+        'id': id,
         'title': title,
         'code': code,
         'credits': credits,
@@ -38,6 +42,7 @@ class Subject {
 
   // แก้ไขเฉพาะบาง field ได้สะดวก
   Subject copyWith({
+    String? id,
     String? title,
     String? code,
     String? credits,
@@ -46,6 +51,7 @@ class Subject {
     String? room,
   }) {
     return Subject(
+      id: id ?? this.id,
       title: title ?? this.title,
       code: code ?? this.code,
       credits: credits ?? this.credits,

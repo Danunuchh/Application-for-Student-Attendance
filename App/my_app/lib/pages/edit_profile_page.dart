@@ -155,11 +155,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
     fillColor: Colors.white,
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(color: Color(0xFFAFC7FA), width: 1.5),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(color: Color(0xFF6A9BF5), width: 2),
     ),
   );
@@ -185,7 +185,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FF),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: CustomAppBar(
         title: 'แก้ไขโปรไฟล์',
         // actions: [
@@ -273,7 +273,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       child: CustomButton(
                         text: 'แก้ไขโปรไฟล์',
                         onPressed: () => setState(() => _isEditing = true),
-                        backgroundColor: const Color(0xFF84A9EA),
+                        backgroundColor: const Color.fromARGB(255, 248, 172, 51),
                         textColor: Colors.white,
                       ),
                     ),
@@ -287,7 +287,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             () => _isEditing = false,
                           ); // ✅ ออกจากโหมดแก้ไข
                         },
-                        backgroundColor: const Color(0xFF9BBDF9),
+                        backgroundColor: const Color(0xFF21BA0C),
                         textColor: Colors.white,
                       ),
                     ),

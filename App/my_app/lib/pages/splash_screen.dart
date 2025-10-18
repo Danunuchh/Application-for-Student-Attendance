@@ -15,7 +15,7 @@ class SplashScreenPage extends StatelessWidget {
         children: [
           // รูปอยู่ด้านบน
           Image.asset(
-            'assets/unicheck.png',
+            'assets/unicheck1.png',
             width: 300, // ลดขนาดลงหน่อย
           ),
 

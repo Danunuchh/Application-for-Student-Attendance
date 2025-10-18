@@ -44,14 +44,17 @@ class _CalendarPageState extends State<CalendarPage> {
   List<Subject> _getItemsForDay(DateTime day) {
     final data = widget.events ?? _events;
     final key = _normalizeDay(day);
-    return data[key] ?? data[DateTime(key.year, key.month, key.day)] ?? const <Subject>[];
+    return data[key] ??
+        data[DateTime(key.year, key.month, key.day)] ??
+        const <Subject>[];
   }
 
   @override
   void initState() {
     super.initState();
     _focusedDay = widget.initialFocusedDay ?? DateTime.now();
-    _selectedDay = widget.initialSelectedDay; // ยังไม่เลือกก็ได้ -> ไม่โชว์รายการ
+    _selectedDay =
+        widget.initialSelectedDay; // ยังไม่เลือกก็ได้ -> ไม่โชว์รายการ
 
     // TODO: โหลดคาบสอนจาก PHP ตาม widget.userId แล้ว map ลง _events จากนั้น setState
     // await _fetchTeachingEvents();
@@ -59,7 +62,9 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    final items = (_selectedDay != null) ? _getItemsForDay(_selectedDay!) : const <Subject>[];
+    final items = (_selectedDay != null)
+        ? _getItemsForDay(_selectedDay!)
+        : const <Subject>[];
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'ปฏิทิน'),
@@ -89,7 +94,7 @@ class _CalendarPageState extends State<CalendarPage> {
               focusedDay: _focusedDay,
               startingDayOfWeek: StartingDayOfWeek.sunday,
               selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-              eventLoader: _getItemsForDay,     // ← ใช้อ่านอีเวนต์
+              eventLoader: _getItemsForDay, // ← ใช้อ่านอีเวนต์
               headerStyle: const HeaderStyle(
                 titleCentered: true,
                 formatButtonVisible: false,
@@ -99,8 +104,14 @@ class _CalendarPageState extends State<CalendarPage> {
                 weekendStyle: TextStyle(fontSize: 12, color: _CalTheme.sub),
               ),
               calendarStyle: CalendarStyle(
-                defaultTextStyle: const TextStyle(color: _CalTheme.ink, fontSize: 12),
-                weekendTextStyle: const TextStyle(color: _CalTheme.ink, fontSize: 12),
+                defaultTextStyle: const TextStyle(
+                  color: _CalTheme.ink,
+                  fontSize: 12,
+                ),
+                weekendTextStyle: const TextStyle(
+                  color: _CalTheme.ink,
+                  fontSize: 12,
+                ),
                 outsideDaysVisible: true,
                 todayDecoration: BoxDecoration(
                   color: const Color.fromARGB(255, 221, 232, 248),
@@ -140,24 +151,34 @@ class _CalendarPageState extends State<CalendarPage> {
             const SizedBox.shrink()
           else if (items.isEmpty)
             const Center(
-              child: Text('ไม่มีคาบสอนในวันนี้', style: TextStyle(color: _CalTheme.sub, fontSize: 14)),
+              child: Text(
+                'ไม่มีคาบสอนในวันนี้',
+                style: TextStyle(color: _CalTheme.sub, fontSize: 14),
+              ),
             )
           else
-            ...items.map((s) => TextBox(
-                  subject: s,
-                  trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => CourseDetailPage(
-                          courseName: s.title,
-                          courseCode: s.code ?? '',
-                        ),
+            ...items.map(
+              (s) => TextBox(
+                title: (s.title ?? '-').toString(),
+                subtitle: (s.code ?? '-').toString(),
+                trailing: const Icon(
+                  Icons.chevron_right,
+                  color: Color(0xFF9CA3AF),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CourseDetailPage(
+                        courseId: s.id.toString(), 
+                        courseName: (s.title ?? '-').toString(),
+                        courseCode: (s.code ?? '-').toString(),
                       ),
-                    );
-                  },
-                )),
+                    ),
+                  );
+                },
+              ),
+            ),
         ],
       ),
     );

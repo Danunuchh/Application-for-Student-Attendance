@@ -17,7 +17,20 @@ class Subject {
     required this.time,
     required this.room,
   });
+
+  // ✅ เพิ่มส่วนนี้เข้าไป
+  factory Subject.fromMap(Map<String, dynamic> m) {
+    return Subject(
+      title: (m['name'] ?? m['title'] ?? '').toString(),
+      code: (m['code'] ?? '').toString(),
+      credits: (m['credits'] ?? m['credit'] ?? '–').toString(),
+      teacher: (m['teacher'] ?? m['lecturer'] ?? '–').toString(),
+      time: (m['time'] ?? m['schedule'] ?? '–').toString(),
+      room: (m['room'] ?? '–').toString(),
+    );
+  }
 }
+
 
 class SubjectDetailPage extends StatelessWidget {
   final Subject subject;
@@ -31,7 +44,7 @@ class SubjectDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    appBar: const CustomAppBar(title: 'เพิ่มคลาสเรียน'),
+    appBar: const CustomAppBar(title: 'รายละเอียดวิชา'),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Container(

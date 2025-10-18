@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.my_app">
+
+    <!-- ✅ เพิ่มสิทธิ์เน็ต -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- ✅ กล้อง -->
     <uses-permission android:name="android.permission.CAMERA" />
-
-    <!-- (ทางเลือก) รองรับกล้องแต่ไม่บังคับ -->
     <uses-feature android:name="android.hardware.camera.any" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
@@ -14,7 +15,8 @@
         android:name="${applicationName}"
         android:label="my_app"
         android:icon="@mipmap/ic_launcher"
-        android:hardwareAccelerated="true">
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true"> <!-- 👈 อนุญาต HTTP -->
 
         <activity
             android:name="io.flutter.embedding.android.FlutterActivity"
@@ -39,7 +41,6 @@
             android:value="2" />
     </application>
 
-    <!-- (คงได้) รายการ queries ตาม template -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:my_app/components/button.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class TeacherQRPage extends StatefulWidget {
@@ -101,7 +102,7 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Align(  
+      body: Align(
         alignment: Alignment.topCenter,
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -170,8 +171,11 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
                           spacing: 6,
                           runSpacing: 4,
                           children: [
-                            const Icon(Icons.timer_outlined,
-                                size: 20, color: Colors.black54),
+                            const Icon(
+                              Icons.timer_outlined,
+                              size: 20,
+                              color: Colors.black54,
+                            ),
                             Text(
                               'หมดอายุใน ${_fmtRemain()}',
                               style: const TextStyle(
@@ -184,33 +188,13 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
                       const SizedBox(height: 30),
 
                       // ปุ่ม Refresh
-                      FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFFA6CAFA),
-                          foregroundColor: const Color(0xFF000000),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 14,
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
-                          ),
-                        ),
-                        onPressed: _loading ? null : _rotateMock,
-                        child: _loading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text('Refresh QR code'),
+                      CustomButton(
+                        text: 'Refresh QR code',
+                        loading: _loading,
+                        onPressed: _rotateMock,
+                        backgroundColor: const Color(0xFF84A9EA),
+                        textColor: Colors.white,
+                        fontSize: 16, // ฟังก์ชันของคุณ
                       ),
                     ],
                   ),

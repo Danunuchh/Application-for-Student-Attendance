@@ -12,6 +12,7 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  // พาเลตหลักของหน้า
   static const Color kPrimary = Color(0xFF84A9EA);
   static const Color kPrimaryLight = Color(0xFF84A9EA);
   static const Color kShadow = Color(0x1A000000);
@@ -19,6 +20,10 @@ class _SignUpPageState extends State<SignUpPage> {
   static const Color kFocused = Color(0xFF88A8E8);
   static const Color kBtn = Color(0xFF84A9EA);
   static const Color kBottom = Color(0xFFA6CAFA);
+
+  // เพิ่มคงที่ที่ _dec() ใช้
+  static const Color _hintGrey = Color(0xFF9CA3AF);
+  static const Color _borderBlue = Color(0xFF9CA3AF);
 
   final _formKey = GlobalKey<FormState>();
 
@@ -45,28 +50,46 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
-  InputDecoration _deco(String hint) => InputDecoration(
-    hintText: hint,
-    isDense: true,
-    filled: true,
-    fillColor: Colors.white,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: kBorder, width: 1.4),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: kBorder, width: 1.4),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
-    ),
-  );
+  // ✅ ใช้สไตล์เดียวกับหน้าอื่น ๆ (floating label + border โทนฟ้า)
+  InputDecoration _dec(String label, {String? hint, Widget? suffix}) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      isDense: true,
+      filled: true,
+      fillColor: Colors.white,
+      hintStyle: const TextStyle(color: _hintGrey),
+      labelStyle: const TextStyle(color: Colors.black87),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _borderBlue, width: 1.4),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kBorder, width: 1.4),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
+      ),
+      errorStyle: const TextStyle(height: 0, color: Colors.transparent),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _borderBlue, width: 1.4),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _borderBlue, width: 2),
+      ),
+      suffixIcon: suffix,
+    );
+  }
 
   Future<void> _sendToServer() async {
-    final url = Uri.parse('http://localhost:8000/signup_api.php'); //10.0.2.2
+    // NOTE: ถ้ารันบน Emulator ให้ใช้ http://10.0.2.2:8000
+    // ถ้ารันบนมือถือจริง ให้ใช้ IP เครื่องคอม เช่น http://192.168.1.20:8000
+    final url = Uri.parse('http://localhost:8000/signup_api.php');
     final data = {
       'prefix': _prefix == kOtherTitle ? _customTitleCtrl.text.trim() : _prefix,
       'full_name': _nameCtrl.text.trim(),
@@ -168,12 +191,17 @@ class _SignUpPageState extends State<SignUpPage> {
                                 child: DropdownButtonFormField<String>(
                                   value: _prefix,
                                   isExpanded: true,
-                                  decoration: _deco('คำนำหน้า').copyWith(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 12,
-                                    ),
-                                  ),
+                                  decoration: _dec('', hint: 'คำนำหน้า')
+                                      .copyWith(
+                                        floatingLabelBehavior:
+                                            FloatingLabelBehavior
+                                                .never, 
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 12,
+                                            ),
+                                      ),
                                   dropdownColor: Colors.white,
                                   items: _titles
                                       .map(
@@ -195,7 +223,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                     });
                                   },
                                   validator: (v) =>
-                                      v == null ? 'เลือกคำนำหน้า' : null,
+                                      v == null ? 'คำนำหน้า' : null,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -204,7 +232,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                 child: TextFormField(
                                   controller: _nameCtrl,
                                   textInputAction: TextInputAction.next,
-                                  decoration: _deco('ชื่อ-นามสกุล'),
+                                  decoration: _dec('ชื่อ-นามสกุล'),
                                   validator: (v) =>
                                       (v == null || v.trim().length < 3)
                                       ? 'กรุณากรอกชื่อ'
@@ -218,7 +246,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             TextFormField(
                               controller: _customTitleCtrl,
                               textInputAction: TextInputAction.next,
-                              decoration: _deco('ระบุคำนำหน้าเอง'),
+                              decoration: _dec('ระบุคำนำหน้าเอง'),
                               validator: (_) {
                                 if (_prefix == kOtherTitle &&
                                     _customTitleCtrl.text.trim().isEmpty) {
@@ -233,7 +261,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
-                            decoration: _deco('อีเมล'),
+                            decoration: _dec('อีเมล'),
                             validator: (v) {
                               if (v == null || v.isEmpty) return 'กรอกอีเมล';
                               final ok =
@@ -249,8 +277,9 @@ class _SignUpPageState extends State<SignUpPage> {
                             controller: _passwordCtrl,
                             obscureText: _obscure1,
                             textInputAction: TextInputAction.next,
-                            decoration: _deco('รหัสผ่าน').copyWith(
-                              suffixIcon: IconButton(
+                            decoration: _dec(
+                              'รหัสผ่าน',
+                              suffix: IconButton(
                                 onPressed: () =>
                                     setState(() => _obscure1 = !_obscure1),
                                 icon: Icon(
@@ -268,8 +297,9 @@ class _SignUpPageState extends State<SignUpPage> {
                           TextFormField(
                             controller: _confirmCtrl,
                             obscureText: _obscure2,
-                            decoration: _deco('ยืนยันรหัสผ่าน').copyWith(
-                              suffixIcon: IconButton(
+                            decoration: _dec(
+                              'ยืนยันรหัสผ่าน',
+                              suffix: IconButton(
                                 onPressed: () =>
                                     setState(() => _obscure2 = !_obscure2),
                                 icon: Icon(
@@ -287,10 +317,12 @@ class _SignUpPageState extends State<SignUpPage> {
                           Center(
                             child: CustomButton(
                               text: 'ลงทะเบียน',
-                              onPressed: _onSignUp,
-                              backgroundColor: kPrimary, // ใช้สีหลักของแอป
-                              textColor: Colors.white, // ตัวอักษรสีขาว
+                              onPressed: _signingUp ? null : _onSignUp,
+                              loading: _signingUp,
+                              backgroundColor: kPrimary,
+                              textColor: Colors.white,
                               fontSize: 16,
+                              // expanded: true, // อยากให้เต็มความกว้างเปิดบรรทัดนี้
                             ),
                           ),
                         ],
@@ -301,10 +333,7 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 140,
-                vertical: 30,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
               decoration: const BoxDecoration(
                 color: kBottom,
                 borderRadius: BorderRadius.only(
@@ -314,23 +343,24 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
               child: SafeArea(
                 top: false,
-                child: SizedBox(
-                  width: double.infinity,
-                  // ✅ เปลี่ยนจาก ElevatedButton → CustomButton
-                  child: CustomButton(
-                    text: 'เข้าสู่ระบบ',
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginPage(),
-                        ),
-                      );
-                    },
-                    backgroundColor: kPrimary, // สีหลักของแอป
-                    textColor: Colors.white,
-                    fontSize: 16,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CustomButton(
+                      text: 'เข้าสู่ระบบ',
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginPage(),
+                          ),
+                        );
+                      },
+                      backgroundColor: kPrimary,
+                      textColor: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ],
                 ),
               ),
             ),

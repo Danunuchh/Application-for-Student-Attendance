@@ -11,9 +11,6 @@ class QRScanPage extends StatefulWidget {
 }
 
 class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
-  static const Color _blue = Color(0xFFA6CAFA);
-
-  // ✅ สร้าง controller แบบ lazy (หลังอนุญาตค่อยสร้าง)
   MobileScannerController? _controller;
 
   bool _handling = false;
@@ -35,7 +32,6 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // ✅ จัดการ lifecycle: pause/resume กล้องเวลาแอปเข้า/ออก foreground
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final c = _controller;
@@ -43,20 +39,17 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused) {
       c.stop();
     } else if (state == AppLifecycleState.resumed) {
-      // เริ่มใหม่เฉพาะตอนกลับมาและมี permission แล้ว
       if (_permissionGranted) c.start();
     }
   }
 
   Future<void> _initPermission() async {
-    // ขอสิทธิ์กล้อง
     final status = await Permission.camera.request();
 
     if (!mounted) return;
     _permissionGranted = status.isGranted;
     _checkingPermission = false;
 
-    // ถ้าให้สิทธิ์แล้ว "ค่อย" สร้าง controller
     if (_permissionGranted) {
       _controller = MobileScannerController(
         detectionSpeed: DetectionSpeed.noDuplicates,
@@ -64,7 +57,6 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
         torchEnabled: false,
       );
     } else {
-      // ถ้าไม่ให้สิทธิ์ แจ้งเตือนครั้งเดียวพอ
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('กรุณาอนุญาตการใช้กล้องเพื่อสแกน QR')),
       );
@@ -108,7 +100,6 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
       if (!mounted) return;
       setState(() => _torchOn = !_torchOn);
     } catch (_) {
-      // ถ้าอุปกรณ์ไม่มีแฟลช จะโยน error มา — เงียบไว้หรือจะแจ้งเตือนก็ได้
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('ไม่สามารถเปิดไฟฉายได้บนอุปกรณ์นี้')),
       );
@@ -147,46 +138,10 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
                   ? const Center(
                       child: Text('ไม่สามารถเริ่มกล้องได้',
                           style: TextStyle(color: Colors.white)))
-                  : Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        // ✅ แสดงกล้องหลังอนุญาตเท่านั้น
-                        MobileScanner(
-                          controller: c,
-                          onDetect: _onDetect,
-                          fit: BoxFit.cover,
-                        ),
-                        IgnorePointer(
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final double boxSize =
-                                  constraints.maxWidth * 0.74;
-                              final double topSpacing =
-                                  constraints.maxHeight * 0.10;
-                              return Column(
-                                children: [
-                                  SizedBox(height: topSpacing),
-                                  Center(
-                                    child: SizedBox(
-                                      width: boxSize,
-                                      height: boxSize,
-                                      child: CustomPaint(
-                                        painter: _ScanFramePainter(
-                                          color: _blue,
-                                          cornerStroke: 9,
-                                          laserStroke: 6,
-                                          cornerLen: 54,
-                                          inset: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+                  : MobileScanner(
+                      controller: c,
+                      onDetect: _onDetect,
+                      fit: BoxFit.cover,
                     ),
     );
   }
@@ -216,79 +171,5 @@ class _PermissionDeniedView extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _ScanFramePainter extends CustomPainter {
-  final Color color;
-  final double cornerStroke;
-  final double laserStroke;
-  final double cornerLen;
-  final double inset;
-
-  _ScanFramePainter({
-    required this.color,
-    required this.cornerStroke,
-    required this.laserStroke,
-    required this.cornerLen,
-    required this.inset,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final pCorner = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = cornerStroke
-      ..strokeCap = StrokeCap.round;
-
-    final pLaser = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = laserStroke
-      ..strokeCap = StrokeCap.round;
-
-    final w = size.width;
-    final h = size.height;
-
-    final l = inset;
-    final r = w - inset;
-    final t = inset;
-    final b = h - inset;
-
-    void drawCorner({
-      required Offset hStart,
-      required bool toRight,
-      required Offset vStart,
-      required bool toDown,
-    }) {
-      canvas.drawLine(
-        hStart,
-        hStart + Offset(toRight ? cornerLen : -cornerLen, 0),
-        pCorner,
-      );
-      canvas.drawLine(
-        vStart,
-        vStart + Offset(0, toDown ? cornerLen : -cornerLen),
-        pCorner,
-      );
-    }
-
-    drawCorner(hStart: Offset(l, t), toRight: true,  vStart: Offset(l, t), toDown: true);
-    drawCorner(hStart: Offset(r, t), toRight: false, vStart: Offset(r, t), toDown: true);
-    drawCorner(hStart: Offset(l, b), toRight: true,  vStart: Offset(l, b), toDown: false);
-    drawCorner(hStart: Offset(r, b), toRight: false, vStart: Offset(r, b), toDown: false);
-
-    final midY = h / 2;
-    canvas.drawLine(Offset(l, midY), Offset(r, midY), pLaser);
-  }
-
-  @override
-  bool shouldRepaint(covariant _ScanFramePainter old) {
-    return color != old.color ||
-        cornerStroke != old.cornerStroke ||
-        laserStroke != old.laserStroke ||
-        cornerLen != old.cornerLen ||
-        inset != old.inset;
   }
 }

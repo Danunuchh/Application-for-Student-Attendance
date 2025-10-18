@@ -32,20 +32,43 @@ class _LoginPageState extends State<LoginPage> {
   static const Color kFocused = Color(0xFF88A8E8); //โฟกัสเมื่อกดที่ช่อง
   static const Color kBtn = Color(0xFFA7C7FF);
   static const Color kBottom = Color(0xFFA6CAFA);
+  static const Color _hintGrey = Color(0xFF9CA3AF);
+  static const Color _borderBlue = Color(0xFF9CA3AF);
 
-  InputDecoration _fieldDeco(String hint) => InputDecoration(
-    hintText: hint,
-    isDense: true,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: kPrimary, width: 1.5),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
-    ),
-  );
+  InputDecoration _dec(String label, {String? hint, Widget? suffix}) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      isDense: true,
+      filled: true,
+      fillColor: Colors.white,
+      hintStyle: const TextStyle(color: _hintGrey),
+      labelStyle: const TextStyle(color: Colors.black87),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF88A8E8), width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
+      ),
+      errorStyle: const TextStyle(height: 0, color: Colors.transparent),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _borderBlue, width: 2),
+      ),
+      suffixIcon: suffix,
+    );
+  }
 
   // เปลี่ยนส่วนนี้ใน _login()
   Future<void> _login() async {
@@ -62,7 +85,9 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = true);
 
     try {
-      final url = Uri.parse('http://localhost:8000/login_api.php');  //10.0.2.2
+      final url = Uri.parse(
+        'http://localhost:8000/login_api.php',
+      ); //10.0.2.2 //192.168.0.100 //localhost
       final res = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -71,27 +96,38 @@ class _LoginPageState extends State<LoginPage> {
 
       final data = jsonDecode(res.body);
 
-    if (data['success'] == true) {
-      final role = data['role_id'];
-      final userId = data['user_id'];
+      if (data['success'] == true) {
+        final role = data['role_id'];
+        final userId = data['user_id'];
 
-      // เก็บสำหรับนำทาง/UI
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userId', userId.toString());
-      await prefs.setString('role', role.toString());
+        // เก็บสำหรับนำทาง/UI
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', userId.toString());
+        await prefs.setString('role', role.toString());
 
-      // นำทางตาม role (ของคุณถูกแล้ว)
-      if (role == 'student') {
-        Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (_) => StudentHomePage(userId: userId.toString())));
-      } else if (role == 'teacher') {
-        Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (_) => TeacherHomePage(userId: userId.toString())));
-      } else if (role == 'admin') {
-        Navigator.pushReplacementNamed(context, '/admin_home',
-          arguments: {'userId': userId.toString()});
-      }
-    } else {
+        // นำทางตาม role (ของคุณถูกแล้ว)
+        if (role == 'student') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => StudentHomePage(userId: userId.toString()),
+            ),
+          );
+        } else if (role == 'teacher') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TeacherHomePage(userId: userId.toString()),
+            ),
+          );
+        } else if (role == 'admin') {
+          Navigator.pushReplacementNamed(
+            context,
+            '/admin_home',
+            arguments: {'userId': userId.toString()},
+          );
+        }
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['message'] ?? 'เข้าสู่ระบบไม่สำเร็จ')),
         );
@@ -149,16 +185,17 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 24),
                     TextField(
-                      controller: _emailCtrl, // NEW
+                      controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: _fieldDeco('อีเมล'),
+                      decoration: _dec('อีเมล'),
                     ),
                     const SizedBox(height: 16),
                     TextField(
-                      controller: _passCtrl, // NEW
+                      controller: _passCtrl,
                       obscureText: _obscure,
-                      decoration: _fieldDeco('รหัสผ่าน').copyWith(
-                        suffixIcon: IconButton(
+                      decoration: _dec(
+                        'รหัสผ่าน',
+                        suffix: IconButton(
                           onPressed: () => setState(() => _obscure = !_obscure),
                           icon: Icon(
                             _obscure ? Icons.visibility_off : Icons.visibility,
@@ -166,7 +203,8 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
+
+                    const SizedBox(height: 1),
                     Center(
                       child: TextButton(
                         onPressed: () {
@@ -191,69 +229,68 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
 
-                  Center(
-                    child: CustomButton(
-                      text: 'เข้าสู่ระบบ',
-                      onPressed: _loading ? null : _login,
-                      loading: _loading,
-                      backgroundColor: const Color(0xFF84A9EA),
-                      textColor: Colors.white,
-                      fontSize: 16,
+                    Center(
+                      child: CustomButton(
+                        text: 'เข้าสู่ระบบ',
+                        onPressed: _loading ? null : _login,
+                        loading: _loading,
+                        backgroundColor: const Color(0xFF84A9EA),
+                        textColor: Colors.white,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 12),
-                ],
-              ),
-            ),
-          ),
-
-          // ✅ ส่วนล่าง (เฉพาะปุ่ม "ลงทะเบียน" เปลี่ยนเป็น CustomButton)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-            decoration: const BoxDecoration(
-              color: kBottom,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(22),
-                topRight: Radius.circular(22),
-              ),
-            ),
-            child: SafeArea(
-              top: false,
-              child: SizedBox(
-                width: double.infinity,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "ยังไม่มีบัญชีผู้ใช้?",
-                      style: TextStyle(fontSize: 16, color: Colors.black87),
-                    ),
-                    const SizedBox(width: 8),
-
-                    // ✅ ปุ่มลงทะเบียน (ใช้ CustomButton)
-                    CustomButton(
-                      text: 'ลงทะเบียน',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SignUpPage(),
-                          ),
-                        );
-                      },
-                      backgroundColor: kPrimary,
-                      textColor: Colors.white,
-                      fontSize: 15,
-                    ),
+                    const SizedBox(height: 12),
                   ],
                 ),
               ),
             ),
-          ),
-        ],
+
+            // ✅ ส่วนล่าง (เฉพาะปุ่ม "ลงทะเบียน" เปลี่ยนเป็น CustomButton)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+              decoration: const BoxDecoration(
+                color: kBottom,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(22),
+                  topRight: Radius.circular(22),
+                ),
+              ),
+              child: SafeArea(
+                top: false,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "ยังไม่มีบัญชีผู้ใช้?",
+                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // ✅ ปุ่มลงทะเบียน (ใช้ CustomButton)
+                      CustomButton(
+                        text: 'ลงทะเบียน',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SignUpPage(),
+                            ),
+                          );
+                        },
+                        backgroundColor: kPrimary,
+                        textColor: Colors.white,
+                        fontSize: 15,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-      )
     );
   }
 }

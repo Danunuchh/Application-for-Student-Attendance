@@ -54,16 +54,6 @@ class _StudentScanPageState extends State<StudentScanPage> {
     super.dispose();
   }
 
-  // ===== Overlay (กรอบสี่มุม + เส้นกลาง) =====
-  Widget _overlay() => IgnorePointer(
-    child: Center(
-      child: CustomPaint(
-        size: const Size(260, 260),
-        painter: _ScanOverlayPainter(),
-      ),
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,15 +67,10 @@ class _StudentScanPageState extends State<StudentScanPage> {
         ),
       ),
 
-      // กล้อง + กรอบสแกน
-      body: Stack(
-        children: [
-          MobileScanner(controller: _controller, onDetect: _onDetect),
-          _overlay(),
-        ],
-      ),
+      // กล้องเต็มจอ (ไม่มีกรอบ CustomPainter แล้ว)
+      body: MobileScanner(controller: _controller, onDetect: _onDetect),
 
-      // แถบล่างสีฟ้า + ปุ่มกลางวงกลมไอคอน QR
+      // แถบล่างสีฟ้า + ปุ่มกลางวงกลมไอคอน QR (กดเพื่อสแกนอีกครั้ง)
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -100,8 +85,7 @@ class _StudentScanPageState extends State<StudentScanPage> {
                 _BarIcon(
                   icon: Icons.home_rounded,
                   selected: false,
-                  onTap: () =>
-                      Navigator.pushReplacementNamed(context, '/courses'),
+                  onTap: () => Navigator.pushReplacementNamed(context, '/courses'),
                 ),
                 Expanded(
                   child: Center(
@@ -129,8 +113,7 @@ class _StudentScanPageState extends State<StudentScanPage> {
                 _BarIcon(
                   icon: Icons.logout_rounded,
                   selected: false,
-                  onTap: () =>
-                      Navigator.pushReplacementNamed(context, '/login'),
+                  onTap: () => Navigator.pushReplacementNamed(context, '/login'),
                 ),
               ],
             ),
@@ -171,69 +154,4 @@ class _BarIcon extends StatelessWidget {
       ),
     );
   }
-}
-
-// วาดกรอบสแกน + เส้นกลางสีน้ำเงินตามภาพ
-class _ScanOverlayPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    const blue = Color(0xFF8FB1F2);
-
-    final stroke = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8
-      ..color = blue.withOpacity(.9);
-
-    const corner = 28.0;
-
-    // มุมซ้ายบน
-    canvas.drawLine(const Offset(0, corner), const Offset(0, 0), stroke);
-    canvas.drawLine(const Offset(0, 0), const Offset(corner, 0), stroke);
-
-    // มุมขวาบน
-    canvas.drawLine(Offset(size.width, corner), Offset(size.width, 0), stroke);
-    canvas.drawLine(
-      Offset(size.width, 0),
-      Offset(size.width - corner, 0),
-      stroke,
-    );
-
-    // มุมซ้ายล่าง
-    canvas.drawLine(
-      Offset(0, size.height - corner),
-      Offset(0, size.height),
-      stroke,
-    );
-    canvas.drawLine(
-      Offset(0, size.height),
-      Offset(corner, size.height),
-      stroke,
-    );
-
-    // มุมขวาล่าง
-    canvas.drawLine(
-      Offset(size.width, size.height - corner),
-      Offset(size.width, size.height),
-      stroke,
-    );
-    canvas.drawLine(
-      Offset(size.width, size.height),
-      Offset(size.width - corner, size.height),
-      stroke,
-    );
-
-    // เส้นกลาง
-    final mid = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6
-      ..color = blue;
-    canvas.drawLine(
-      Offset(0, size.height / 2),
-      Offset(size.width, size.height / 2),
-      mid,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

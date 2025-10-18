@@ -4,7 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http; // ✅ ใช้ http
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
+import 'package:my_app/teacher/course_detail_page.dart';
 import 'teacher_qr_page.dart';
+import 'package:my_app/teacher/subject_detail_page.dart';
+
 // import 'course_detail_page.dart'; // มีอยู่แล้วในโปรเจกต์คุณ
 
 // ---------- ปรับตามเครื่องคุณ ----------
@@ -44,6 +47,15 @@ class ApiService {
     }
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
+
+  // ✅ ย้ายเมธอดนี้เข้ามาในคลาส และยังเป็น static ได้
+  static Future<Map<String, dynamic>> addStudentToCourse({
+    required String studentId,
+    required int courseId,
+  }) async {
+    final body = {'student_id': studentId, 'course_id': courseId};
+    return await postJson('courses_api.php?type=add_student', body);
+  }
 }
 
 class CoursesPage extends StatefulWidget {
@@ -62,6 +74,252 @@ class _CoursesPageState extends State<CoursesPage> {
   void initState() {
     super.initState();
     _fetchCourses();
+  }
+
+  void _showAddStudentSheet(int courseId) {
+    List<Map<String, dynamic>> allStudents = [];
+    List<Map<String, dynamic>> filteredStudents = [];
+    Map<String, bool> selectedStudents = {};
+    bool isLoading = false;
+
+    int calculateYearFromStartYear(String startYear) {
+      //การคำนวณชั้นปี
+      final currentYear = DateTime.now().year + 543;
+      final start = int.parse(startYear) + 2500;
+      return currentYear - start + 1;
+    }
+
+    Future<void> fetchStudents(int courseId) async {
+      try {
+        final json = await ApiService.getJson(
+          'get_student.php',
+          query: {'course_id': courseId.toString()},
+        );
+
+        if (json['success'] == true && json['students'] is List) {
+          final List data = json['students'];
+
+          setState(() {
+            allStudents = data.cast<Map<String, dynamic>>();
+            filteredStudents = allStudents;
+            selectedStudents = {
+              for (var s in allStudents) s['user_id'].toString(): false,
+            };
+          });
+
+          print('✅ Loaded students: ${allStudents.length}');
+        } else {
+          print('⚠️ Server message: ${json['message']}');
+        }
+      } catch (e) {
+        print('⚠️ Error fetching students: $e');
+      }
+    }
+
+    Future<void> saveStudents(List<Map<String, dynamic>> students) async {
+      // 🔹 สร้าง payload เป็น Map<String, dynamic>
+      final Map<String, dynamic> payload = {
+        'type': 'insert',
+        'course_id': courseId,
+        'students': students.map((s) {
+          return {
+            'user_id': s['user_id'],
+            'user_name': s['full_name'],
+            'student_id': s['student_id'],
+          };
+        }).toList(),
+      };
+
+      try {
+        final json = await ApiService.postJson(
+          'save_schedule.php', // positional arg 1
+          payload, // positional arg 2
+        );
+
+        if (json['success'] == true) {
+          print('✅ Saved successfully');
+        } else {
+          print('❌ Save failed: ${json['message']}');
+        }
+      } catch (e) {
+        print('⚠️ Error saving students: $e');
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            // โหลดข้อมูลครั้งแรก
+            if (!isLoading) {
+              isLoading = true;
+              fetchStudents(courseId).then((_) => setState(() {}));
+            }
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.9,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // ✅ ใช้ CustomAppBar เหมือนหน้า CoursesPage
+                    CustomAppBar(
+                      title: 'เพิ่มนักศึกษาเข้าคลาส',
+                      leading: IconButton(
+                        icon: const Icon(
+                          Icons.close,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      actions: const [
+                        SizedBox(width: 6), // เผื่อระยะห่างด้านขวา
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ปุ่มปี 1-4
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(4, (i) {
+                        final year = i + 1;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                filteredStudents = allStudents
+                                    .where(
+                                      (s) =>
+                                          calculateYearFromStartYear(
+                                            s['start_year'],
+                                          ) ==
+                                          year,
+                                    )
+                                    .toList();
+                              });
+                            },
+                            child: Text('ปี $year'),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // รายการนักศึกษา
+                    Expanded(
+                      child: filteredStudents.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'ไม่มีข้อมูลนักศึกษา',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: filteredStudents.length,
+                              itemBuilder: (context, index) {
+                                final student = filteredStudents[index];
+                                final id = student['user_id'].toString();
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 4,
+                                  ),
+                                  title: Text(
+                                    '${student['full_name']} (${student['student_id']})',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    'ชั้นปี ${calculateYearFromStartYear(student['start_year'])}',
+                                  ),
+                                  trailing: Checkbox(
+                                    value: selectedStudents[id] ?? false,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        selectedStudents[id] = val ?? false;
+                                      });
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+
+                    // ปุ่มบันทึก
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () async {
+                          // ✅ วางโค้ด Dialog ยืนยันตรงนี้
+                          final selected = filteredStudents
+                              .where(
+                                (s) =>
+                                    selectedStudents[s['user_id'].toString()]!,
+                              )
+                              .toList();
+
+                          if (selected.isEmpty) return;
+
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('ยืนยันการบันทึก'),
+                              content: Text(
+                                'คุณต้องการบันทึก ${selected.length} นักศึกษาที่เลือกใช่หรือไม่?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('ยกเลิก'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text('ตกลง'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true) {
+                            await saveStudents(selected);
+                            Navigator.pop(context); // ปิด modal หลังบันทึก
+                          }
+                        },
+                        child: const Text('บันทึกนักศึกษาที่เลือก'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _fetchCourses() async {
@@ -150,11 +408,6 @@ class _CoursesPageState extends State<CoursesPage> {
         title: 'คลาสเรียน',
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFF88A8E8)),
-            onPressed: _fetchCourses,
-            tooltip: 'รีเฟรช',
-          ),
-          IconButton(
             icon: const Icon(Icons.add_circle, color: Color(0xFF88A8E8)),
             onPressed: _openAddCourseSheet,
             tooltip: 'เพิ่มวิชา',
@@ -174,20 +427,52 @@ class _CoursesPageState extends State<CoursesPage> {
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (_, i) {
                   final c = _courses[i];
+
                   return TextBox(
                     title: c['name'],
                     subtitle: c['code'],
                     onTap: () {
-                      // ถ้ามีหน้า detail เปิดได้ที่นี่
-                      // Navigator.push(...);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CourseDetailPage(
+                            courseId: c['id'].toString(),
+                            courseName: c['name']?.toString(),
+                            courseCode: c['code']?.toString(),
+                          ),
+                        ),
+                      );
                     },
-                    trailing: IconButton(
-                      icon: const Icon(
-                        Icons.qr_code_2,
-                        color: Color(0xFF9CA3AF),
-                      ),
-                      onPressed: () => _goToQR(c),
-                      tooltip: 'QR เช็กชื่อ',
+
+                    // 👇 ปรับตรงนี้
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // ปุ่มเพิ่มนักศึกษา
+                        IconButton(
+                          icon: const Icon(
+                            Icons.person_add_alt_1,
+                            color: Color(0xFF88A8E8),
+                          ),
+                          onPressed: () {
+                            _showAddStudentSheet(
+                              c['id'], // courseId
+                            );
+                          },
+                        ),
+
+                        const SizedBox(width: 4),
+
+                        // ปุ่ม QR เดิม
+                        // IconButton(
+                        //   icon: const Icon(
+                        //     Icons.qr_code_2,
+                        //     color: Color(0xFF9CA3AF),
+                        //   ),
+                        //   onPressed: () => _goToQR(c),
+                        //   tooltip: 'QR เช็กชื่อ',
+                        // ),
+                      ],
                     ),
                   );
                 },
@@ -239,10 +524,11 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
   final _code = TextEditingController();
   final _credit = TextEditingController();
   final _teacher = TextEditingController();
-  final _day = TextEditingController(); 
+  final _day = TextEditingController();
   final _start = TextEditingController();
   final _end = TextEditingController();
   final _room = TextEditingController();
+  final _section = TextEditingController();
   final _sessions = TextEditingController();
 
   bool _canSubmit = false;
@@ -268,6 +554,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
       _start,
       _end,
       _room,
+      _section,
       _sessions,
     ]) {
       c.addListener(_recalcCanSubmit);
@@ -333,6 +620,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
         _start.text.trim().isNotEmpty &&
         _end.text.trim().isNotEmpty &&
         _room.text.trim().isNotEmpty &&
+        _section.text.trim().isNotEmpty &&
         _sessions.text.trim().isNotEmpty;
     if (ok != _canSubmit) setState(() => _canSubmit = ok);
   }
@@ -356,16 +644,16 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+        borderSide: const BorderSide(color: Color(0xFF88A8E8), width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: _borderBlue, width: 2),
+        borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
       ),
       errorStyle: const TextStyle(height: 0, color: Colors.transparent),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+        borderSide: const BorderSide(color: Color(0xFF9CA3AF), width: 1.5),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
@@ -385,6 +673,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
     _start.dispose();
     _end.dispose();
     _room.dispose();
+    _section.dispose();
     _sessions.dispose();
     super.dispose();
   }
@@ -415,13 +704,16 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
         'user_id': widget.userId,
         'name': _name.text.trim(),
         'code': _code.text.trim(),
-        'credit': _credit.text.trim(), // ถ้าฝั่ง PHP ต้องการ int ก็แปลงเป็น int ที่นี่ได้
+        'credit': _credit.text
+            .trim(), // ถ้าฝั่ง PHP ต้องการ int ก็แปลงเป็น int ที่นี่ได้
         'teacher': _teacher.text.trim(), // ดึงจาก user_id มาก่อนหน้าแล้ว
-        'day': _day.text.trim(), // ถ้ามี day_id จาก dropdown ให้ใส่ 'day_id': _selectedDayId
+        'day': _day.text
+            .trim(), // ถ้ามี day_id จาก dropdown ให้ใส่ 'day_id': _selectedDayId
         'day_id': _selectedDayId,
         'start_time': _start.text.trim(),
         'end_time': _end.text.trim(),
         'room': _room.text.trim(),
+        'section': _section.text.trim(),
         'sessions': _sessions.text.trim(), // เช่น "3"
         // ไม่ต้องใส่ 'type' ใน body
       };
@@ -450,6 +742,50 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  Future<void> _addStudent(String studentId, int courseId) async {
+    try {
+      final res = await ApiService.addStudentToCourse(
+        studentId: studentId,
+        courseId: courseId,
+      );
+
+      if (res['success'] == true) {
+        _showLocalSnack('เพิ่มนักศึกษาเรียบร้อย');
+      } else {
+        _showLocalSnack(res['message'] ?? 'เพิ่มนักศึกษาไม่สำเร็จ');
+      }
+    } catch (e) {
+      _showLocalSnack('เกิดข้อผิดพลาด: $e');
+    }
+  }
+
+  Future<String?> _askStudentId(BuildContext context) async {
+    final controller = TextEditingController();
+    return await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('เพิ่มนักศึกษาเข้าคลาส'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: 'รหัสนักศึกษา',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('ยกเลิก'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('ตกลง'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showLocalSnack(String msg) {
@@ -498,7 +834,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                     decoration: _dec('วิชา'),
                     validator: (v) => _required(v, 'กรุณากรอกชื่อวิชา'),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
 
                   Row(
                     children: [
@@ -509,7 +845,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                           validator: (v) => _required(v, 'กรุณากรอกรหัสวิชา'),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: TextFormField(
                           controller: _credit,
@@ -523,7 +859,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
 
                   _loadingTeacherName
                       ? const LinearProgressIndicator(minHeight: 2)
@@ -534,38 +870,47 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                           validator: (v) =>
                               _required(v, 'กรุณากรอกชื่ออาจารย์ผู้สอน'),
                         ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
 
-                  _loadingDays
-                      ? const LinearProgressIndicator(minHeight: 2)
-                      : DropdownButtonFormField<String>(
-                          value: _selectedDayId,
-                          items: _days.map((d) {
-                            final id = d['id'].toString();
-                            final name = d['name'].toString();
-                            return DropdownMenuItem<String>(
-                              value: id,
-                              child: Text(name),
-                            );
-                          }).toList(),
-                          onChanged: (v) {
-                            setState(() {
-                              _selectedDayId = v;
-                              // อัปเดต controller เดิมเพื่อเข้ากับโค้ดที่ใช้อยู่แล้ว
-                              final name = _days
-                                  .firstWhere(
-                                    (e) => e['id'].toString() == v,
-                                  )['name']
-                                  .toString();
-                              _day.text = name;
-                            });
-                          },
-                          decoration: _dec('วันที่เรียน'),
-                          validator: (v) => (v == null || v.isEmpty)
-                              ? 'กรุณาเลือกวันที่เรียน'
-                              : null,
-                        ),
-                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: _selectedDayId,
+                    items: _days.map((d) {
+                      final id = d['id'].toString();
+                      final name = d['name'].toString();
+                      return DropdownMenuItem<String>(
+                        value: id,
+                        child: Text(name),
+                      );
+                    }).toList(),
+                    onChanged: (v) {
+                      setState(() {
+                        _selectedDayId = v;
+                        final name = _days
+                            .firstWhere((e) => e['id'].toString() == v)['name']
+                            .toString();
+                        _day.text = name;
+                      });
+                    },
+                    decoration: _dec('วันที่เรียน').copyWith(
+                      filled: true,
+                      fillColor: const Color.fromARGB(
+                        255,
+                        255,
+                        255,
+                        255,
+                      ), // ✅ สีพื้นหลังช่อง dropdown
+                    ),
+                    dropdownColor: const Color.fromARGB(
+                      255,
+                      255,
+                      255,
+                      255,
+                    ), // ✅ สีพื้นหลัง popup list
+                    validator: (v) => (v == null || v.isEmpty)
+                        ? 'กรุณาเลือกวันที่เรียน'
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
 
                   Row(
                     children: [
@@ -575,7 +920,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                           readOnly: true,
                           onTap: () => _pickTime(_start),
                           textAlign: TextAlign.center,
-                          decoration: _dec('เวลาเริ่ม', hint: 'HH:mm'),
+                          decoration: _dec('เวลาเริ่ม'),
                           validator: (v) => _required(v, 'เลือกเวลาเริ่ม'),
                         ),
                       ),
@@ -588,20 +933,34 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                           readOnly: true,
                           onTap: () => _pickTime(_end),
                           textAlign: TextAlign.center,
-                          decoration: _dec('เวลาสิ้นสุด', hint: 'HH:mm'),
+                          decoration: _dec('เวลาสิ้นสุด'),
                           validator: (v) => _required(v, 'เลือกเวลาสิ้นสุด'),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
 
-                  TextFormField(
-                    controller: _room,
-                    decoration: _dec('ห้องเรียน'),
-                    validator: (v) => _required(v, 'กรุณากรอกห้องเรียน'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _room,
+                          decoration: _dec('ห้องเรียน'),
+                          validator: (v) => _required(v, 'กรุณากรอกห้องเรียน'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _section,
+                          decoration: _dec('กลุ่มที่เรียน'),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
 
                   TextFormField(
                     controller: _sessions,
@@ -620,7 +979,10 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                         onPressed: _submitting
                             ? null
                             : () => Navigator.pop(context),
-                        child: const Text('ยกเลิก'),
+                        child: const Text(
+                          'ยกเลิก',
+                          style: TextStyle(color: Colors.red),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       FilledButton.icon(

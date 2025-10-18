@@ -22,6 +22,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   bool _hideConfirm = true;
   bool _submitting = false;
 
+  // ---------- palette สำหรับ _dec ----------
+  static const Color _hintGrey = Color(0xFF9CA3AF);
+  static const Color _borderBlue = Color(0xFF9CA3AF);
+
   @override
   void dispose() {
     _emailCtrl.dispose();
@@ -61,28 +65,42 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         if (mounted) setState(() => _submitting = false);
       }
     }
-    // ไม่ใช้ snackbar ตามที่ตั้งใจ — เปลี่ยนหน้าหรือ pop ได้จากภายนอก
+    // ไม่ใช้ snackbar ที่นี่ — ให้ภายนอกจัดการต่อ (pop / เปลี่ยนหน้า / แจ้งเตือน)
   }
 
-  InputDecoration _decorate(
-    String hint, {
-    Widget? prefixIcon,
-    Widget? suffixIcon,
-  }) {
+  // ---------- ใช้ร่วมกับทุก TextFormField ----------
+  InputDecoration _dec(String label, {String? hint, Widget? suffix}) {
     return InputDecoration(
+      labelText: label,
       hintText: hint,
-      prefixIcon: prefixIcon,
-      suffixIcon: suffixIcon,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      isDense: true,
+      filled: true,
+      fillColor: Colors.white,
+      hintStyle: const TextStyle(color: _hintGrey),
+      labelStyle: const TextStyle(color: Colors.black87),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+      ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: const Color(0xFF84A9EA), width: 1.5),
+        borderSide: const BorderSide(color: Color(0xFF88A8E8), width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
       ),
+      errorStyle: const TextStyle(height: 0, color: Colors.transparent),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _borderBlue, width: 2),
+      ),
+      suffixIcon: suffix,
     );
   }
 
@@ -103,7 +121,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    // โลโก้ในกรอบเส้นฟ้า
+                    // ภาพ
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -128,7 +146,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF1F2937), // เทาเข้มอ่านง่าย
+                          color: Color(0xFF1F2937),
                         ),
                       ),
                     ),
@@ -139,7 +157,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
                       validator: _validateEmail,
-                      decoration: _decorate('อีเมล'),
+                      decoration: _dec('อีเมล'),
                     ),
                     const SizedBox(height: 20),
 
@@ -148,9 +166,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       controller: _passCtrl,
                       obscureText: _hidePass,
                       validator: _validatePass,
-                      decoration: _decorate(
+                      decoration: _dec(
                         'รหัสผ่านใหม่',
-                        suffixIcon: IconButton(
+                        suffix: IconButton(
                           onPressed: () =>
                               setState(() => _hidePass = !_hidePass),
                           icon: Icon(
@@ -166,9 +184,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       controller: _confirmCtrl,
                       obscureText: _hideConfirm,
                       validator: _validateConfirm,
-                      decoration: _decorate(
+                      decoration: _dec(
                         'ยืนยันรหัสผ่าน',
-                        suffixIcon: IconButton(
+                        suffix: IconButton(
                           onPressed: () =>
                               setState(() => _hideConfirm = !_hideConfirm),
                           icon: Icon(
@@ -181,12 +199,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     ),
                     const SizedBox(height: 26),
 
-                    // ปุ่มสีเขียว (ตัวอักษรสีเขียว ตามภาพ)
+                    // ปุ่มบันทึก (แสดงโหลดขณะ onSubmit ทำงาน)
                     CustomButton(
                       text: 'บันทึกรหัสผ่านใหม่',
-                      onPressed: _handleSubmit,
-                      backgroundColor: const Color(0xFF84A9EA),
-                      textColor: const Color.fromARGB(255, 255, 255, 255),
+                      onPressed: _submitting ? null : _handleSubmit,
+                      loading: _submitting,
+                      backgroundColor: const Color(0xFF21BA0C),
+                      textColor: Colors.white,
                     ),
                   ],
                 ),
