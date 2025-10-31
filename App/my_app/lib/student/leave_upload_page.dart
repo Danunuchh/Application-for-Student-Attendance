@@ -205,7 +205,7 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                     text: _picked == null ? 'เลือกไฟล์' : 'เปลี่ยนไฟล์',
                     onPressed: _pickFile,
                     backgroundColor: const Color(0xFFA6CAFA), // สีพื้นเดิม
-                    textColor: _ink, // สีข้อความเดิม
+                    textColor: const Color.fromARGB(255, 255, 255, 255), // สีข้อความเดิม
                     fontSize: 15,
                   ),
                 ],
@@ -348,7 +348,7 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                 text: _submitting ? 'กำลังส่ง…' : 'ยืนยัน',
                 onPressed: _submitting ? null : _submit,
                 backgroundColor: const Color(0xFFA6CAFA), // ✅ ใช้สีเดียวกับปุ่มเดิม
-                textColor: const Color.fromARGB(255, 0, 0, 0),
+                textColor: const Color.fromARGB(255, 255, 255, 255),
                 fontSize: 15,
               ),
             ),

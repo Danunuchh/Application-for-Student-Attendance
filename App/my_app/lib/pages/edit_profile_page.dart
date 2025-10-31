@@ -156,7 +156,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFFAFC7FA), width: 1.5),
+      borderSide: const BorderSide(color: Color(0xFF84A9EA), width: 1.5),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),

@@ -89,7 +89,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> _sendToServer() async {
     // NOTE: ถ้ารันบน Emulator ให้ใช้ http://10.0.2.2:8000
     // ถ้ารันบนมือถือจริง ให้ใช้ IP เครื่องคอม เช่น http://192.168.1.20:8000
-    final url = Uri.parse('http://localhost:8000/signup_api.php');
+    final url = Uri.parse('http://10.0.2.2:8000/signup_api.php');
     final data = {
       'prefix': _prefix == kOtherTitle ? _customTitleCtrl.text.trim() : _prefix,
       'full_name': _nameCtrl.text.trim(),
@@ -191,11 +191,11 @@ class _SignUpPageState extends State<SignUpPage> {
                                 child: DropdownButtonFormField<String>(
                                   value: _prefix,
                                   isExpanded: true,
-                                  decoration: _dec('', hint: 'คำนำหน้า')
+                                  decoration: _dec('คำนำหน้า')
                                       .copyWith(
                                         floatingLabelBehavior:
                                             FloatingLabelBehavior
-                                                .never, 
+                                                .auto, 
                                         contentPadding:
                                             const EdgeInsets.symmetric(
                                               horizontal: 12,
@@ -319,7 +319,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               text: 'ลงทะเบียน',
                               onPressed: _signingUp ? null : _onSignUp,
                               loading: _signingUp,
-                              backgroundColor: kPrimary,
+                              backgroundColor: const Color(0xFF84A9EA),
                               textColor: Colors.white,
                               fontSize: 16,
                               // expanded: true, // อยากให้เต็มความกว้างเปิดบรรทัดนี้

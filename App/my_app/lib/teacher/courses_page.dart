@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http; // ✅ ใช้ http
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
+import 'package:my_app/components/button.dart';
 import 'package:my_app/teacher/course_detail_page.dart';
 import 'teacher_qr_page.dart';
 import 'package:my_app/teacher/subject_detail_page.dart';
@@ -12,7 +13,7 @@ import 'package:my_app/teacher/subject_detail_page.dart';
 
 // ---------- ปรับตามเครื่องคุณ ----------
 const String apiBase =
-    'http://localhost:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
+    'http://10.0.2.2:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
 
 class ApiService {
   static Map<String, String> get _jsonHeaders => {
@@ -264,20 +265,16 @@ class _CoursesPageState extends State<CoursesPage> {
 
                     // ปุ่มบันทึก
                     SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
+                      child: CustomButton(
+                        text: 'บันทึกนักศึกษาที่เลือก',
+                        backgroundColor: const Color(0xFF88A8E8),
+                        textColor: Colors.white,
                         onPressed: () async {
-                          // ✅ วางโค้ด Dialog ยืนยันตรงนี้
                           final selected = filteredStudents
                               .where(
                                 (s) =>
-                                    selectedStudents[s['user_id'].toString()]!,
+                                    selectedStudents[s['user_id'].toString()] ==
+                                    true,
                               )
                               .toList();
 
@@ -306,10 +303,9 @@ class _CoursesPageState extends State<CoursesPage> {
 
                           if (confirm == true) {
                             await saveStudents(selected);
-                            Navigator.pop(context); // ปิด modal หลังบันทึก
+                            if (context.mounted) Navigator.pop(context);
                           }
                         },
-                        child: const Text('บันทึกนักศึกษาที่เลือก'),
                       ),
                     ),
                   ],
