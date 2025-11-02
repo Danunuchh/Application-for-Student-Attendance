@@ -5,7 +5,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-/// โมเดลบันทึกการเข้าเรียน
+/// โมเดลบันทึกการเข้าเรียน (รองรับทั้ง key แบบ snake_case และ camelCase)
 class AttendanceRecord {
   final DateTime date;
   final String studentId;
@@ -22,12 +22,42 @@ class AttendanceRecord {
   });
 
   factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
+    // หาเวลาเช็คชื่อ (หลายชื่อที่เป็นไปได้)
+    final dynamic t1 =
+        json['attendance_time'] ?? json['checkTime'] ?? json['check_time'];
+    final String? checkTime = t1 == null ? null : t1.toString();
+
+    // หา student id / name (รองรับ snake_case / camelCase)
+    final sid = (json['student_id'] ?? json['studentId'] ?? '').toString();
+    final sname =
+        (json['student_name'] ?? json['studentName'] ?? json['student'] ?? '')
+            .toString();
+
+    // หา field วันที่ — รองรับ 'day', 'date' หรือ fallback เป็น today
+    DateTime parsedDate = DateTime.now();
+    try {
+      final d =
+          json['day'] ?? json['date'] ?? json['class_time'] ?? json['time'];
+      if (d != null) {
+        // ถ้าเป็นวันที่แบบ 'YYYY-MM-DD' หรือ 'YYYY-MM-DD HH:mm:ss' จะพยายาม parse
+        parsedDate =
+            DateTime.tryParse(d.toString()) ??
+            // ถ้า server ส่งเป็น '2025-11-02' หรือ '02/11/65' หน่อย ๆ อาจต้อง custom parse
+            parsedDate;
+      }
+    } catch (_) {
+      // ignore, ใช้ now
+    }
+
+    // ตัดสิน present จากเวลาเช็คชื่อ (null -> ไม่มา)
+    final presentBool = checkTime != null && checkTime.isNotEmpty;
+
     return AttendanceRecord(
-      date: DateTime.parse(json['date'] as String),
-      studentId: json['studentId'] as String,
-      studentName: json['studentName'] as String,
-      present: json['present'] as bool,
-      checkTime: json['checkTime'] as String?,
+      date: parsedDate,
+      studentId: sid,
+      studentName: sname,
+      present: presentBool,
+      checkTime: checkTime,
     );
   }
 
@@ -43,13 +73,13 @@ class AttendanceRecord {
 class AttendanceDetailPage extends StatefulWidget {
   final String courseName;
   final String courseId;
-  final String userId; // ✅ เพิ่มตรงนี้
+  final String userId; // เพิ่ม userId เพื่อส่งไปหา API
 
   const AttendanceDetailPage({
     super.key,
     required this.courseName,
     required this.courseId,
-    required this.userId, // ✅ ต้องใส่ required
+    required this.userId,
   });
 
   @override
@@ -61,7 +91,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   DateTime? _selectedDay;
   bool _loading = false;
   List<AttendanceRecord> _records = [];
-  late Map<DateTime, List<AttendanceRecord>> _byDay;
+  Map<DateTime, List<AttendanceRecord>> _byDay = {};
 
   @override
   void initState() {
@@ -77,27 +107,87 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   Future<void> _fetchAttendance() async {
     setState(() => _loading = true);
     try {
+      final dateStr =
+        '${_selectedDay!.year.toString().padLeft(4, '0')}-'
+        '${_selectedDay!.month.toString().padLeft(2, '0')}-'
+        '${_selectedDay!.day.toString().padLeft(2, '0')}';
+
       final url = Uri.parse('http://192.168.0.111:8000/get_attandance.php')
           .replace(
             queryParameters: {
-              'course_id': widget.courseId, // ✅ เปลี่ยน courseId → course_id
+              'course_id': widget.courseId,
               'type': 'student',
               'user_id': widget.userId,
+              'date': dateStr,
             },
           );
 
       final resp = await http.get(url);
-
-      if (resp.statusCode == 200) {
-        final data = json.decode(resp.body) as List<dynamic>;
-        _records = data
-            .map((e) => AttendanceRecord.fromJson(e as Map<String, dynamic>))
-            .toList();
-        _byDay = _groupByDay(_records);
-      } else {
+      if (resp.statusCode != 200) {
         _showSnack('เกิดข้อผิดพลาดในการดึงข้อมูล: ${resp.statusCode}');
+        return;
       }
-    } catch (e) {
+
+      final decoded = json.decode(resp.body);
+
+      // หารูปแบบ list ของ records — รองรับทั้ง List ตรงๆ หรือ { "data": [...] }
+      List<dynamic> rawList;
+      if (decoded is List) {
+        rawList = decoded;
+      } else if (decoded is Map && decoded['data'] is List) {
+        rawList = decoded['data'] as List<dynamic>;
+      } else if (decoded is Map &&
+          decoded['success'] == true &&
+          decoded['data'] is List) {
+        rawList = decoded['data'] as List<dynamic>;
+      } else {
+        // ถ้าโครงสร้างไม่ตรง ให้แสดงข้อความ และไม่ขัด application
+        debugPrint(
+          'Unexpected attendance response shape: ${decoded.runtimeType} body=${resp.body}',
+        );
+        rawList = [];
+      }
+
+      final List<AttendanceRecord> loaded = [];
+      for (var item in rawList) {
+        try {
+          Map<String, dynamic> m;
+          if (item is Map<String, dynamic>) {
+            m = item;
+          } else if (item is Map) {
+            m = Map<String, dynamic>.from(item);
+          } else if (item is String) {
+            final parsed = json.decode(item);
+            if (parsed is Map) {
+              m = Map<String, dynamic>.from(parsed);
+            } else {
+              debugPrint(
+                'Skipping attendance item (string but not object): $item',
+              );
+              continue;
+            }
+          } else {
+            debugPrint(
+              'Skipping attendance item (unknown type): ${item.runtimeType}',
+            );
+            continue;
+          }
+
+          // Normalize: some APIs return attendance_time but no date — if no date we can use a date field from payload if exists
+          final rec = AttendanceRecord.fromJson(m);
+          loaded.add(rec);
+        } catch (err, st) {
+          debugPrint('Failed to parse attendance item: $err\n$st\nitem: $item');
+          continue;
+        }
+      }
+
+      setState(() {
+        _records = loaded;
+        _byDay = _groupByDay(_records);
+      });
+    } catch (e, st) {
+      debugPrint('Fetch attendance failed: $e\n$st');
       _showSnack('เกิดข้อผิดพลาด: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -125,7 +215,6 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
     return _byDay[k] ?? const [];
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     const outline = Color(0xFFCDE0F9);
@@ -187,18 +276,17 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                 // ===== ปฏิทิน =====
                 Container(
                   decoration: BoxDecoration(
-                    //ตกแต่งปฏิทิน
                     color: Colors.white,
                     border: Border.all(
                       color: const Color(0xFFA6CAFA),
-                      width: 1.5, // ✅ เส้นขอบหนา 2
+                      width: 1.5,
                     ),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.08),
                         blurRadius: 6,
-                        spreadRadius: 2, // ✅ เงาชัดขึ้น
+                        spreadRadius: 2,
                         offset: const Offset(0, 3),
                       ),
                     ],
@@ -214,14 +302,16 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                     selectedDayPredicate: (d) =>
                         _selectedDay != null && isSameDay(d, _selectedDay),
                     onPageChanged: (f) => setState(() => _focusedDay = f),
-                    onDaySelected: (sel, foc) => setState(() {
-                      _selectedDay = sel;
-                      _focusedDay = foc;
-                    }),
+                    onDaySelected: (sel, foc) {
+                      setState(() {
+                        _selectedDay = sel;
+                        _focusedDay = foc;
+                      });
+                      _fetchAttendance(); // เรียกหลัง setState
+                    },
+
                     availableGestures: AvailableGestures.horizontalSwipe,
                     eventLoader: (d) => _recordsOf(d),
-
-                    // custom cell (ไม่มีเงาสี่เหลี่ยม)
                     calendarBuilders: CalendarBuilders(
                       defaultBuilder: (context, day, _) =>
                           _buildDayCell(day, Colors.black87),
@@ -236,7 +326,6 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                           _buildDayCell(day, Colors.white, bgColor: primary),
                       markerBuilder: (context, day, events) {
                         if (events.isEmpty) return const SizedBox.shrink();
-                        // จุดบอกว่ามีข้อมูลเช็คชื่อ
                         return Align(
                           alignment: Alignment.bottomCenter,
                           child: Padding(
@@ -253,7 +342,6 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                         );
                       },
                     ),
-
                     daysOfWeekStyle: const DaysOfWeekStyle(
                       weekendStyle: TextStyle(color: Colors.black87),
                       weekdayStyle: TextStyle(color: Colors.black87),
@@ -341,13 +429,12 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ซ้าย: วันที่ + รายชื่อนักศึกษา
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _thaiShortDate(r.date),
+                        '${r.studentId}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -355,13 +442,12 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '${r.studentId} ${r.studentName}',
+                        ' ${r.studentName}',
                         style: const TextStyle(fontSize: 14.5),
                       ),
                     ],
                   ),
                 ),
-                // ขวา: เวลา หรือ “ไม่ได้เช็คชื่อ”
                 Text(
                   r.present ? (r.checkTime ?? '') : 'ไม่ได้เช็คชื่อ',
                   style: TextStyle(

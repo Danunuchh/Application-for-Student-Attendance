@@ -17,6 +17,7 @@ if (!$input) $input = $_POST;
 $course_id = $_POST['course_id'] ?? $_GET['course_id'] ?? 0;
 $type = $_GET['type'] ?? ($input['type'] ?? 'default'); // รับ type จาก GET หรือ POST
 $date = isset($input['date']) ? date('Y-m-d', strtotime($input['date'])) : date('Y-m-d');
+$user_id = $_POST['user_id'] ?? $_GET['user_id'] ?? 0;
 
 if ($course_id === 0) {
     http_response_code(400);
@@ -29,23 +30,31 @@ include 'connect.php'; // ต้องแน่ใจว่า connect.php ส�
 
 try {
     if ($type === 'student') {
-        // Query สำหรับ student (เช็คชื่อเฉพาะนักเรียน)
-        $sql = "
-            SELECT 
-                ad.attendance_detail_id,
-                ad.user_id,
-                ad.student_id,
-                ad.student_name,
-                ad.time AS attendance_time,
-                ad.leave_status
-            FROM attendance_detail ad
-            JOIN attendance a ON ad.attendance_id = a.attendance_id
-            WHERE a.course_id = :course_id
-            ORDER BY ad.student_name
-        ";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute(['course_id' => $course_id]);
-    } else {
+    // Query สำหรับ student (เช็คชื่อเฉพาะนักเรียน)
+    $sql = "
+        SELECT 
+            ad.attendance_detail_id,
+            ad.user_id,
+            ad.student_id,
+            ad.student_name,
+            ad.time AS attendance_time,
+            ad.leave_status
+        FROM attendance_detail ad
+        JOIN attendance a ON ad.attendance_id = a.attendance_id
+        WHERE a.course_id = :course_id
+          AND ad.user_id = :user_id
+          AND a.day = :date
+        ORDER BY ad.student_name 
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        'course_id' => $course_id,
+        'user_id' => $user_id,
+        'date' => $date,
+    ]);
+}
+ else {
         // Query default หรือ type อื่นๆ
         $sql = "
             SELECT 

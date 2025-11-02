@@ -43,10 +43,11 @@ try {
         throw new Exception('รูปแบบอีเมลไม่ถูกต้อง');
     }
 
+    //ฟังก์ชันในการแยกรหัสนักศึกษาจากอีเมลที่ลงทะเบียน
     $student_id = trim($data['email']);
     $student_id = explode('@', $student_id)[0];
-    if ($student_id >= 99999999) {
-        $student_id = '';
+    if ($student_id >= 99999999) {     
+        $student_id = '';       //ดักรหัสของอาจารย์ให้เป็นค่าว่าง
     }
 
     // แยก local part และ domain (ไม่สนใจตัวพิมพ์ใหญ่เล็ก)
