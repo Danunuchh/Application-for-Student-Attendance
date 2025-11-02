@@ -8,7 +8,7 @@ import 'package:my_app/components/textbox.dart';
 
 /// ปรับให้ตรงกับเครื่อง/เซิร์ฟเวอร์ของคุณ
 const String apiBase =
-    'http://localhost:8000'; // Android Emulator ใช้ http://10.0.2.2:8000
+    'http://192.168.0.111:8000'; // Android Emulator ใช้ http://10.0.2.2:8000
 
 class CourseDetailPage extends StatefulWidget {
   final String courseId; // ✅ รับ id ที่หน้า list ส่งมา
@@ -165,6 +165,14 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   // ====== ค้นหา ======
   void _onSearch() {
     final q = _searchCtl.text.trim();
+    // ถ้าไม่ใช่ตัวเลข ให้ไม่ค้นหา
+    if (q.isNotEmpty && !RegExp(r'^\d+$').hasMatch(q)) {
+      setState(() {
+        _filtered = [];
+      });
+      return;
+    }
+
     setState(() {
       if (q.isEmpty) {
         _filtered = List.of(_students);
@@ -172,8 +180,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         _filtered = _students
             .where(
               (s) =>
-                  (s['id'] ?? '').contains(q) ||
-                  (s['name'] ?? '').toLowerCase().contains(q.toLowerCase()),
+                  (s['student_id'] ?? '').contains(q) ||
+                  (s['user_id'] ?? '').contains(q),
             )
             .toList();
       }

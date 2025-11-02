@@ -5,13 +5,13 @@ import 'package:http/http.dart' as http;
 import 'package:my_app/components/custom_bar.dart';
 import 'package:my_app/pages/login_page.dart';
 import 'package:my_app/components/menu_title.dart';
-
 import 'package:my_app/teacher/teacher_attendancehistory_page.dart';
 import 'package:my_app/teacher/calendar_page.dart';
 import 'package:my_app/teacher/courses_page.dart';
 import 'package:my_app/teacher/dashboard_page.dart';
 import 'package:my_app/pages/edit_profile_page.dart';
 import 'package:my_app/teacher/pending_approvals_page.dart';
+import 'package:my_app/teacher/qr_code_page.dart';
 
 class AppColors {
   static const primary = Color(0xFF4A86E8);
@@ -55,9 +55,11 @@ class TeacherHomePage extends StatelessWidget {
       onFabTap: () async {
         final result = await Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => CoursesPage(userId: userId)),
+          MaterialPageRoute(builder: (_) => QrCodePage(userId: userId)),
         );
-        if (result != null) debugPrint('QR Result: $result');
+        if (result != null) {
+          debugPrint('QR Result: $result');
+        }
       },
 
       // ===== Body =====
@@ -77,10 +79,8 @@ class TeacherHomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => EditProfilePage(
-                            userId: userId,
-                            role: 'teacher',
-                          ),
+                          builder: (_) =>
+                              EditProfilePage(userId: userId, role: 'teacher'),
                         ),
                       );
                     },
@@ -196,8 +196,11 @@ class TeacherHomePage extends StatelessWidget {
                                 builder: (_) => PendingApprovalsPage(
                                   userId: userId,
                                   loadList: (uid) async {
-                                    final res = await http.get(Uri.parse(
-                                        'https://yourserver.com/api/get_pending.php?teacher_id=$uid'));
+                                    final res = await http.get(
+                                      Uri.parse(
+                                        'https://192.168.0.111:8000/api/get_pending.php?teacher_id=$uid',
+                                      ),
+                                    );
                                     final data =
                                         jsonDecode(res.body) as List<dynamic>;
                                     return data
@@ -205,8 +208,11 @@ class TeacherHomePage extends StatelessWidget {
                                         .toList();
                                   },
                                   loadDetail: (reqId) async {
-                                    final res = await http.get(Uri.parse(
-                                        'https://yourserver.com/api/get_pending_detail.php?id=$reqId'));
+                                    final res = await http.get(
+                                      Uri.parse(
+                                        'https://192.168.0.111:8000/api/get_pending_detail.php?id=$reqId',
+                                      ),
+                                    );
                                     return jsonDecode(res.body);
                                   },
                                 ),
@@ -227,9 +233,7 @@ class TeacherHomePage extends StatelessWidget {
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => AttendanceHistoryPage(
-                                 
-                                ),
+                                builder: (_) => AttendanceHistoryPage(userId: userId),
                               ),
                             ),
                           ),
@@ -250,29 +254,38 @@ class TeacherHomePage extends StatelessWidget {
                                 builder: (_) => DashboardPage(
                                   userId: userId,
                                   loadCourses: (id) async {
-                                    final res = await http.get(Uri.parse(
-                                        'https://yourserver.com/api/get_courses.php?teacher_id=$id'));
+                                    final res = await http.get(
+                                      Uri.parse(
+                                        'https://192.168.0.111:8000/api/get_courses.php?teacher_id=$id',
+                                      ),
+                                    );
                                     final data =
                                         jsonDecode(res.body) as List<dynamic>;
                                     return data
-                                        .map((e) => CourseOption(
-                                              id: e['course_id'].toString(),
-                                              name:
-                                                  e['course_name'].toString(),
-                                            ))
+                                        .map(
+                                          (e) => CourseOption(
+                                            id: e['course_id'].toString(),
+                                            name: e['course_name'].toString(),
+                                          ),
+                                        )
                                         .toList();
                                   },
-                                  loadDashboard: ({
-                                    required userId,
-                                    required courseId,
-                                    required range,
-                                  }) async {
-                                    final res = await http.get(Uri.parse(
-                                        'https://yourserver.com/api/get_dashboard.php?teacher_id=$userId&course_id=$courseId&range=$range'));
-                                    final json =
-                                        jsonDecode(res.body) as Map<String, dynamic>;
-                                    return DashboardData.fromJson(json);
-                                  },
+                                  loadDashboard:
+                                      ({
+                                        required userId,
+                                        required courseId,
+                                        required range,
+                                      }) async {
+                                        final res = await http.get(
+                                          Uri.parse(
+                                            'https://192.168.0.111:8000/api/get_dashboard.php?teacher_id=$userId&course_id=$courseId&range=$range',
+                                          ),
+                                        );
+                                        final json =
+                                            jsonDecode(res.body)
+                                                as Map<String, dynamic>;
+                                        return DashboardData.fromJson(json);
+                                      },
                                 ),
                               ),
                             ),

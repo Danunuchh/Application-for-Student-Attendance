@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http; // ✅ ใช้ http
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
 import 'package:my_app/components/button.dart';
 import 'package:my_app/teacher/course_detail_page.dart';
-import 'teacher_qr_page.dart';
+import 'package:my_app/teacher/teacher_qr_page.dart';
 import 'package:my_app/teacher/subject_detail_page.dart';
-import 'package:my_app/teacher/qr_code_page.dart';
 
 // import 'course_detail_page.dart'; // มีอยู่แล้วในโปรเจกต์คุณ
 
@@ -61,15 +61,15 @@ class ApiService {
   }
 }
 
-class CoursesPage extends StatefulWidget {
+class QrCodePage extends StatefulWidget {
   final String userId;
-  const CoursesPage({super.key, required this.userId});
+  const QrCodePage({super.key, required this.userId});
 
   @override
-  State<CoursesPage> createState() => _CoursesPageState();
+  State<QrCodePage> createState() => _CoursesPageState();
 }
 
-class _CoursesPageState extends State<CoursesPage> {
+class _CoursesPageState extends State<QrCodePage> {
   final List<Map<String, dynamic>> _courses = [];
   bool _loading = false;
 
@@ -291,20 +291,11 @@ class _CoursesPageState extends State<CoursesPage> {
                               ),
                               actions: [
                                 TextButton(
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: const Color(0xFFF44336),
-                                  ),
                                   onPressed: () =>
                                       Navigator.pop(context, false),
                                   child: const Text('ยกเลิก'),
                                 ),
                                 ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF21BA0C),
-                                    foregroundColor: const Color(
-                                      0xFFFFFFFF,
-                                    ), // สีพื้นหลังปุ่ม
-                                  ),
                                   onPressed: () => Navigator.pop(context, true),
                                   child: const Text('ตกลง'),
                                 ),
@@ -370,6 +361,63 @@ class _CoursesPageState extends State<CoursesPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  Future<void> _sendQRCodeData(dynamic courseId) async {
+    setState(() => _loading = true);
+
+    final String courseIdStr = courseId?.toString() ?? '';
+    final now = DateTime.now();
+    final formattedDate =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+    final Map<String, dynamic> data = {
+      'course_id': courseIdStr,
+      'date': formattedDate,
+    };
+
+    debugPrint('=> Sending qrcode payload: $data');
+
+    try {
+      final res = await http.post(
+        Uri.parse('$apiBase/qrcode.php'),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode(data),
+      );
+
+      // ✅ check empty response
+      if (res.body.isEmpty) {
+        throw Exception('Server returned empty response');
+      }
+
+      // ✅ parse JSON safely
+      final Map<String, dynamic> json = jsonDecode(res.body);
+
+      debugPrint('<= Response json: $json');
+
+      final bool success = (json['success'] == true);
+      final String message =
+          (json['message'] ??
+                  (success ? 'ส่งข้อมูลสำเร็จ' : 'ส่งข้อมูลไม่สำเร็จ'))
+              .toString();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    } catch (e, st) {
+      debugPrint('❌ _sendQRCodeData failed: $e');
+      debugPrint(st.toString());
+
+      final String errMsg = e.toString();
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $errMsg')));
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   // ไปหน้า QR
   void _goToQR(Map<String, dynamic> c) {
     Navigator.push(
@@ -411,17 +459,7 @@ class _CoursesPageState extends State<CoursesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CustomAppBar(
-        title: 'คลาสเรียน',
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle, color: Color(0xFF88A8E8)),
-            onPressed: _openAddCourseSheet,
-            tooltip: 'เพิ่มวิชา',
-          ),
-          const SizedBox(width: 6),
-        ],
-      ),
+      appBar: CustomAppBar(title: 'คลาสเรียน'),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _courses.isEmpty
@@ -438,47 +476,36 @@ class _CoursesPageState extends State<CoursesPage> {
                   return TextBox(
                     title: c['name'],
                     subtitle: c['code'],
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CourseDetailPage(
-                            courseId: c['id'].toString(),
-                            courseName: c['name']?.toString(),
-                            courseCode: c['code']?.toString(),
-                          ),
-                        ),
-                      );
-                    },
+                    onTap: () {},
 
                     // 👇 ปรับตรงนี้
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // ปุ่มเพิ่มนักศึกษา
                         IconButton(
-                          icon: const Icon(
-                            Icons.person_add_alt_1,
-                            color: Color(0xFF9CA3AF),
+                          icon: SvgPicture.asset(
+                            'assets/qr_code.svg',
+                            width: 24,
+                            height: 24,
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFF9CA3AF),
+                              BlendMode.srcIn,
+                            ),
                           ),
                           onPressed: () {
-                            _showAddStudentSheet(
-                              c['id'], // courseId
+                            _sendQRCodeData(c['id']);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TeacherQRPage(
+                                  courseId: c['id'], // ส่ง courseId
+                                  courseName: c['name'], // ส่ง courseName
+                                ),
+                              ),
                             );
                           },
+                          tooltip: 'QR เช็กชื่อ',
                         ),
-
-                        const SizedBox(width: 4),
-
-                        // ปุ่ม QR เดิม
-                        // IconButton(
-                        //   icon: const Icon(
-                        //     Icons.qr_code_2,
-                        //     color: Color(0xFF9CA3AF),
-                        //   ),
-                        //   onPressed: () => _goToQR(c),
-                        //   tooltip: 'QR เช็กชื่อ',
-                        // ),
                       ],
                     ),
                   );

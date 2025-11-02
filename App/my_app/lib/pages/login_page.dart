@@ -86,8 +86,8 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final url = Uri.parse(
-        'http://10.0.2.2:8000/login_api.php',
-      ); //10.0.2.2 //192.168.0.100 //localhost
+        'http://192.168.0.111:8000/login_api.php',
+      ); //10.0.2.2 //192.168.0.111 //localhost
       final res = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},

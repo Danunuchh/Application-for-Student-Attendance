@@ -89,7 +89,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> _sendToServer() async {
     // NOTE: ถ้ารันบน Emulator ให้ใช้ http://10.0.2.2:8000
     // ถ้ารันบนมือถือจริง ให้ใช้ IP เครื่องคอม เช่น http://192.168.1.20:8000
-    final url = Uri.parse('http://10.0.2.2:8000/signup_api.php');
+    final url = Uri.parse('http://localhost:8000/signup_api.php');
     final data = {
       'prefix': _prefix == kOtherTitle ? _customTitleCtrl.text.trim() : _prefix,
       'full_name': _nameCtrl.text.trim(),

@@ -11,7 +11,7 @@ import 'package:my_app/student/student_courses_page.dart';
 import 'package:my_app/student/qr_scan_page.dart';
 import 'package:my_app/student/student_calendar_loader.dart';
 
-// ✅ ใช้หน้าแก้ไขโปรไฟล์เวอร์ชันนักศึกษา (ตามไฟล์/คลาสที่คุณมี)
+// ใช้หน้าแก้ไขโปรไฟล์เวอร์ชันนักศึกษา
 import 'package:my_app/pages/edit_profile_page.dart'
     show EditProfileStudentPage, EditProfilePage;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,7 +30,6 @@ class MenuItemData {
 }
 
 class StudentHomePage extends StatelessWidget {
-  // 🔧 non-nullable และ required
   final String userId;
   const StudentHomePage({super.key, required this.userId});
 
@@ -46,19 +45,14 @@ class StudentHomePage extends StatelessWidget {
     final topRow = items.sublist(0, 2);
     final bottomRow = items.sublist(2);
 
-    // ===== ใช้ CustomBottomBarWithFab ครอบ body ทั้งหมด =====
     return CustomBottomBarWithFab(
       role: 'student',
-      onHome: () {
-        // หน้า Home อยู่แล้ว — ไม่ต้องทำอะไร
-      },
+      onHome: () {},
       onLogout: () {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(
-            builder: (_) => const LoginPage(),
-          ), // หรือ SplashScreen()
-          (route) => false, // 🔹 ปิดทุกหน้าเก่า ไม่ให้ย้อนกลับได้
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+          (route) => false,
         );
       },
       onFabTap: () async {
@@ -70,13 +64,11 @@ class StudentHomePage extends StatelessWidget {
           debugPrint('QR Result: $result');
         }
       },
-
-      // ===== Body ด้านล่างคือเนื้อหาหน้าเดิมของคุณ =====
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔹 Top icons (โปรไฟล์)
+            // Top icons (โปรไฟล์)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Row(
@@ -85,7 +77,6 @@ class StudentHomePage extends StatelessWidget {
                   InkWell(
                     borderRadius: BorderRadius.circular(50),
                     onTap: () async {
-                      // ดึงจาก SharedPreferences ถ้าไม่มีจะ fallback เป็น userId ที่ได้จาก constructor
                       final prefs = await SharedPreferences.getInstance();
                       final savedId = prefs.getString('userId');
                       final uid = (savedId != null && savedId.isNotEmpty)
@@ -111,7 +102,6 @@ class StudentHomePage extends StatelessWidget {
                         ),
                       );
                     },
-
                     child: SvgPicture.asset(
                       "assets/profile.svg",
                       width: 34,
@@ -122,7 +112,7 @@ class StudentHomePage extends StatelessWidget {
               ),
             ),
 
-            // 🔹 โลโก้
+            // โลโก้
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Center(
@@ -143,7 +133,7 @@ class StudentHomePage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // 🔹 หัวข้อเมนู
+            // หัวข้อเมนู
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 26),
               child: Text(
@@ -157,17 +147,16 @@ class StudentHomePage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // 🔹 กล่องเมนู
+            // กล่องเมนู
             Expanded(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                   24,
                   8,
                   24,
-                  kBottomNavigationBarHeight /*≈56*/ + 0, // รวมเผื่อ FAB
+                  kBottomNavigationBarHeight,
                 ),
                 child: Column(
-                  // mainAxisAlignment: MainAxisAlignment.spaceEvenly, // ✅ กระจายพื้นที่เท่ากัน
                   children: [
                     // แถวบน
                     Row(
@@ -179,15 +168,12 @@ class StudentHomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: Colors.black,
                             textColor: Colors.black,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const StudentCalendarLoader(), // โหลดปฏิทินจาก API
-                                ),
-                              );
-                            },
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const StudentCalendarLoader(),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -223,10 +209,8 @@ class StudentHomePage extends StatelessWidget {
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => PendingApprovalsPage(
-                                  approvals:
-                                      const [], // ใส่รายการจริงได้ภายหลัง
-                                ),
+                                builder: (_) =>
+                                    PendingApprovalsPage(approvals: const []),
                               ),
                             ),
                           ),
@@ -239,14 +223,18 @@ class StudentHomePage extends StatelessWidget {
                             iconBg: const Color(0xFFCDE0F9),
                             iconColor: Colors.black,
                             textColor: Colors.black,
-                            onTap: () {
-                              final List<Map<String, String>> myCourses =
-                                  []; // โหลดจาก backend ได้
+                            onTap: () async {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              final currentUserId =
+                                  prefs.getString('userId') ?? userId;
+
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      AttendanceHistoryPage(courses: myCourses),
+                                  builder: (_) => AttendanceHistoryPage(
+                                    userId: currentUserId,
+                                  ),
                                 ),
                               );
                             },

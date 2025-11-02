@@ -1,9 +1,20 @@
-// lib/student/student_attendancedetail_page.dart
+// lib/teacher/attendancedetail_page.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-/// โมเดลบันทึกการเข้าเรียน
+class _CalTheme {
+  static const primary = Color(0xFF4A86E8); // ฟ้าเข้ม
+  static const ink = Color(0xFF1F2937); // ตัวอักษรเข้ม
+  static const sub = Color(0xFF9CA3AF); // สีตัวอักษรรอง
+  static const border = Color(0xFFCFE0FF); // ขอบฟ้าอ่อน
+  static const cardShadow = Color(0x0D000000); // Shadow นุ่ม
+  static const todayBg = Color(0xFFDDE8F8); // Today background ฟ้าอ่อน
+  static const selectedBg = Color(0xFF4A86E8); // Selected day
+}
+
 class AttendanceRecord {
   final DateTime date;
   final String studentId;
@@ -20,32 +31,37 @@ class AttendanceRecord {
   });
 
   factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
+    // ใช้ attendance_time ตัดสิน present
+    final time = json['attendance_time'];
+    final presentBool = time != null && time.toString().isNotEmpty;
+
+    // แปลงวัน
+    DateTime parsedDate;
+    final d = json['day'];
+    if (d is String) {
+      parsedDate = DateTime.tryParse(d) ?? DateTime.now();
+    } else {
+      parsedDate = DateTime.now();
+    }
+
     return AttendanceRecord(
-      date: DateTime.parse(json['date'] as String),
-      studentId: json['studentId'] as String,
-      studentName: json['studentName'] as String,
-      present: json['present'] as bool,
-      checkTime: json['checkTime'] as String?,
+      date: parsedDate,
+      studentId: (json['student_id'] ?? '') as String,
+      studentName: (json['student_name'] ?? '') as String,
+      present: presentBool,
+      checkTime: time?.toString(),
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        'date': date.toIso8601String(),
-        'studentId': studentId,
-        'studentName': studentName,
-        'present': present,
-        'checkTime': checkTime,
-      };
 }
 
 class AttendanceDetailPage extends StatefulWidget {
   final String courseName;
-  final List<AttendanceRecord> records; // ✅ รับรายการจริงจากภายนอก
+  final String courseId;
 
-  const AttendanceDetailPage({
+  AttendanceDetailPage({
     super.key,
     required this.courseName,
-    required this.records,
+    required this.courseId,
   });
 
   @override
@@ -56,37 +72,15 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  late Map<DateTime, List<AttendanceRecord>> _byDay;
-
-  @override
-  void initState() {
-    super.initState();
-    _byDay = _groupByDay(widget.records);
-    _selectedDay = DateTime(_focusedDay.year, _focusedDay.month, _focusedDay.day);
-  }
-
-  Map<DateTime, List<AttendanceRecord>> _groupByDay(List<AttendanceRecord> list) {
-    final map = <DateTime, List<AttendanceRecord>>{};
-    for (final r in list) {
-      final k = DateTime(r.date.year, r.date.month, r.date.day);
-      map.putIfAbsent(k, () => []).add(r);
-    }
-    return map;
-  }
-
-  List<AttendanceRecord> _recordsOf(DateTime day) {
-    final k = DateTime(day.year, day.month, day.day);
-    return _byDay[k] ?? const [];
-  }
+  bool _loading = false;
+  String? _errorMessage;
+  List<AttendanceRecord> _records = [];
 
   @override
   Widget build(BuildContext context) {
-    const outline = Color(0xFFCDE0F9);
-    const primary = Color(0xFF4A86E8);
-
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const CustomAppBar(title: 'ประวัติการเข้าเรียน'),
+      appBar: CustomAppBar(title: 'ประวัติการเข้าเรียน'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
@@ -95,48 +89,16 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 widget.courseName,
-                style: const TextStyle(fontSize: 16, color: Colors.black54),
+                style: const TextStyle(fontSize: 16, color: Color(0xFF1F2937)),
               ),
             ),
           ),
 
-          // Header เดือน
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                splashRadius: 20,
-                icon: const Icon(Icons.chevron_left_rounded),
-                onPressed: () {
-                  setState(() {
-                    _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1, 1);
-                  });
-                },
-              ),
-              Text(
-                _monthName(_focusedDay.month),
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-              ),
-              IconButton(
-                splashRadius: 20,
-                icon: const Icon(Icons.chevron_right_rounded),
-                onPressed: () {
-                  setState(() {
-                    _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1, 1);
-                  });
-                },
-              ),
-            ],
-          ),
-
-          // ===== ปฏิทิน =====
+          // ===== Calendar =====
           Container(
-            decoration: BoxDecoration(  //ตกแต่งปฏิทิน
+            decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(
-                color: const Color(0xFFA6CAFA),
-                width: 1.5,
-              ),
+              border: Border.all(color: _CalTheme.border, width: 1.5),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -147,142 +109,191 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                 ),
               ],
             ),
-            padding: const EdgeInsets.all(6),
-            child: TableCalendar<AttendanceRecord>(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: TableCalendar(
               firstDay: DateTime.utc(2018, 1, 1),
               lastDay: DateTime.utc(2100, 12, 31),
               focusedDay: _focusedDay,
-              headerVisible: false,
-              calendarFormat: CalendarFormat.month,
-              startingDayOfWeek: StartingDayOfWeek.sunday,
-              selectedDayPredicate: (d) => _selectedDay != null && isSameDay(d, _selectedDay),
-              onPageChanged: (f) => setState(() => _focusedDay = f),
-              onDaySelected: (sel, foc) => setState(() {
-                _selectedDay = sel;
-                _focusedDay = foc;
-              }),
-              availableGestures: AvailableGestures.horizontalSwipe,
-              eventLoader: (d) => _recordsOf(d),
-
-              // custom cell (ไม่มีเงาสี่เหลี่ยม)
-              calendarBuilders: CalendarBuilders(
-                defaultBuilder: (context, day, _) => _buildDayCell(day, Colors.black87),
-                outsideBuilder: (context, day, _) => _buildDayCell(day, Colors.black38),
-                todayBuilder: (context, day, _) =>
-                    _buildDayCell(day, Colors.black87, borderColor: outline),
-                selectedBuilder: (context, day, _) =>
-                    _buildDayCell(day, Colors.white, bgColor: primary),
-                markerBuilder: (context, day, events) {
-                  if (events.isEmpty) return const SizedBox.shrink();
-                  // จุดบอกว่ามีข้อมูลเช็คชื่อ
-                  return Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF4A86E8),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  );
-                },
+              headerVisible: true,
+              selectedDayPredicate: (d) =>
+                  _selectedDay != null && isSameDay(d, _selectedDay),
+              onDaySelected: (selectedDay, focusedDay) async {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                  _records = [];
+                  _errorMessage = null;
+                });
+                await _fetchAttendanceForDay(selectedDay);
+              },
+              calendarStyle: CalendarStyle(
+                todayDecoration: BoxDecoration(
+                  color: _CalTheme.todayBg,
+                  border: Border.all(color: _CalTheme.primary, width: 1.5),
+                  shape: BoxShape.circle,
+                ),
+                selectedDecoration: BoxDecoration(
+                  color: _CalTheme.selectedBg,
+                  shape: BoxShape.circle,
+                ),
+                markerDecoration: BoxDecoration(
+                  color: _CalTheme.primary,
+                  shape: BoxShape.circle,
+                ),
               ),
-
               daysOfWeekStyle: const DaysOfWeekStyle(
-                weekendStyle: TextStyle(color: Colors.black87),
-                weekdayStyle: TextStyle(color: Colors.black87),
+                weekdayStyle: TextStyle(fontSize: 12, color: _CalTheme.sub),
+                weekendStyle: TextStyle(fontSize: 12, color: _CalTheme.sub),
+              ),
+              headerStyle: const HeaderStyle(
+                titleCentered: true,
+                formatButtonVisible: false,
               ),
             ),
           ),
 
           const SizedBox(height: 18),
-          ..._buildCards(day: _selectedDay ?? _focusedDay, outline: outline),
+
+          if (_loading) const Center(child: CircularProgressIndicator()),
+
+          if (_errorMessage != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                _errorMessage!,
+                style: TextStyle(color: Colors.red.shade600),
+              ),
+            ),
+
+          ..._buildCards(),
         ],
       ),
     );
   }
 
-  // === cell แบบวงกลม ===
-  Widget _buildDayCell(
-    DateTime day,
-    Color textColor, {
-    Color? bgColor,
-    Color? borderColor,
-  }) {
-    final isCircle = bgColor != null || borderColor != null;
-    return Center(
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: isCircle
-            ? BoxDecoration(
-                color: bgColor,
-                shape: BoxShape.circle,
-                border: borderColor != null ? Border.all(color: borderColor, width: 1.5) : null,
-              )
-            : const BoxDecoration(),
-        alignment: Alignment.center,
-        child: Text(
-          '${day.day}',
-          style: TextStyle(color: textColor, fontWeight: FontWeight.w500, fontSize: 15),
-        ),
-      ),
-    );
+  Future<void> _fetchAttendanceForDay(DateTime day) async {
+    setState(() {
+      _loading = true;
+      _errorMessage = null;
+    });
+
+    final dateStr =
+        '${day.year.toString().padLeft(4, '0')}-'
+        '${day.month.toString().padLeft(2, '0')}-'
+        '${day.day.toString().padLeft(2, '0')}';
+
+    final payload = {'course_id': widget.courseId, 'date': dateStr, 'type': 'teacher'};
+
+    try {
+      final uri = Uri.parse('http://192.168.0.111:8000/get_attandance.php');
+      final resp = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: payload,
+      );
+
+      if (resp.statusCode != 200) {
+        throw Exception('HTTP ${resp.statusCode}');
+      }
+
+      final data = json.decode(resp.body);
+      List<AttendanceRecord> loaded = [];
+
+      if (data is List) {
+        loaded = data
+            .map((e) => AttendanceRecord.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      } else if (data is Map && data['data'] is List) {
+        loaded = (data['data'] as List)
+            .map((e) => AttendanceRecord.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+
+      setState(() => _records = loaded);
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'ไม่สามารถโหลดข้อมูลได้: $e';
+      });
+    } finally {
+      setState(() => _loading = false);
+    }
   }
 
-  List<Widget> _buildCards({required DateTime day, required Color outline}) {
-    final records = _recordsOf(day);
-    if (records.isEmpty) {
+  List<Widget> _buildCards() {
+    final Color presentColor = const Color(0xFF34D399); // เขียว
+    final Color absentColor = const Color(0xFFF87171); // แดง
+    final Color cardBorder = _CalTheme.border;
+    final Color cardShadow = _CalTheme.cardShadow;
+
+    if (_records.isEmpty) {
       return [
         const SizedBox(height: 8),
         Center(
-          child: Text('ไม่มีข้อมูลการเช็คชื่อในวันนี้', style: TextStyle(color: Colors.grey.shade600)),
+          child: Text(
+            'ไม่มีข้อมูลการเช็คชื่อในวันนี้',
+            style: TextStyle(color: _CalTheme.sub, fontSize: 14),
+          ),
         ),
       ];
     }
-    return records.map((r) {
+
+    return _records.map((r) {
       return Padding(
-        padding: const EdgeInsets.only(bottom: 14),
-        child: Material(
-          color: Colors.white,
-          elevation: 2,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: outline, width: 1.2),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(color: Color(0x14000000), blurRadius: 8, offset: Offset(0, 3)),
-              ],
-            ),
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Card(
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: cardBorder, width: 1),
+          ),
+          shadowColor: cardShadow,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ซ้าย: วันที่ + รายชื่อนักศึกษา
+                // ซ้าย: รหัส + ชื่อ
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(_thaiShortDate(r.date),
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 6),
-                      Text('${r.studentId} ${r.studentName}',
-                          style: const TextStyle(fontSize: 14.5)),
+                      Text(
+                        r.studentId,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: _CalTheme.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        r.studentName,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade800,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                // ขวา: เวลา หรือ “ไม่ได้เช็คชื่อ”
-                Text(
-                  r.present ? (r.checkTime ?? '') : 'ไม่ได้เช็คชื่อ',
-                  style: TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w600,
-                    color: r.present ? Colors.green : Colors.red,
+                // ขวา: เวลาเช็คชื่อ
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: r.checkTime != null
+                        ? presentColor.withOpacity(0.1)
+                        : absentColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    r.checkTime ?? 'ไม่ได้เช็คชื่อ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: r.checkTime != null ? presentColor : absentColor,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],
@@ -291,32 +302,5 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
         ),
       );
     }).toList();
-  }
-
-  String _monthName(int m) {
-    const en = [
-      '',
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return en[m];
-  }
-
-  String _thaiShortDate(DateTime d) {
-    final dd = d.day.toString().padLeft(2, '0');
-    final mm = d.month.toString().padLeft(2, '0');
-    final buddhist = d.year + 543;
-    final yy = (buddhist % 100).toString().padLeft(2, '0');
-    return '$dd/$mm/$yy';
   }
 }

@@ -5,6 +5,55 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:my_app/components/button.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:http/http.dart' as http; // ✅ ใช้ http
+
+const String apiBase =
+    //'http://10.0.2.2:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
+    'http://192.168.0.111:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
+
+class ApiService {
+  static Map<String, String> get _jsonHeaders => {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json; charset=utf-8',
+  };
+
+  static Future<Map<String, dynamic>> getJson(
+    String path, {
+    Map<String, String>? query,
+  }) async {
+    final uri = Uri.parse('$apiBase/$path').replace(queryParameters: query);
+    final res = await http.get(uri, headers: _jsonHeaders);
+    if (res.statusCode != 200) {
+      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> postJson(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    final uri = Uri.parse('$apiBase/$path');
+    final res = await http.post(
+      uri,
+      headers: _jsonHeaders,
+      body: jsonEncode(body),
+    );
+    if (res.statusCode != 200) {
+      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  // ✅ ย้ายเมธอดนี้เข้ามาในคลาส และยังเป็น static ได้
+  static Future<Map<String, dynamic>> addStudentToCourse({
+    required String studentId,
+    required int courseId,
+  }) async {
+    final body = {'student_id': studentId, 'course_id': courseId};
+    return await postJson('courses_api.php?type=add_student', body);
+  }
+}
 
 class TeacherQRPage extends StatefulWidget {
   final int courseId;
@@ -32,7 +81,7 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
   @override
   void initState() {
     super.initState();
-    _startSessionMock();
+    _fetchQRCode();
   }
 
   @override
@@ -41,18 +90,130 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
     super.dispose();
   }
 
-  Future<void> _startSessionMock() async {
+  static final Map<String, Future<Map<String, dynamic>?>> _inflightRequests =
+      {};
+
+  /// ส่งข้อมูลไปเซิร์ฟเวอร์เพื่อขอ qr_code (เดิม)
+  Future<Map<String, dynamic>?> _sendQRCodeData(dynamic courseId) async {
+    // ถ้ามี token ที่ยังไม่หมดอายุ ให้ใช้ token เดิมเลย (ไม่ยิง request)
+    if (_token != null && _expiresAt != null) {
+      final now = DateTime.now();
+      if (_expiresAt!.isAfter(now)) {
+        debugPrint('⏱ Using cached token (not calling API)');
+        // _token เป็น jsonEncode ของ {'qr_code_id':..., 'qr_password':...}
+        try {
+          final cached = jsonDecode(_token!);
+          if (cached is Map<String, dynamic>) {
+            // จำลอง response shape ที่ API คืน (อย่างน้อยต้องมี qr_code_id + qr_password)
+            return {
+              'success': true,
+              'qr_code_id': cached['qr_code_id'],
+              'qr_password': cached['qr_password'],
+            };
+          }
+        } catch (_) {
+          // ถ้า decode ไม่ได้ ให้ไปเรียก API ปกติ
+          debugPrint('⚠️ Cached token decode failed, will call API');
+        }
+      } else {
+        debugPrint('⌛ Cached token expired, will call API');
+      }
+    }
+
     setState(() => _loading = true);
-    await Future.delayed(const Duration(milliseconds: 300));
-    _applyNewToken(_randomToken());
-    setState(() => _loading = false);
+
+    final String courseIdStr = courseId?.toString() ?? '';
+
+    final now = DateTime.now();
+    final formattedDate =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+    final Map<String, dynamic> data = {
+      'course_id': courseIdStr,
+      'date': formattedDate,
+    };
+
+    try {
+      final json = await ApiService.postJson('qrcode.php', data);
+
+      if (json['success'] == true) {
+        return json;
+      } else {
+        final String msg = json['message'] ?? 'ส่งข้อมูลไม่สำเร็จ';
+        if (mounted)
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(msg)));
+        return null;
+      }
+    } catch (e) {
+      debugPrint('❌ _sendQRCodeData failed: $e');
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ')),
+        );
+      return null;
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
-  Future<void> _rotateMock() async {
-    setState(() => _loading = true);
-    await Future.delayed(const Duration(milliseconds: 250));
-    _applyNewToken(_randomToken());
-    setState(() => _loading = false);
+  /// Wrapper ที่ป้องกันการเรียก API พร้อมกันซ้ำๆ (key = courseId|date)
+  Future<Map<String, dynamic>?> _sendQRCodeDataSafe(dynamic courseId) {
+    final String courseIdStr = courseId?.toString() ?? '';
+
+    final now = DateTime.now();
+    final formattedDate =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+    final key = '$courseIdStr|$formattedDate';
+
+    // ถ้ามี request อยู่ ให้ reuse future นั้น
+    if (_inflightRequests.containsKey(key)) {
+      debugPrint('⏳ Reusing inflight request for $key');
+      return _inflightRequests[key]!;
+    }
+
+    // ถ้า cached token ยัง valid, _sendQRCodeData จะ return cached result โดยไม่ยิง API
+    final future = _sendQRCodeData(courseId).whenComplete(() {
+      _inflightRequests.remove(key);
+      debugPrint('🧹 Inflight request removed for $key');
+    });
+
+    _inflightRequests[key] = future;
+    debugPrint('🔒 Added inflight request for $key');
+
+    return future;
+  }
+
+  /// ปรับ _fetchQRCode ให้ใช้ _sendQRCodeDataSafe และไม่สร้างซ้ำเมื่อมี token ที่ยังใช้งานได้
+  Future<void> _fetchQRCode() async {
+    // ถ้ามี token และยังไม่หมดอายุ ให้ใช้เลยโดยไม่เรียก API
+    if (_token != null &&
+        _expiresAt != null &&
+        _expiresAt!.isAfter(DateTime.now())) {
+      debugPrint('✅ Token still valid — using local token, no API call');
+      // รีสตาร์ท ticker เผื่อยังไม่ทำ
+      _restartTicker();
+      return;
+    }
+
+    if (mounted) setState(() => _loading = true);
+
+    final response = await _sendQRCodeDataSafe(widget.courseId);
+
+    if (response != null && response['success'] == true) {
+      // สร้าง QR จาก qr_code_id + qr_password
+      final qrData = {
+        'qr_code_id': response['qr_code_id'],
+        'qr_password': response['qr_password'],
+      };
+      _token = jsonEncode(qrData);
+      _expiresAt = DateTime.now().add(const Duration(minutes: 3));
+      _restartTicker();
+    }
+
+    if (mounted) setState(() => _loading = false);
   }
 
   String _randomToken() {
@@ -164,7 +325,7 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
                       const SizedBox(height: 14),
 
                       // เวลานับถอยหลัง
-                      if (_expiresAt != null)
+                      /*if (_expiresAt != null)
                         Wrap(
                           alignment: WrapAlignment.center,
                           crossAxisAlignment: WrapCrossAlignment.center,
@@ -185,17 +346,17 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
                             ),
                           ],
                         ),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 30),*/
 
                       // ปุ่ม Refresh
-                      CustomButton(
+                      /*CustomButton(
                         text: 'Refresh QR code',
                         loading: _loading,
-                        onPressed: _rotateMock,
+                        onPressed: _fetchQRCode,
                         backgroundColor: const Color(0xFF84A9EA),
                         textColor: Colors.white,
-                        fontSize: 16, // ฟังก์ชันของคุณ
-                      ),
+                        fontSize: 16,
+                      ),*/
                     ],
                   ),
           ),

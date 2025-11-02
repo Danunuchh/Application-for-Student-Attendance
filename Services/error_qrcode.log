@@ -1,0 +1,6 @@
+[02-Nov-2025 04:22:03 UTC] DB error in qrcode.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'field list'
+[02-Nov-2025 04:29:30 UTC] DB error in qrcode.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'field list'
+[02-Nov-2025 04:33:00 UTC] DB error in qrcode.php: SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+[02-Nov-2025 04:33:12 UTC] DB error in qrcode.php: SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+[02-Nov-2025 04:34:29 UTC] DB error in qrcode.php: SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+[02-Nov-2025 04:39:20 UTC] DB error in qrcode.php: SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens

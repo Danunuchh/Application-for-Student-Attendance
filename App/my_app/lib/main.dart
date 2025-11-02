@@ -93,8 +93,14 @@ class MyApp extends StatelessWidget {
           }
           return CoursesPage(userId: userId);
         },
-        '/teacher_attendancehistory': (context) =>
-            const AttendanceHistoryPage(),
+        '/teacher_attendancehistory': (context) {
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
+          final userId = args?['userId'] as String?;
+          if (userId == null || userId.isEmpty) return const LoginPage();
+          return AttendanceHistoryPage(userId: userId);
+        },
 
         // 🔹 Admin Pages
         '/admin_home': (context) => const AdminHomePage(),
@@ -138,4 +144,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
- 

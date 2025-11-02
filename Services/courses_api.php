@@ -23,10 +23,50 @@ function json_err($code, $msg, $extra = [])
 $type = $_GET['type'] ?? '';
 
 try {
+
+    if ($type === 'show_student') {
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            json_err(405, 'Method not allowed');
+        }
+
+        $userIdRaw = $_GET['user_id'] ?? '';
+        if ($userIdRaw === '') {
+            json_err(400, 'missing user_id');
+        }
+        $userId = (int)$userIdRaw;
+
+        $sql = "
+            SELECT c.course_id AS id,
+            c.course_name AS name,
+            c.code,
+            c.credit,
+            c.user_id,
+            c.day_id,
+            c.start_time,
+            c.end_time,
+            c.times,
+            c.class AS room,
+            c.max_leave AS sessions,
+            c.teacher_name,
+            c.section,
+            c.created_at
+        FROM `schedule` s
+        LEFT JOIN course c ON c.course_id = s.course_id
+        LEFT JOIN schedule_detail d ON s.schedule_id = d.schedule_id
+        WHERE d.user_id = :uid
+            
+        ";
+        $st = $pdo->prepare($sql);
+        $st->bindValue(':uid', $userId, PDO::PARAM_INT);
+        $st->execute();
+        $rows = $st->fetchAll();
+
+        json_ok(['success' => true, 'data' => $rows]);
+    }
     // ----------------------------------------------------
     // GET /courses.php?type=show&user_id=17
     // ----------------------------------------------------
-    if ($type === 'show') {
+    else if ($type === 'show') {
         if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
             json_err(405, 'Method not allowed');
         }
@@ -205,18 +245,18 @@ try {
     } // GET /courses_api.php?type=detail&course_id=123
     // GET /courses_api.php?type=detail&course_id=123
     // GET /courses_api.php?type=detail&course_id=123
-else if ($type === 'detail') {
-    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-        json_err(405, 'Method not allowed');
-    }
+    else if ($type === 'detail') {
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            json_err(405, 'Method not allowed');
+        }
 
-    $course_id = filter_input(INPUT_GET, 'course_id', FILTER_VALIDATE_INT);
-    if (!$course_id) {
-        json_err(400, 'Invalid course_id');
-    }
+        $course_id = filter_input(INPUT_GET, 'course_id', FILTER_VALIDATE_INT);
+        if (!$course_id) {
+            json_err(400, 'Invalid course_id');
+        }
 
-    // ดึงรายละเอียดรายวิชา + JOIN ตาราง day เพื่อได้ชื่อวัน
-    $sql = "
+        // ดึงรายละเอียดรายวิชา + JOIN ตาราง day เพื่อได้ชื่อวัน
+        $sql = "
         SELECT 
             c.course_id                              AS id,
             c.course_name                             AS name,
@@ -240,17 +280,17 @@ else if ($type === 'detail') {
         LIMIT 1
     ";
 
-    $st = $pdo->prepare($sql);
-    $st->execute([':id' => $course_id]);
-    $course = $st->fetch(PDO::FETCH_ASSOC);
+        $st = $pdo->prepare($sql);
+        $st->execute([':id' => $course_id]);
+        $course = $st->fetch(PDO::FETCH_ASSOC);
 
-    if (!$course) {
-        json_err(404, 'Course not found');
-    }
+        if (!$course) {
+            json_err(404, 'Course not found');
+        }
 
-    // ดึงรายชื่อนักศึกษาในคลาส (ปรับชื่อตารางให้ตรงของคุณ)
-    // ตัวอย่างสมมติ: course_student(course_id, user_id), students(user_id, student_id, full_name)
-    $sqlStu = "
+        // ดึงรายชื่อนักศึกษาในคลาส (ปรับชื่อตารางให้ตรงของคุณ)
+        // ตัวอย่างสมมติ: course_student(course_id, user_id), students(user_id, student_id, full_name)
+        $sqlStu = "
     SELECT 
         d.user_id, 
         d.user_name AS name, 
@@ -259,17 +299,16 @@ else if ($type === 'detail') {
     INNER JOIN schedule s ON s.schedule_id = d.schedule_id
     WHERE s.course_id = :course_id
 ";
-$st2 = $pdo->prepare($sqlStu);
-$st2->execute([':course_id' => $course_id]); // ✅ ชื่อพารามิเตอร์ตรงกัน
-$students = $st2->fetchAll(PDO::FETCH_ASSOC);
+        $st2 = $pdo->prepare($sqlStu);
+        $st2->execute([':course_id' => $course_id]); // ✅ ชื่อพารามิเตอร์ตรงกัน
+        $students = $st2->fetchAll(PDO::FETCH_ASSOC);
 
 
-    json_ok([
-        'course'   => $course,
-        'students' => $students,
-    ]);
-}
- else {
+        json_ok([
+            'course'   => $course,
+            'students' => $students,
+        ]);
+    } else {
         json_err(400, 'unknown type');
     }
 } catch (Throwable $e) {

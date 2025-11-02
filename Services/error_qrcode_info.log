@@ -1,0 +1,9 @@
+[01-Nov-2025 19:35:23 UTC] DB error in qrcode_info.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.time' in 'field list'
+[01-Nov-2025 19:39:44 UTC] DB error in qrcode_info.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.time' in 'field list'
+[01-Nov-2025 19:50:19 UTC] DB error in qrcode_info.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.time' in 'field list'
+[01-Nov-2025 19:50:58 UTC] DB error in qrcode_info.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.time' in 'field list'
+[02-Nov-2025 04:04:03 UTC] QR_ID: 64, User_ID: , Date: 
+[02-Nov-2025 04:42:19 UTC] DB error in qrcode_info.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.time' in 'field list'
+[02-Nov-2025 04:44:29 UTC] DB error in qrcode_info.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.time' in 'field list'
+[02-Nov-2025 04:46:36 UTC] DB error in qrcode_info.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.time' in 'field list'
+[02-Nov-2025 04:48:37 UTC] DB error in qrcode_info.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.time' in 'field list'
