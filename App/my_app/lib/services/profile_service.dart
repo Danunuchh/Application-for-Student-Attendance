@@ -1,6 +1,5 @@
 // lib/services/profile_service.dart
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:my_app/models/user_profile.dart';
 import 'package:my_app/services/api_service.dart';
 
@@ -22,7 +21,7 @@ class ProfileService {
     // สร้าง URL พร้อม query
     final baseUri = Uri.parse('http://localhost:8000/profile_api.php');
     final uri = baseUri.replace(
-      queryParameters: {'type': 'show', 'user_id': userId, 'role': role}
+      queryParameters: {'type': 'show', 'user_id': userId, 'role': role},
     );
 
     // รวม headers (เพิ่ม Accept: application/json)

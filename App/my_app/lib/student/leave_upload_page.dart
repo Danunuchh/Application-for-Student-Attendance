@@ -84,14 +84,16 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
             datePickerTheme: const DatePickerThemeData(
               headerBackgroundColor: Color(0xFF4A86E8), // หัวปฏิทิน (เดือน/ปี)
               headerForegroundColor: Colors.white, // ตัวหนังสือบนหัว
-              todayForegroundColor: MaterialStatePropertyAll(Color(0xFF4A86E8)),
-              todayBackgroundColor: MaterialStatePropertyAll(Color(0x204A86E8)),
+              todayForegroundColor: WidgetStatePropertyAll(Color(0xFF4A86E8)),
+              todayBackgroundColor: WidgetStatePropertyAll(Color(0x204A86E8)),
               rangePickerBackgroundColor: Color(0xFFFFFFFF),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(16)),
               ),
             ),
-            dialogBackgroundColor: const Color(0xFFFFFFFF),
+            dialogTheme: DialogThemeData(
+              backgroundColor: const Color(0xFFFFFFFF),
+            ),
           ),
           child: child!,
         );
@@ -205,7 +207,12 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
                     text: _picked == null ? 'เลือกไฟล์' : 'เปลี่ยนไฟล์',
                     onPressed: _pickFile,
                     backgroundColor: const Color(0xFFA6CAFA), // สีพื้นเดิม
-                    textColor: const Color.fromARGB(255, 0, 0, 0), // สีข้อความเดิม
+                    textColor: const Color.fromARGB(
+                      255,
+                      0,
+                      0,
+                      0,
+                    ), // สีข้อความเดิม
                     fontSize: 15,
                   ),
                 ],
@@ -347,7 +354,9 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
               child: CustomButton(
                 text: _submitting ? 'กำลังส่ง…' : 'ยืนยัน',
                 onPressed: _submitting ? null : _submit,
-                backgroundColor: const Color(0xFF21BA0C), // ✅ ใช้สีเดียวกับปุ่มเดิม
+                backgroundColor: const Color(
+                  0xFF21BA0C,
+                ), // ✅ ใช้สีเดียวกับปุ่มเดิม
                 textColor: const Color.fromARGB(255, 255, 255, 255),
                 fontSize: 15,
               ),

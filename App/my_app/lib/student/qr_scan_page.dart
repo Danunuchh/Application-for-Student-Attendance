@@ -6,7 +6,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:my_app/config.dart'; 
+import 'package:my_app/config.dart';
 
 class Student {
   final String userId;
@@ -39,7 +39,7 @@ Future<String?> getUserId() async {
   return userId;
 }
 
-const String apiBase = '${baseUrl}';
+const String apiBase = baseUrl;
 
 class ApiService {
   static Map<String, String> get _jsonHeaders => {

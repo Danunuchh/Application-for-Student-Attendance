@@ -22,7 +22,7 @@ class StudentCourseReportPage extends StatefulWidget {
 class _StudentCourseReportPageState extends State<StudentCourseReportPage> {
   // โทนสีกราฟ
   static const Color kLightBlue = Color(0xFFABCDFB); // ฟ้าอ่อน
-  static const Color kLightRed = Color(0xFFE06E6E);  // แดงอ่อน
+  static const Color kLightRed = Color(0xFFE06E6E); // แดงอ่อน
   static const Color kInk = Color(0xFF1F2937);
 
   // ตัวเลือกช่วงเวลา
@@ -108,9 +108,11 @@ class _StudentCourseReportPageState extends State<StudentCourseReportPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('เกิดข้อผิดพลาด: ${snap.error}',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.red.shade700)),
+                  Text(
+                    'เกิดข้อผิดพลาด: ${snap.error}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.red.shade700),
+                  ),
                   const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: _reload,
@@ -290,7 +292,8 @@ class CourseReport {
       attendShare = (json['attend_share'] ?? 0).toDouble();
       absentShare = (json['absent_share'] ?? 0).toDouble();
     } else {
-      final int present = (json['present_count'] ?? json['present_sessions'] ?? 0) as int;
+      final int present =
+          (json['present_count'] ?? json['present_sessions'] ?? 0) as int;
       final int absent = (json['absent_count_total'] ?? 0) as int;
       final int total = (json['total_sessions'] ?? (present + absent)) as int;
       if (total > 0) {
@@ -335,7 +338,7 @@ class _DropdownBox<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String _labelOf(T v) => itemBuilder != null ? itemBuilder!(v) : v.toString();
+    String labelOf(T v) => itemBuilder != null ? itemBuilder!(v) : v.toString();
 
     return Container(
       height: 44,
@@ -352,10 +355,9 @@ class _DropdownBox<T> extends StatelessWidget {
           icon: const Icon(Icons.keyboard_arrow_down_rounded),
           dropdownColor: Colors.white,
           items: items
-              .map((e) => DropdownMenuItem<T>(
-                    value: e,
-                    child: Text(_labelOf(e)),
-                  ))
+              .map(
+                (e) => DropdownMenuItem<T>(value: e, child: Text(labelOf(e))),
+              )
               .toList(),
           onChanged: onChanged,
         ),

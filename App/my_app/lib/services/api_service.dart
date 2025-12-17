@@ -14,7 +14,9 @@ class ApiMock {
     return {
       'sessionId': now.millisecondsSinceEpoch % 100000, // mock session id
       'token': 'mock_${courseId}_${now.millisecondsSinceEpoch}',
-      'expiresAt': now.add(const Duration(minutes: 2)).toIso8601String(), // หมดอายุ 2 นาที
+      'expiresAt': now
+          .add(const Duration(minutes: 2))
+          .toIso8601String(), // หมดอายุ 2 นาที
     };
   }
 
@@ -33,7 +35,8 @@ class ApiMock {
 /// REAL API CLIENT (เชื่อมต่อจริง)
 /// ==========================
 class ApiService {
-  static const String baseUrl = 'https://localhost:8000/api'; // ✅ ใส่ endpoint จริง
+  static const String baseUrl = 'http://localhost:8000/api';
+  //'https://localhost:8000/api'; // ✅ ใส่ endpoint จริง
 
   /// ดึง token ที่บันทึกไว้ตอน login
   static Future<String?> getToken() async {

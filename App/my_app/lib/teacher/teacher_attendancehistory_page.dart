@@ -4,20 +4,17 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http; // ✅ ใช้ http
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
-import 'package:my_app/components/button.dart';
 import 'package:my_app/teacher/attendancedetail_page.dart';
 import 'teacher_qr_page.dart';
-import 'package:my_app/teacher/subject_detail_page.dart';
-import 'package:my_app/teacher/qr_code_page.dart';
 
-import 'package:my_app/config.dart'; 
+import 'package:my_app/config.dart';
 
 // import 'course_detail_page.dart'; // มีอยู่แล้วในโปรเจกต์คุณ
 
 // ---------- ปรับตามเครื่องคุณ ----------
 const String apiBase =
     //'http://10.0.2.2:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
-    '${baseUrl}'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
+    baseUrl; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
 
 class ApiService {
   static Map<String, String> get _jsonHeaders => {
@@ -66,7 +63,7 @@ class ApiService {
 class AttendanceHistoryPage extends StatefulWidget {
   final String userId;
   final List<Map<String, String>> courses;
-  AttendanceHistoryPage({
+  const AttendanceHistoryPage({
     super.key,
     required this.userId,
     this.courses = const [],
@@ -531,7 +528,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
       context: context,
       initialTime: now,
       builder: (c, child) => MediaQuery(
-        data: MediaQuery.of(c!).copyWith(alwaysUse24HourFormat: true),
+        data: MediaQuery.of(c).copyWith(alwaysUse24HourFormat: true),
         child: child!,
       ),
     );
@@ -720,7 +717,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                   const SizedBox(height: 12),
 
                   DropdownButtonFormField<String>(
-                    value: _selectedDayId,
+                    initialValue: _selectedDayId,
                     items: _days.map((d) {
                       final id = d['id'].toString();
                       final name = d['name'].toString();

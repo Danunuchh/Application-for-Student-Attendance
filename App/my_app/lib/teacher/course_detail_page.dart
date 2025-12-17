@@ -5,11 +5,10 @@ import 'package:http/http.dart' as http;
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
 
-import 'package:my_app/config.dart'; 
+import 'package:my_app/config.dart';
 
 /// ปรับให้ตรงกับเครื่อง/เซิร์ฟเวอร์ของคุณ
-const String apiBase =
-    '${baseUrl}'; // Android Emulator ใช้ http://10.0.2.2:8000
+const String apiBase = baseUrl; // Android Emulator ใช้ http://10.0.2.2:8000
 
 class CourseDetailPage extends StatefulWidget {
   final String courseId; // ✅ รับ id ที่หน้า list ส่งมา

@@ -4,10 +4,9 @@ import 'package:my_app/components/textbox.dart';
 import 'student_attendancedetail_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:my_app/config.dart'; 
+import 'package:my_app/config.dart';
 
-const String apiBase =
-    '${baseUrl}'; // เปลี่ยนเป็น IP/URL จริงของคุณ
+const String apiBase = baseUrl; // เปลี่ยนเป็น IP/URL จริงของคุณ
 
 class AttendanceHistoryPage extends StatefulWidget {
   final String userId; // ใช้ userId เพื่อดึงรายวิชา

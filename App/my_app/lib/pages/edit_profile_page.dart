@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:my_app/components/button.dart';
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/models/user_profile.dart';
 import 'package:my_app/services/profile_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:my_app/config.dart'; 
 
 class EditProfilePage extends StatefulWidget {
   final String userId;
@@ -274,7 +272,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       child: CustomButton(
                         text: 'แก้ไขโปรไฟล์',
                         onPressed: () => setState(() => _isEditing = true),
-                        backgroundColor: const Color.fromARGB(255, 248, 172, 51),
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          248,
+                          172,
+                          51,
+                        ),
                         textColor: Colors.white,
                       ),
                     ),

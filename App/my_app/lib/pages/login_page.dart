@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/admin/admin_home_page.dart';
 import 'package:my_app/components/button.dart';
 import 'package:my_app/pages/forgot_password.dart';
 import 'package:my_app/pages/signup.dart';
@@ -8,7 +7,7 @@ import 'package:my_app/student/student_home_pages.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:my_app/config.dart'; 
+import 'package:my_app/config.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -86,9 +85,10 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = true);
 
     try {
-      final url = Uri.parse(
-        '${baseUrl}login_api.php',
-      ); //10.0.2.2 //192.168.0.101 //localhost
+      final url = Uri.parse('$baseUrl/login_api.php');
+      //final url = Uri.parse(
+      //'${baseUrl}login_api.php',
+      //); //10.0.2.2 //192.168.0.101 //localhost
       final res = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},

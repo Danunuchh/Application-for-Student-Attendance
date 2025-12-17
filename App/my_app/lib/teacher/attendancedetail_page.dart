@@ -57,7 +57,7 @@ class AttendanceDetailPage extends StatefulWidget {
 }
 
 class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
-  DateTime _focusedDay = DateTime.now();
+  final DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
   bool _loading = false;
@@ -68,7 +68,11 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   Map<DateTime, List<String>> get _attendanceEvents {
     Map<DateTime, List<String>> map = {};
     for (var record in _records) {
-      final key = DateTime(record.date.year, record.date.month, record.date.day);
+      final key = DateTime(
+        record.date.year,
+        record.date.month,
+        record.date.day,
+      );
       map.putIfAbsent(key, () => []);
       map[key]!.add(record.studentId);
     }
@@ -149,7 +153,11 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
         '${day.month.toString().padLeft(2, '0')}-'
         '${day.day.toString().padLeft(2, '0')}';
 
-    final payload = {'course_id': widget.courseId, 'date': dateStr, 'type': 'teacher'};
+    final payload = {
+      'course_id': widget.courseId,
+      'date': dateStr,
+      'type': 'teacher',
+    };
 
     try {
       final uri = Uri.parse('${baseUrl}get_attandance.php');
@@ -244,7 +252,10 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                 ),
                 // ขวา: เวลาเช็คชื่อ
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: r.checkTime != null
                         ? presentColor.withOpacity(0.1)

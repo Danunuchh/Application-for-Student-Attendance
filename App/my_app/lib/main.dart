@@ -5,7 +5,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:my_app/admin/admin_home_page.dart';
 import 'package:my_app/admin/admin_student_page.dart';
 import 'package:my_app/admin/admin_add_student_page.dart';
-import 'package:my_app/admin/admin_class_page.dart';
 import 'package:my_app/admin/admin_history_page.dart';
 
 // --- Student side ---
