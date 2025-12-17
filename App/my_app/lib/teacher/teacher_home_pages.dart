@@ -13,6 +13,9 @@ import 'package:my_app/pages/edit_profile_page.dart';
 import 'package:my_app/teacher/pending_approvals_page.dart';
 import 'package:my_app/teacher/qr_code_page.dart';
 
+import 'package:my_app/config.dart'; 
+
+
 class AppColors {
   static const primary = Color(0xFF4A86E8);
   static const ink = Color(0xFF1F2937);
@@ -198,7 +201,7 @@ class TeacherHomePage extends StatelessWidget {
                                   loadList: (uid) async {
                                     final res = await http.get(
                                       Uri.parse(
-                                        'https://192.168.0.111:8000/api/get_pending.php?teacher_id=$uid',
+                                        '${baseUrl}/get_pending.php?teacher_id=$uid',
                                       ),
                                     );
                                     final data =
@@ -210,7 +213,7 @@ class TeacherHomePage extends StatelessWidget {
                                   loadDetail: (reqId) async {
                                     final res = await http.get(
                                       Uri.parse(
-                                        'https://192.168.0.111:8000/api/get_pending_detail.php?id=$reqId',
+                                        '${baseUrl}get_pending_detail.php?id=$reqId',
                                       ),
                                     );
                                     return jsonDecode(res.body);

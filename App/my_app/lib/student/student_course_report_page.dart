@@ -63,7 +63,7 @@ class _StudentCourseReportPageState extends State<StudentCourseReportPage> {
     // }
 
     final uri = Uri.parse(
-      'https://your-server.com/api/course-report'
+      'https://localhost:8000'
       '?code=${Uri.encodeQueryComponent(widget.courseCode)}'
       '&period=$period',
     );

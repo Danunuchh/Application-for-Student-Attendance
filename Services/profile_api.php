@@ -1,152 +1,177 @@
 <?php
 // api/profile.php
-// -------------------------------
-// Single endpoint for:
-//   - Show profile:  type=show   (GET หรือ POST JSON ก็ได้)
-//   - Update profile: type=update (POST/PUT JSON)
-// ใช้กับตาราง users (คอลัมน์ตามที่คุณให้มา)
-//
-// NOTE: ในโปรดักชัน ควรยืนยันตัวตนด้วย Session/JWT แล้วใช้ user_id จากฝั่ง server
+// Single endpoint: type=show | type=update
+// NOTE: in production, authenticate (Session/JWT) and use server-side user_id.
 
+declare(strict_types=1);
+
+// --- error handling: don't display to client, log instead ---
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+error_reporting(E_ALL);
+
+// --- CORS & JSON header (ส่งก่อน output ใด ๆ) ---
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *'); // แนะนำระบุโดเมนจริงในโปรดักชัน
+header('Access-Control-Allow-Origin: *'); // เปลี่ยนเป็นโดเมนจริงใน production
 header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit;
-
-include 'connect.php';
-function respond(int $code, array $payload) {
-  http_response_code($code);
-  echo json_encode($payload, JSON_UNESCAPED_UNICODE);
-  exit;
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    // preflight response
+    http_response_code(200);
+    exit;
 }
+
+// --- include DB connection ---
+// connect.php ต้องเซ็ต $pdo เป็น PDO instance และตั้ง charset เป็น utf8mb4
+// ตัวอย่าง connect.php ควรมีลักษณะ:
+// $pdo = new PDO('mysql:host=localhost;dbname=xxx;charset=utf8mb4', $user, $pass, $opts);
+// $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+require_once __DIR__ . '/connect.php';
+if (!isset($pdo) || !$pdo instanceof PDO) {
+    error_log('connect.php did not provide $pdo');
+    http_response_code(500);
+    echo json_encode(['success'=>false,'message'=>'Database not initialized']);
+    exit;
+}
+
+function respond(int $code, array $payload): void {
+    http_response_code($code);
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 function json_input(): array {
-  $raw = file_get_contents('php://input');
-  $data = json_decode($raw, true);
-  return is_array($data) ? $data : [];
+    $raw = file_get_contents('php://input');
+    if ($raw === false || $raw === '') return [];
+    $data = json_decode($raw, true);
+    return is_array($data) ? $data : [];
 }
 
+function split_full_name(string $full): array {
+    $full = trim(preg_replace('/\s+/', ' ', $full));
+    if ($full === '') return ['firstName'=>'', 'lastName'=>''];
+    $parts = explode(' ', $full);
+    if (count($parts) === 1) return ['firstName'=>$parts[0], 'lastName'=>''];
+    $last = array_pop($parts);
+    $first = implode(' ', $parts);
+    return ['firstName'=>$first, 'lastName'=>$last];
+}
 
 // ---------- Router ----------
 $method = $_SERVER['REQUEST_METHOD'];
-$input  = ($method === 'GET') ? $_GET : json_input(); // อนุญาต GET (query) และ POST/PUT (JSON)
-$type   = isset($input['type']) ? strtolower(trim($input['type'])) : 'show';
+$input  = ($method === 'GET') ? $_GET : json_input();
+$type   = isset($input['type']) ? strtolower(trim((string)$input['type'])) : 'show';
 
-// ---------- Utils ----------
-/** แบ่ง firstName/lastName จาก full_name (เดาระยะง่าย ๆ) */
-function split_full_name(string $full): array {
-  $full = trim(preg_replace('/\s+/', ' ', $full));
-  if ($full === '') return ['firstName'=>'', 'lastName'=>''];
-  $parts = explode(' ', $full);
-  if (count($parts) === 1) return ['firstName'=>$parts[0], 'lastName'=>''];
-  $last = array_pop($parts);
-  $first = implode(' ', $parts);
-  return ['firstName'=>$first, 'lastName'=>$last];
-}
-
-// =====================================================
-// TYPE: SHOW  (GET /api/profile.php?type=show&user_id=...)
-// =====================================================
+// ---------- TYPE: SHOW ----------
 if ($type === 'show') {
-  $userId = isset($input['user_id']) ? (int)$input['user_id'] : 0;
-  if ($userId <= 0) {
-    respond(400, ['success'=>false, 'message'=>'Missing user_id']);
-  }
+    $userId = isset($input['user_id']) ? (int)$input['user_id'] : 0;
+    if ($userId <= 0) {
+        respond(400, ['success'=>false, 'message'=>'Missing or invalid user_id']);
+    }
 
-  $stmt = $pdo->prepare("
-    SELECT user_id, full_name, email, phone_number, address,
-           profile_attachment, role_id, student_id
-    FROM users
-    WHERE user_id = :id
-    LIMIT 1
-  ");
-  $stmt->execute([':id'=>$userId]);
-  $u = $stmt->fetch();
-  if (!$u) {
-    respond(404, ['success'=>false, 'message'=>'User not found']);
-  }
+    try {
+        $stmt = $pdo->prepare("
+            SELECT user_id, full_name, email, phone_number, address,
+                   profile_attachment, role_id, student_id
+            FROM users
+            WHERE user_id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $userId]);
+        $u = $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        error_log("DB error in profile show: " . $e->getMessage());
+        respond(500, ['success'=>false, 'message'=>'Database error']);
+    }
 
-  $split = split_full_name($u['full_name'] ?? '');
-  $data = [
-    'id'                => (string)$u['user_id'],
-    'fullName'          => $u['full_name'] ?? '',
-    'firstName'         => $split['firstName'],
-    'lastName'          => $split['lastName'],
-    'email'             => $u['email'] ?? '',
-    'phone'             => $u['phone_number'] ?? '',
-    'address'           => $u['address'] ?? '',
-    'role'              => $u['role_id'] ?? '',
-    'profileAttachment' => $u['profile_attachment'] ?? '',
-    'studentId'         => $u['student_id'] ?? '',
-  ];
+    if (!$u) {
+        respond(404, ['success'=>false, 'message'=>'User not found']);
+    }
 
-  respond(200, ['success'=>true, 'data'=>$data]);
+    $split = split_full_name((string)($u['full_name'] ?? ''));
+    $data = [
+        'id'                => (string)$u['user_id'],
+        'fullName'          => $u['full_name'] ?? '',
+        'firstName'         => $split['firstName'],
+        'lastName'          => $split['lastName'],
+        'email'             => $u['email'] ?? '',
+        'phone'             => $u['phone_number'] ?? '',
+        'address'           => $u['address'] ?? '',
+        'role'              => $u['role_id'] ?? '',
+        'profileAttachment' => $u['profile_attachment'] ?? '',
+        'studentId'         => $u['student_id'] ?? '',
+    ];
+    respond(200, ['success'=>true, 'data'=>$data]);
 }
 
-// =====================================================
-// TYPE: UPDATE (POST/PUT JSON -> /api/profile.php { type:"update", ...})
-// =====================================================
+// ---------- TYPE: UPDATE ----------
 if ($type === 'update') {
-  if (!in_array($method, ['POST','PUT'])) {
-    respond(405, ['success'=>false, 'message'=>'Use POST or PUT for update']);
-  }
+    if (!in_array($method, ['POST','PUT'], true)) {
+        respond(405, ['success'=>false, 'message'=>'Use POST or PUT for update']);
+    }
 
-  $userId = isset($input['id']) ? (int)$input['id'] : 0;
-  if ($userId <= 0) {
-    respond(400, ['success'=>false, 'message'=>'Invalid user_id']);
-  }
+    $userId = isset($input['id']) ? (int)$input['id'] : 0;
+    if ($userId <= 0) {
+        respond(400, ['success'=>false, 'message'=>'Invalid user_id']);
+    }
 
-  $email     = trim($input['email'] ?? '');
-  $firstName = trim($input['firstName'] ?? '');
-  $lastName  = trim($input['lastName'] ?? '');
-  $phone     = trim($input['phone'] ?? '');
-  $address   = trim($input['address'] ?? '');
-  $studentId = isset($input['studentId'])   ? trim($input['studentId'])   : null;
-  $teacherId = isset($input['teacherCode']) ? trim($input['teacherCode']) : null;
+    $email     = trim((string)($input['email'] ?? ''));
+    $firstName = trim((string)($input['firstName'] ?? ''));
+    $lastName  = trim((string)($input['lastName'] ?? ''));
+    $phone     = trim((string)($input['phone'] ?? ''));
+    $address   = trim((string)($input['address'] ?? ''));
+    $studentId = array_key_exists('studentId', $input) ? trim((string)$input['studentId']) : null;
 
-  if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    respond(422, ['success'=>false, 'message'=>'Invalid email format']);
-  }
-  $fullName = trim($firstName . ' ' . $lastName);
-  // ถ้าไม่ส่ง first/last มา แปลว่าอาจอยากคงค่าเดิม → จะดึงจาก DB ก่อนแล้วค่อยอัปเดตบางฟิลด์
-  $stmt = $pdo->prepare("SELECT full_name, email, phone_number, address, student_id FROM users WHERE user_id = :id LIMIT 1");
-  $stmt->execute([':id'=>$userId]);
-  $current = $stmt->fetch();
-  if (!$current) {
-    respond(404, ['success'=>false, 'message'=>'User not found']);
-  }
+    if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        respond(422, ['success'=>false, 'message'=>'Invalid email format']);
+    }
 
-  // ถ้าไม่ได้ส่งค่าใหม่มา ให้คงค่าเดิม
-  if ($fullName === '' && !empty($current['full_name'])) $fullName = $current['full_name'];
-  if ($email   === '' && !empty($current['email'])) $email = $current['email'];
-  if ($phone   === '' && !empty($current['phone_number'])) $phone = $current['phone_number'];
-  if ($address === '' && !empty($current['address'])) $address = $current['address'];
-  if ($studentId === null) $studentId = $current['student_id'];
+    // Fetch current row to keep missing fields
+    try {
+        $stmt = $pdo->prepare("SELECT full_name, email, phone_number, address, student_id FROM users WHERE user_id = :id LIMIT 1");
+        $stmt->execute([':id' => $userId]);
+        $current = $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        error_log("DB error fetch current user: " . $e->getMessage());
+        respond(500, ['success'=>false, 'message'=>'Database error']);
+    }
 
-  try {
-    $stmt = $pdo->prepare("
-      UPDATE users SET
-        full_name      = :full_name,
-        email          = :email,
-        phone_number   = :phone,
-        address        = :address,
-        student_id     = :student_id
-      WHERE user_id     = :user_id
-      LIMIT 1
-    ");
-    $stmt->execute([
-      ':full_name'  => $fullName,
-      ':email'      => $email,
-      ':phone'      => $phone,
-      ':address'    => $address,
-      ':student_id' => $studentId,
-      ':user_id'    => $userId,
-    ]);
-    respond(200, ['success'=>true, 'message'=>'Profile updated']);
-  } catch (Throwable $e) {
-    respond(500, ['success'=>false, 'message'=>'Update failed', 'error'=>$e->getMessage()]);
-  }
+    if (!$current) {
+        respond(404, ['success'=>false, 'message'=>'User not found']);
+    }
+
+    $fullName = trim($firstName . ' ' . $lastName);
+    if ($fullName === '' && !empty($current['full_name'])) $fullName = $current['full_name'];
+    if ($email === '' && !empty($current['email'])) $email = $current['email'];
+    if ($phone === '' && !empty($current['phone_number'])) $phone = $current['phone_number'];
+    if ($address === '' && !empty($current['address'])) $address = $current['address'];
+    if ($studentId === null) $studentId = $current['student_id'];
+
+    try {
+        $stmt = $pdo->prepare("
+            UPDATE users SET
+              full_name    = :full_name,
+              email        = :email,
+              phone_number = :phone,
+              address      = :address,
+              student_id   = :student_id
+            WHERE user_id = :user_id
+            LIMIT 1
+        ");
+        $stmt->execute([
+            ':full_name'  => $fullName,
+            ':email'      => $email,
+            ':phone'      => $phone,
+            ':address'    => $address,
+            ':student_id' => $studentId,
+            ':user_id'    => $userId,
+        ]);
+        respond(200, ['success'=>true, 'message'=>'Profile updated']);
+    } catch (Throwable $e) {
+        error_log("DB error update user: " . $e->getMessage());
+        respond(500, ['success'=>false, 'message'=>'Update failed']);
+    }
 }
 
-// -------------- Unknown type --------------
+// unknown type
 respond(400, ['success'=>false, 'message'=>'Unknown type. Use type=show or type=update']);

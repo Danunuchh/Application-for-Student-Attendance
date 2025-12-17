@@ -86,10 +86,10 @@ class CustomBottomBarWithFab extends StatelessWidget {
         color: fabRing,
         shape: const CircularNotchedRectangle(),
         notchMargin: 4,
-        height: 56, //ความสูงของแทบสีฟ้า
+        height: 46, //ความสูงของแทบสีฟ้า
         padding: const EdgeInsets.symmetric(horizontal: 50),  //ระยะห่างของไอคอนกับวงกลมกรงกลาง
         child: Transform.translate(
-          offset: const Offset(0, 3), // ✅ ขยับลง 6px (ปรับได้ 4–10 ตามความพอดี) ความสูงของไอคอน
+          offset: const Offset(0, 7), // ✅ ขยับลง 6px (ปรับได้ 4–10 ตามความพอดี) ความสูงของไอคอน
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,

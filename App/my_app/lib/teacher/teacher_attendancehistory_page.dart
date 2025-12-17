@@ -10,12 +10,14 @@ import 'teacher_qr_page.dart';
 import 'package:my_app/teacher/subject_detail_page.dart';
 import 'package:my_app/teacher/qr_code_page.dart';
 
+import 'package:my_app/config.dart'; 
+
 // import 'course_detail_page.dart'; // มีอยู่แล้วในโปรเจกต์คุณ
 
 // ---------- ปรับตามเครื่องคุณ ----------
 const String apiBase =
     //'http://10.0.2.2:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
-    'http://192.168.0.111:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
+    '${baseUrl}'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
 
 class ApiService {
   static Map<String, String> get _jsonHeaders => {

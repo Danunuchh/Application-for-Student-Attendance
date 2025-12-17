@@ -1,19 +1,9 @@
-// lib/teacher/attendancedetail_page.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_app/components/custom_appbar.dart';
-import 'package:table_calendar/table_calendar.dart';
-
-class _CalTheme {
-  static const primary = Color(0xFF4A86E8); // ฟ้าเข้ม
-  static const ink = Color(0xFF1F2937); // ตัวอักษรเข้ม
-  static const sub = Color(0xFF9CA3AF); // สีตัวอักษรรอง
-  static const border = Color(0xFFCFE0FF); // ขอบฟ้าอ่อน
-  static const cardShadow = Color(0x0D000000); // Shadow นุ่ม
-  static const todayBg = Color(0xFFDDE8F8); // Today background ฟ้าอ่อน
-  static const selectedBg = Color(0xFF4A86E8); // Selected day
-}
+import 'package:my_app/components/app_calendar.dart';
+import 'package:my_app/config.dart';
 
 class AttendanceRecord {
   final DateTime date;
@@ -31,11 +21,9 @@ class AttendanceRecord {
   });
 
   factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
-    // ใช้ attendance_time ตัดสิน present
     final time = json['attendance_time'];
     final presentBool = time != null && time.toString().isNotEmpty;
 
-    // แปลงวัน
     DateTime parsedDate;
     final d = json['day'];
     if (d is String) {
@@ -58,7 +46,7 @@ class AttendanceDetailPage extends StatefulWidget {
   final String courseName;
   final String courseId;
 
-  AttendanceDetailPage({
+  const AttendanceDetailPage({
     super.key,
     required this.courseName,
     required this.courseId,
@@ -75,6 +63,24 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   bool _loading = false;
   String? _errorMessage;
   List<AttendanceRecord> _records = [];
+
+  /// แปลง _records เป็น Map<DateTime, List<String>> สำหรับ marker
+  Map<DateTime, List<String>> get _attendanceEvents {
+    Map<DateTime, List<String>> map = {};
+    for (var record in _records) {
+      final key = DateTime(record.date.year, record.date.month, record.date.day);
+      map.putIfAbsent(key, () => []);
+      map[key]!.add(record.studentId);
+    }
+    return map;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // โหลดข้อมูลวันแรก (วันนี้) อัตโนมัติ
+    _fetchAttendanceForDay(_focusedDay);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,62 +100,23 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
             ),
           ),
 
-          // ===== Calendar =====
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: _CalTheme.border, width: 1.5),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 6,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: TableCalendar(
-              firstDay: DateTime.utc(2018, 1, 1),
-              lastDay: DateTime.utc(2100, 12, 31),
-              focusedDay: _focusedDay,
-              headerVisible: true,
-              selectedDayPredicate: (d) =>
-                  _selectedDay != null && isSameDay(d, _selectedDay),
-              onDaySelected: (selectedDay, focusedDay) async {
-                setState(() {
-                  _selectedDay = selectedDay;
-                  _focusedDay = focusedDay;
-                  _records = [];
-                  _errorMessage = null;
-                });
-                await _fetchAttendanceForDay(selectedDay);
-              },
-              calendarStyle: CalendarStyle(
-                todayDecoration: BoxDecoration(
-                  color: _CalTheme.todayBg,
-                  border: Border.all(color: _CalTheme.primary, width: 1.5),
-                  shape: BoxShape.circle,
-                ),
-                selectedDecoration: BoxDecoration(
-                  color: _CalTheme.selectedBg,
-                  shape: BoxShape.circle,
-                ),
-                markerDecoration: BoxDecoration(
-                  color: _CalTheme.primary,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              daysOfWeekStyle: const DaysOfWeekStyle(
-                weekdayStyle: TextStyle(fontSize: 12, color: _CalTheme.sub),
-                weekendStyle: TextStyle(fontSize: 12, color: _CalTheme.sub),
-              ),
-              headerStyle: const HeaderStyle(
-                titleCentered: true,
-                formatButtonVisible: false,
-              ),
-            ),
+          // ===== ใช้ AppCalendar =====
+          AppCalendar<String>(
+            events: _attendanceEvents,
+            initialFocusedDay: _focusedDay,
+            initialSelectedDay: _selectedDay,
+            onDaySelected: (day) async {
+              setState(() {
+                _selectedDay = day;
+                _records = [];
+                _errorMessage = null;
+              });
+              await _fetchAttendanceForDay(day);
+            },
+            onMonthChanged: (month) {
+              // สามารถ fetch summary เดือนนี้ได้ถ้าต้องการ
+              print('เดือนเปลี่ยน: $month');
+            },
           ),
 
           const SizedBox(height: 18),
@@ -185,7 +152,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
     final payload = {'course_id': widget.courseId, 'date': dateStr, 'type': 'teacher'};
 
     try {
-      final uri = Uri.parse('http://192.168.0.111:8000/get_attandance.php');
+      final uri = Uri.parse('${baseUrl}get_attandance.php');
       final resp = await http.post(
         uri,
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -222,8 +189,8 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   List<Widget> _buildCards() {
     final Color presentColor = const Color(0xFF34D399); // เขียว
     final Color absentColor = const Color(0xFFF87171); // แดง
-    final Color cardBorder = _CalTheme.border;
-    final Color cardShadow = _CalTheme.cardShadow;
+    final Color cardBorder = const Color(0xFF84A9EA);
+    final Color cardShadow = const Color(0x0D000000);
 
     if (_records.isEmpty) {
       return [
@@ -231,7 +198,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
         Center(
           child: Text(
             'ไม่มีข้อมูลการเช็คชื่อในวันนี้',
-            style: TextStyle(color: _CalTheme.sub, fontSize: 14),
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14),
           ),
         ),
       ];
@@ -261,7 +228,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: _CalTheme.ink,
+                          color: Color(0xFF1F2937),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -277,10 +244,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                 ),
                 // ขวา: เวลาเช็คชื่อ
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: r.checkTime != null
                         ? presentColor.withOpacity(0.1)

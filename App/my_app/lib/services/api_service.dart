@@ -33,7 +33,7 @@ class ApiMock {
 /// REAL API CLIENT (เชื่อมต่อจริง)
 /// ==========================
 class ApiService {
-  static const String baseUrl = 'https://your-server.com/api'; // ✅ ใส่ endpoint จริง
+  static const String baseUrl = 'https://localhost:8000/api'; // ✅ ใส่ endpoint จริง
 
   /// ดึง token ที่บันทึกไว้ตอน login
   static Future<String?> getToken() async {

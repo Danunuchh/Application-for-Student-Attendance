@@ -1,4 +1,3 @@
-// lib/pages/teacher_qr_page.dart
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
@@ -7,9 +6,11 @@ import 'package:my_app/components/button.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:http/http.dart' as http; // ✅ ใช้ http
 
+import 'package:my_app/config.dart'; 
+
 const String apiBase =
     //'http://10.0.2.2:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
-    'http://192.168.0.111:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
+    '${baseUrl}'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
 
 class ApiService {
   static Map<String, String> get _jsonHeaders => {

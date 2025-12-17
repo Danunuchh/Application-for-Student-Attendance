@@ -8,7 +8,8 @@ class StudentCalendarLoader extends StatefulWidget {
   const StudentCalendarLoader({super.key});
 
   @override
-  State<StudentCalendarLoader> createState() => _StudentCalendarLoaderState();
+  State<StudentCalendarLoader> createState() =>
+      _StudentCalendarLoaderState();
 }
 
 class _StudentCalendarLoaderState extends State<StudentCalendarLoader> {
@@ -17,39 +18,35 @@ class _StudentCalendarLoaderState extends State<StudentCalendarLoader> {
   @override
   void initState() {
     super.initState();
-    _future = _fetchEvents(); // ✅ โหลดจาก API จริง
+    _future = _fetchEvents();
   }
 
-  DateTime _normalizeDay(DateTime d) => DateTime.utc(d.year, d.month, d.day);
+  DateTime _normalize(DateTime d) => DateTime.utc(d.year, d.month, d.day);
 
   Future<Map<DateTime, List<Subject>>> _fetchEvents() async {
-    // 🔵 เปลี่ยน URL เป็นของคุณเอง
-    final url = Uri.parse('https://your-server.com/api/schedule');
+    final res = await http.get(Uri.parse('https://localhost:8000'));
 
-    final res = await http.get(url);
     if (res.statusCode != 200) {
-      throw Exception('โหลดข้อมูลไม่สำเร็จ (${res.statusCode})');
+      throw Exception('HTTP ${res.statusCode}');
     }
 
-    final list = jsonDecode(res.body);
-    if (list is! List) {
-      throw Exception('รูปแบบข้อมูลไม่ถูกต้อง (ต้องเป็น List)');
-    }
+    final data = jsonDecode(res.body);
+    if (data is! List) throw Exception('JSON ต้องเป็น List');
 
     final map = <DateTime, List<Subject>>{};
-    for (final raw in list) {
-      final dateStr = (raw['date'] ?? '').toString();
-      if (dateStr.isEmpty) continue;
 
-      final date = _normalizeDay(DateTime.parse(dateStr));
+    for (final raw in data) {
+      if (raw['date'] == null) continue;
+
+      final date = _normalize(DateTime.parse(raw['date']));
       final subject = Subject(
-        id: (raw['id'] ?? '').toString(),
-        title: (raw['title'] ?? '').toString(),
-        code: (raw['code'] ?? '').toString(),
-        credits: (raw['credits'] ?? '').toString(),
-        teacher: (raw['teacher'] ?? '').toString(),
-        time: (raw['time'] ?? '').toString(),
-        room: (raw['room'] ?? '').toString(),
+        id: '${raw['id']}',
+        title: '${raw['title']}',
+        code: '${raw['code']}',
+        credits: '${raw['credits']}',
+        teacher: '${raw['teacher']}',
+        time: '${raw['time']}',
+        room: '${raw['room']}',
       );
 
       map.putIfAbsent(date, () => <Subject>[]).add(subject);
@@ -62,25 +59,23 @@ class _StudentCalendarLoaderState extends State<StudentCalendarLoader> {
   Widget build(BuildContext context) {
     return FutureBuilder<Map<DateTime, List<Subject>>>(
       future: _future,
-      initialData: const <DateTime, List<Subject>>{}, // ✅ เริ่มด้วย events ว่าง
+      initialData: const {},
       builder: (context, snap) {
-        // ❌ ถ้า error: ยังแสดงปฏิทิน (events ว่าง) แต่โชว์แถบแจ้งเตือนด้านล่าง
         if (snap.hasError) {
-          // ใช้ ScaffoldMessenger หลังจากเฟรมนี้ build เสร็จ เพื่อไม่ให้ throw during build
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            final msg = 'เกิดข้อผิดพลาดในการโหลดข้อมูล: ${snap.error}';
             ScaffoldMessenger.of(context)
               ..clearSnackBars()
-              ..showSnackBar(SnackBar(content: Text(msg)));
+              ..showSnackBar(
+                SnackBar(
+                  content: Text('โหลดข้อมูลล้มเหลว: ${snap.error}'),
+                ),
+              );
           });
         }
 
-        // ✅ แสดงปฏิทินตั้งแต่แรก (แม้กำลังโหลด)
-        final events = snap.data ?? const <DateTime, List<Subject>>{};
         return StudentCalendarPage(
-          events: events,
+          events: snap.data ?? const {},
           initialFocusedDay: DateTime.now(),
-          // initialSelectedDay ไม่ส่ง เพื่อให้ขึ้น “เฉพาะปฏิทินก่อน”
         );
       },
     );

@@ -8,6 +8,7 @@ import 'package:my_app/student/student_home_pages.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:my_app/config.dart'; 
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -86,8 +87,8 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final url = Uri.parse(
-        'http://192.168.0.101:8000/login_api.php',
-      ); //10.0.2.2 //192.168.0.111 //localhost
+        '${baseUrl}login_api.php',
+      ); //10.0.2.2 //192.168.0.101 //localhost
       final res = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
