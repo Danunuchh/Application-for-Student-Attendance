@@ -51,7 +51,7 @@ flutter:
   assets:
     - assets/login1.png
     - assets/signup1.png
-    - assets/unicheck1.png
+    - assets/logounimai.png
     - assets/forgot1.png
     - assets/loader.json
     - assets/bell.svg

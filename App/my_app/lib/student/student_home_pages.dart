@@ -122,7 +122,7 @@ class StudentHomePage extends StatelessWidget {
                     minHeight: 120,
                   ),
                   child: Image.asset(
-                    'assets/unicheck1.png',
+                    'assets/logounimai.png',
                     height: 250,
                     fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) =>
