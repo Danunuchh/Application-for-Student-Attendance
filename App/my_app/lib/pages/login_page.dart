@@ -250,7 +250,7 @@ class _LoginPageState extends State<LoginPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
               decoration: const BoxDecoration(
-                color: kBottom,
+                color: Color(0xFFA6CAFA),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(22),
                   topRight: Radius.circular(22),
@@ -280,7 +280,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           );
                         },
-                        backgroundColor: kPrimary,
+                        backgroundColor: const Color(0xFF84A9EA),
                         textColor: Colors.white,
                         fontSize: 15,
                       ),
