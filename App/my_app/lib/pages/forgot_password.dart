@@ -129,7 +129,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       ),
                       child: Center(
                         child: Image.asset(
-                          'assets/forgot1.png',
+                          'assets/logoadmin.png',
                           height: 230,
                           fit: BoxFit.contain,
                           errorBuilder: (_, __, ___) =>

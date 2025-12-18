@@ -37,8 +37,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       // หน้าแรก: Splash เพื่อตรวจ token/role
-      initialRoute: '/student_home',
-
+      initialRoute: '/teacher_home',
+      //student_home
       // ภาษาที่รองรับ
       locale: const Locale('th'),
       supportedLocales: const [Locale('th'), Locale('en')],

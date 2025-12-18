@@ -52,7 +52,7 @@ flutter:
     - assets/logologin.png
     - assets/logoregister.png
     - assets/logounimai.png
-    - assets/forgot1.png
+    - assets/logoadmin.png
     - assets/loader.json
     - assets/bell.svg
     - assets/check.svg

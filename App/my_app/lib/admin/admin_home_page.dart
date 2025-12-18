@@ -31,7 +31,10 @@ class AdminHomePage extends StatelessWidget {
                 children: [
                   // โลโก้
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
@@ -39,10 +42,13 @@ class AdminHomePage extends StatelessWidget {
                           minHeight: 120,
                         ),
                         child: Image.asset(
-                          'assets/unicheck1.png',
+                          'assets/logounimai.png',
                           fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) =>
-                              const Icon(Icons.image, size: 80, color: AppColors.sub),
+                          errorBuilder: (_, __, ___) => const Icon(
+                            Icons.image,
+                            size: 80,
+                            color: AppColors.sub,
+                          ),
                         ),
                       ),
                     ),
