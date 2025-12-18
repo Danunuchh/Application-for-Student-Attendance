@@ -176,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: Center(
                         child: Image.asset(
-                          'assets/login1.png',
+                          'assets/logologin.png',
                           height: 230,
                           fit: BoxFit.contain,
                           errorBuilder: (_, __, ___) =>

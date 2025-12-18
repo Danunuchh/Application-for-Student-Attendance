@@ -49,8 +49,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/login1.png
-    - assets/signup1.png
+    - assets/logologin.png
+    - assets/logoregister.png
     - assets/logounimai.png
     - assets/forgot1.png
     - assets/loader.json
