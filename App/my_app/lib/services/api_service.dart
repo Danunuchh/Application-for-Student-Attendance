@@ -1,13 +1,9 @@
 // lib/services/api_mock.dart
 import 'dart:async';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 // N: นำ import config.dart มาใช้แทนการ hardcode baseUrl ซ้ำ
 import 'package:my_app/config.dart';
-import 'package:my_app/models/subject.dart';
-import 'package:my_app/models/day.dart';
-
 /// ==========================
 /// MOCK API (จำลอง Backend)
 /// ==========================

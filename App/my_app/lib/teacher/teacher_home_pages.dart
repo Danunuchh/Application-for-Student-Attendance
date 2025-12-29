@@ -6,7 +6,7 @@ import 'package:my_app/components/custom_bar.dart';
 import 'package:my_app/pages/login_page.dart';
 import 'package:my_app/components/menu_title.dart';
 import 'package:my_app/teacher/teacher_attendancehistory_page.dart';
-import 'package:my_app/teacher/calendar_page.dart';
+import 'package:my_app/teacher/teacher_calendar_loader.dart';
 import 'package:my_app/teacher/courses_page.dart';
 import 'package:my_app/teacher/dashboard_page.dart';
 import 'package:my_app/pages/edit_profile_page.dart';
@@ -172,7 +172,7 @@ class TeacherHomePage extends StatelessWidget {
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => CalendarPage(userId: userId),
+                                builder: (_) => const TeacherCalendarLoader(),
                               ),
                             ),
                           ),

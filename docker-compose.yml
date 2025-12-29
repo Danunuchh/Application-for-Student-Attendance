@@ -1,25 +1,26 @@
 services:
-  backend:
-    build:
-      context: ./Services
-      dockerfile: Dockerfile-node
-    container_name: backend-app
-    ports:
-      - "3000:3000"
-    environment:
-      NODE_ENV: development
-      DB_HOST: db
-      DB_USER: root
-      DB_PASSWORD: password
-      DB_NAME: Application_attendance
-      TZ: Asia/Bangkok
-    depends_on:
-      - db
-    restart: always
-    volumes:
-      - ./Services:/usr/src/app
-      - /usr/src/app/node_modules
-    command: npm run dev
+  # ไม่ได้ใช่ nodejs
+  # backend:
+  #   build:
+  #     context: ./Services
+  #     dockerfile: Dockerfile-node
+  #   container_name: backend-app
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     NODE_ENV: development
+  #     DB_HOST: db
+  #     DB_USER: root
+  #     DB_PASSWORD: password
+  #     DB_NAME: Application_attendance
+  #     TZ: Asia/Bangkok
+  #   depends_on:
+  #     - db
+  #   restart: always
+  #   volumes:
+  #     - ./Services:/usr/src/app
+  #     - /usr/src/app/node_modules
+  #   command: npm run dev
 
   db:
     image: mysql:8.0
