@@ -4,6 +4,7 @@ import 'package:my_app/components/custom_appbar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:my_app/config.dart'; // N: เพิ่ม import config เพื่อใช้ baseUrl
 
 class AdminStudentReportPage extends StatefulWidget {
   final String courseName;
@@ -62,8 +63,9 @@ class _StudentCourseReportPageState extends State<AdminStudentReportPage> {
     //   "present_sessions": 41
     // }
 
+    // N: เปลี่ยนจาก hardcode https://localhost:8000 เป็นใช้ baseUrl จาก config.dart
     final uri = Uri.parse(
-      'https://localhost:8000'
+      '$baseUrl'
       '?code=${Uri.encodeQueryComponent(widget.courseCode)}'
       '&period=$period',
     );

@@ -257,9 +257,10 @@ class TeacherHomePage extends StatelessWidget {
                                 builder: (_) => DashboardPage(
                                   userId: userId,
                                   loadCourses: (id) async {
+                                    // N: เปลี่ยนจาก hardcode IP 192.168.0.111 เป็นใช้ baseUrl จาก config.dart
                                     final res = await http.get(
                                       Uri.parse(
-                                        'https://192.168.0.111:8000/api/get_courses.php?teacher_id=$id',
+                                        '$baseUrl/api/get_courses.php?teacher_id=$id',
                                       ),
                                     );
                                     final data =
@@ -279,9 +280,10 @@ class TeacherHomePage extends StatelessWidget {
                                         required courseId,
                                         required range,
                                       }) async {
+                                        // N: เปลี่ยนจาก hardcode IP 192.168.0.111 เป็นใช้ baseUrl จาก config.dart
                                         final res = await http.get(
                                           Uri.parse(
-                                            'https://192.168.0.111:8000/api/get_dashboard.php?teacher_id=$userId&course_id=$courseId&range=$range',
+                                            '$baseUrl/api/get_dashboard.php?teacher_id=$userId&course_id=$courseId&range=$range',
                                           ),
                                         );
                                         final json =

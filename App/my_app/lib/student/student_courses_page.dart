@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
 import 'package:my_app/student/student_course_report_page.dart';
+import 'package:my_app/config.dart'; // N: เพิ่ม import config เพื่อใช้ baseUrl
 
 class StudentCoursesPage extends StatefulWidget {
   const StudentCoursesPage({super.key});
@@ -19,8 +20,8 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
   static const Color ink = Color(0xFF1F2937);
   static const Color sub = Color(0xFF6B7280);
 
-  // TODO: เปลี่ยนเป็น URL จริงของคุณ
-  final Uri apiUrl = Uri.parse('https://your-backend.com/api/student/courses');
+  // N: เปลี่ยนจาก hardcode URL เป็นใช้ baseUrl จาก config.dart + path
+  late final Uri apiUrl = Uri.parse('$baseUrl/api/student/courses');
 
   @override
   void initState() {
