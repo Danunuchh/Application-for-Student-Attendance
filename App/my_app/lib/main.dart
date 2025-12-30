@@ -6,6 +6,8 @@ import 'package:my_app/admin/admin_home_page.dart';
 import 'package:my_app/admin/admin_student_page.dart';
 import 'package:my_app/admin/admin_add_student_page.dart';
 import 'package:my_app/admin/admin_history_page.dart';
+import 'package:my_app/admin/admin_teacher_page.dart';
+import 'package:my_app/admin/admin_add_teacher_page.dart';
 
 // --- Student side ---
 import 'package:my_app/student/student_home_pages.dart';
@@ -105,6 +107,8 @@ class MyApp extends StatelessWidget {
         '/admin_home': (context) => const AdminHomePage(),
         '/admin_student': (context) => const AdminStudentPage(),
         '/add_student': (context) => const AddStudentPage(),
+        '/admin_teacher': (context) => const AdminTeacherPage(),
+        '/add_teacher': (context) => const AddTeacherPage(),
         '/admin_history': (context) => const AdminHistoryPage(),
       },
 

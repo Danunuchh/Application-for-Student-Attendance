@@ -18,7 +18,6 @@ class AdminHomePage extends StatelessWidget {
     final String userId = (args is Map && args['userId'] != null)
         ? args['userId'].toString()
         : '';
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -59,8 +58,9 @@ class AdminHomePage extends StatelessWidget {
                     text: 'นักศึกษา',
                     onPressed: () {
                       Navigator.pushNamed(
+                        
                         context,
-                        '/admin_history',
+                        '/admin_student',
                         arguments: {'userId': userId},
                       );
                     },
@@ -72,7 +72,7 @@ class AdminHomePage extends StatelessWidget {
                     onPressed: () {
                       Navigator.pushNamed(
                         context,
-                        '/admin_student',
+                        '/admin_teacher',
                         arguments: {'userId': userId},
                       );
                     },
