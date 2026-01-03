@@ -60,7 +60,7 @@ class AdminHomePage extends StatelessWidget {
                     onPressed: () {
                       Navigator.pushNamed(
                         context,
-                        '/admin_history',
+                        '/admin_student',
                         arguments: {'userId': userId},
                       );
                     },
@@ -72,7 +72,7 @@ class AdminHomePage extends StatelessWidget {
                     onPressed: () {
                       Navigator.pushNamed(
                         context,
-                        '/admin_student',
+                        '/admin_teacher',
                         arguments: {'userId': userId},
                       );
                     },
