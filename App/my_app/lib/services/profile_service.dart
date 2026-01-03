@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:my_app/models/user_profile.dart';
 import 'package:my_app/services/api_service.dart';
+import 'package:my_app/config.dart'; // N: เพิ่ม import config เพื่อใช้ baseUrl
 
 // หมายเหตุ:
 // - ApiService.uri(String path) ควรคืนค่า Uri ที่รวม baseUrl + path
@@ -18,8 +19,8 @@ class ProfileService {
     required String userId,
     required String role,
   }) async {
-    // สร้าง URL พร้อม query
-    final baseUri = Uri.parse('http://localhost:8000/profile_api.php');
+    // N: เปลี่ยนจาก hardcode localhost เป็นใช้ baseUrl จาก config.dart
+    final baseUri = Uri.parse('$baseUrl/profile_api.php');
     final uri = baseUri.replace(
       queryParameters: {'type': 'show', 'user_id': userId, 'role': role},
     );
@@ -53,8 +54,8 @@ class ProfileService {
     required String role,
     required UserProfile payload,
   }) async {
-    // final baseUri = Uri.parse('http://localhost:8000/profile_api.php');
-    final uri = Uri.parse('http://localhost:8000/profile_api.php');
+    // N: เปลี่ยนจาก hardcode localhost เป็นใช้ baseUrl จาก config.dart
+    final uri = Uri.parse('$baseUrl/profile_api.php');
 
     final bodyMap = <String, dynamic>{
       'type': 'update',
