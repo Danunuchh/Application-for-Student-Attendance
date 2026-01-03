@@ -6,7 +6,7 @@ import 'package:my_app/admin/admin_home_page.dart';
 import 'package:my_app/admin/admin_student_page.dart';
 import 'package:my_app/admin/admin_teacher_page.dart';
 import 'package:my_app/admin/admin_history_page.dart';
-import 'package:my_app/admin/admin_teacher_page.dart';
+// import 'package:my_app/admin/add_student_page.dart';
 import 'package:my_app/admin/admin_add_teacher_page.dart';
 
 // --- Student side ---
@@ -37,8 +37,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Uni Check',
       debugShowCheckedModeBanner: false,
-
-      // ✅ แก้ตรงนี้
       initialRoute: '/splash',
 
       locale: const Locale('th'),
@@ -49,7 +47,7 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
 
-      routes: {
+      routes: <String, WidgetBuilder>{
         // 🔹 Auth
         '/': (context) => const LoginPage(),
         '/login': (context) => const LoginPage(),
@@ -58,78 +56,66 @@ class MyApp extends StatelessWidget {
 
         // 🔹 Student
         '/student_home': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
+          final args =
+              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
-          if (userId == null || userId.isEmpty) {
-            return const LoginPage();
-          }
-          return StudentHomePage(userId: userId);
+          return (userId == null || userId.isEmpty)
+              ? const LoginPage()
+              : StudentHomePage(userId: userId);
         },
         '/scan': (context) => const StudentScanPage(),
         '/leave_upload': (context) => const LeaveUploadPage(),
 
         // 🔹 Teacher
         '/teacher_home': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
+          final args =
+              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
-          if (userId == null || userId.isEmpty) {
-            return const LoginPage();
-          }
-          return TeacherHomePage(userId: userId);
+          return (userId == null || userId.isEmpty)
+              ? const LoginPage()
+              : TeacherHomePage(userId: userId);
         },
         '/courses': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
+          final args =
+              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
-          if (userId == null || userId.isEmpty) {
-            return const LoginPage();
-          }
-          return CoursesPage(userId: userId);
+          return (userId == null || userId.isEmpty)
+              ? const LoginPage()
+              : CoursesPage(userId: userId);
         },
         '/teacher_attendancehistory': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
+          final args =
+              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
-          if (userId == null || userId.isEmpty) {
-            return const LoginPage();
-          }
-          return AttendanceHistoryPage(userId: userId);
+          return (userId == null || userId.isEmpty)
+              ? const LoginPage()
+              : AttendanceHistoryPage(userId: userId);
         },
 
-        // 🔹 Admin
+        // 🔹 Admin (ไม่ซ้ำ!)
         '/admin_home': (context) => const AdminHomePage(),
-<<<<<<< HEAD
-        '/admin_student': (context) => AdminStudentPage(),
-        '/admin_teacher': (context) => AdminTeacherPage(),
-=======
         '/admin_student': (context) => const AdminStudentPage(),
-        '/add_student': (context) => const AddStudentPage(),
         '/admin_teacher': (context) => const AdminTeacherPage(),
-        '/add_teacher': (context) => const AddTeacherPage(),
->>>>>>> 8a7bfc79f22c6e3b7c0b669b2d40c9edf92d6f90
+        // '/add_student': (context) => const AddStudentPage(),
+        // '/add_teacher': (context) => const AddTeacherPage(),
         '/admin_history': (context) => const AdminHistoryPage(),
       },
 
       onGenerateRoute: (settings) {
         if (settings.name == '/teacher_qr') {
-          final args = settings.arguments;
-          if (args is Map<String, dynamic>) {
-            final courseId = args['courseId'] as int?;
-            final courseName = args['courseName'] as String?;
-            if (courseId != null && courseName != null) {
-              return MaterialPageRoute(
-                builder: (_) => TeacherQRPage(
-                  courseId: courseId,
-                  courseName: courseName,
-                ),
-              );
-            }
+          final args = settings.arguments as Map<String, dynamic>?;
+          final courseId = args?['courseId'] as int?;
+          final courseName = args?['courseName'] as String?;
+          if (courseId != null && courseName != null) {
+            return MaterialPageRoute(
+              builder: (_) => TeacherQRPage(
+                courseId: courseId,
+                courseName: courseName,
+              ),
+            );
           }
-          return MaterialPageRoute(builder: (_) => const LoginPage());
         }
-        return null;
+        return MaterialPageRoute(builder: (_) => const LoginPage());
       },
 
       onUnknownRoute: (_) =>

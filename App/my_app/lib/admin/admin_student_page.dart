@@ -217,7 +217,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
         title: 'นักศึกษา',
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle, color: _borderBlue),
+            icon: const Icon(Icons.add_circle, color: Color(0xFF88A8E8)),
             onPressed: _openAddStudentModal,
           ),
           const SizedBox(width: 6),

@@ -6,8 +6,6 @@ class ClassPage extends StatelessWidget {
     super.key,
     this.studentId,
     this.studentName,
-    required Null Function(dynamic context) Function,
-    //required AdminHistoryPage Function(dynamic context),
   });
 
   final String? studentId;
@@ -45,17 +43,17 @@ class ClassPage extends StatelessWidget {
           ),
         ),
       ),
-
       body: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         itemCount: _classes.length + (hasStudent ? 1 : 0),
         itemBuilder: (context, i) {
-          // แสดงข้อมูลนักศึกษาด้านบน (ถ้ามี)
+          /// แสดงชื่ออาจารย์/นักศึกษาด้านบน
           if (hasStudent && i == 0) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
-                'นักศึกษา: $studentName  ${studentId != null ? "($studentId)" : ""}',
+                'อาจารย์: $studentName'
+                '${studentId != null ? " ($studentId)" : ""}',
                 style: const TextStyle(fontSize: 14, color: Colors.black54),
               ),
             );
@@ -69,7 +67,6 @@ class ClassPage extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: () async {
-                //ไปหน้าแก้ไขรายวิชา พร้อมส่งค่าเริ่มต้น
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -77,7 +74,7 @@ class ClassPage extends StatelessWidget {
                       name: c['name']!,
                       code: c['code']!,
                       credits: '3',
-                      teacher: 'ดร.รัตติกกร สมบัติแก้ว',
+                      teacher: studentName ?? '',
                       startTime: '17:00',
                       endTime: '20:00',
                       room: 'E107',
@@ -86,9 +83,7 @@ class ClassPage extends StatelessWidget {
                   ),
                 );
 
-                // ถ้าหน้าแก้ไขส่งค่ากลับมา (เช่นกดบันทึก/ลบ)
                 if (result is Map) {
-                  // คุณจะอัปเดตรายการ/ลบได้ที่นี่ (เดโม่เป็น snackbar)
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -100,10 +95,8 @@ class ClassPage extends StatelessWidget {
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(vertical: 8),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
