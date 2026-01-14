@@ -36,15 +36,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Uni Check',
       debugShowCheckedModeBanner: false,
-      initialRoute: '/splash',
 
-<<<<<<< HEAD
       // หน้าแรก:
       initialRoute: '/login',
+
       //student_home ,//teacher_home
       // ภาษาที่รองรับ
-=======
->>>>>>> 3ad59fe4ae5a05af2b799c8d8548c5bceb71baa6
       locale: const Locale('th'),
       supportedLocales: const [Locale('th'), Locale('en')],
       localizationsDelegates: const [
@@ -62,7 +59,8 @@ class MyApp extends StatelessWidget {
         // 🔹 Student
         '/student_home': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
           return (userId == null || userId.isEmpty)
               ? const LoginPage()
@@ -74,7 +72,8 @@ class MyApp extends StatelessWidget {
         // 🔹 Teacher
         '/teacher_home': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
           return (userId == null || userId.isEmpty)
               ? const LoginPage()
@@ -82,7 +81,8 @@ class MyApp extends StatelessWidget {
         },
         '/courses': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
           return (userId == null || userId.isEmpty)
               ? const LoginPage()
@@ -90,7 +90,8 @@ class MyApp extends StatelessWidget {
         },
         '/teacher_attendancehistory': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
           return (userId == null || userId.isEmpty)
               ? const LoginPage()
@@ -113,10 +114,8 @@ class MyApp extends StatelessWidget {
           final courseName = args?['courseName'] as String?;
           if (courseId != null && courseName != null) {
             return MaterialPageRoute(
-              builder: (_) => TeacherQRPage(
-                courseId: courseId,
-                courseName: courseName,
-              ),
+              builder: (_) =>
+                  TeacherQRPage(courseId: courseId, courseName: courseName),
             );
           }
         }
