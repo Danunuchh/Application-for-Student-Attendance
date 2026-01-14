@@ -23,7 +23,6 @@ import 'package:my_app/teacher/teacher_attendancehistory_page.dart';
 // --- Auth / Misc ---
 import 'package:my_app/pages/login_page.dart';
 import 'package:my_app/pages/signup.dart';
-import 'package:my_app/pages/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,9 +37,9 @@ class MyApp extends StatelessWidget {
       title: 'Uni Check',
       debugShowCheckedModeBanner: false,
 
-      // หน้าแรก: Splash เพื่อตรวจ token/role
-      initialRoute: '/teacher_home',
-      //student_home
+      // หน้าแรก:
+      initialRoute: '/login',
+      //student_home ,//teacher_home
       // ภาษาที่รองรับ
       locale: const Locale('th'),
       supportedLocales: const [Locale('th'), Locale('en')],
@@ -56,7 +55,6 @@ class MyApp extends StatelessWidget {
         '/': (context) => const LoginPage(),
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignUpPage(),
-        '/splash': (context) => const SplashScreenPage(),
 
         // 🔹 Student Pages (ไม่ใช้ const เพราะต้องอ่าน arguments)
         '/student_home': (context) {
