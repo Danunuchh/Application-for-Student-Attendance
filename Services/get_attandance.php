@@ -49,14 +49,12 @@ try {
         JOIN attendance a ON ad.attendance_id = a.attendance_id
         WHERE a.course_id = :course_id
           AND ad.user_id = :user_id
-          AND a.day = :date
     ";
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             'course_id' => $course_id,
             'user_id' => $user_id,
-            'date' => $date,
         ]);
     } else {
         // Query default หรือ type อื่นๆ

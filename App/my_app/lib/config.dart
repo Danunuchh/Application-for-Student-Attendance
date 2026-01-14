@@ -3,5 +3,5 @@
 // สำหรับ iOS Simulator / Web ใช้ localhost ได้
 // N: ลบ /Services ออก เพราะ Docker mount ./Services -> /var/www/html (document root)
 // const String baseUrl = 'http://10.0.2.2:8000'; // Android Emulator
-const String baseUrl = 'http://172.19.176.1:8000'; // Physical Device (เปลี่ยน IP ตามเครื่องคุณ)
+const String baseUrl = 'http://192.168.0.102:8000/Services/'; // Physical Device (เปลี่ยน IP ตามเครื่องคุณ)
 // const String baseUrl = 'http://localhost:8000'; // iOS Simulator / Web
