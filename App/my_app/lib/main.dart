@@ -23,7 +23,6 @@ import 'package:my_app/teacher/teacher_attendancehistory_page.dart';
 // --- Auth / Misc ---
 import 'package:my_app/pages/login_page.dart';
 import 'package:my_app/pages/signup.dart';
-import 'package:my_app/pages/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,6 +38,13 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: '/splash',
 
+<<<<<<< HEAD
+      // หน้าแรก:
+      initialRoute: '/login',
+      //student_home ,//teacher_home
+      // ภาษาที่รองรับ
+=======
+>>>>>>> 3ad59fe4ae5a05af2b799c8d8548c5bceb71baa6
       locale: const Locale('th'),
       supportedLocales: const [Locale('th'), Locale('en')],
       localizationsDelegates: const [
@@ -52,7 +58,6 @@ class MyApp extends StatelessWidget {
         '/': (context) => const LoginPage(),
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignUpPage(),
-        '/splash': (context) => const SplashScreenPage(),
 
         // 🔹 Student
         '/student_home': (context) {
