@@ -4,9 +4,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 // --- Admin side ---
 import 'package:my_app/admin/admin_home_page.dart';
 import 'package:my_app/admin/admin_student_page.dart';
-import 'package:my_app/admin/admin_add_student_page.dart';
-import 'package:my_app/admin/admin_history_page.dart';
 import 'package:my_app/admin/admin_teacher_page.dart';
+import 'package:my_app/admin/admin_history_page.dart';
+// import 'package:my_app/admin/add_student_page.dart';
 import 'package:my_app/admin/admin_add_teacher_page.dart';
 
 // --- Student side ---
@@ -36,11 +36,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Uni Check',
       debugShowCheckedModeBanner: false,
+      initialRoute: '/splash',
 
+<<<<<<< HEAD
       // หน้าแรก:
       initialRoute: '/login',
       //student_home ,//teacher_home
       // ภาษาที่รองรับ
+=======
+>>>>>>> 3ad59fe4ae5a05af2b799c8d8548c5bceb71baa6
       locale: const Locale('th'),
       supportedLocales: const [Locale('th'), Locale('en')],
       localizationsDelegates: const [
@@ -49,93 +53,79 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
 
-      // ======= Static Routes =======
-      routes: {
-        // 🔹 Auth Pages
+      routes: <String, WidgetBuilder>{
+        // 🔹 Auth
         '/': (context) => const LoginPage(),
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignUpPage(),
 
-        // 🔹 Student Pages (ไม่ใช้ const เพราะต้องอ่าน arguments)
+        // 🔹 Student
         '/student_home': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
-          if (userId == null || userId.isEmpty) {
-            // ถ้าไม่มี userId ให้ย้อนกลับไปหน้า login (หรือ splash ตามที่ต้องการ)
-            return const LoginPage();
-          }
-          return StudentHomePage(userId: userId);
+          return (userId == null || userId.isEmpty)
+              ? const LoginPage()
+              : StudentHomePage(userId: userId);
         },
         '/scan': (context) => const StudentScanPage(),
         '/leave_upload': (context) => const LeaveUploadPage(),
 
-        // 🔹 Teacher Pages (ไม่ใช้ const เพราะต้องอ่าน arguments)
+        // 🔹 Teacher
         '/teacher_home': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
-          if (userId == null || userId.isEmpty) {
-            return const LoginPage();
-          }
-          return TeacherHomePage(userId: userId);
+          return (userId == null || userId.isEmpty)
+              ? const LoginPage()
+              : TeacherHomePage(userId: userId);
         },
         '/courses': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
-          if (userId == null || userId.isEmpty) {
-            return const LoginPage(); // หรือย้อนกลับหน้า teacher_home ก็ได้
-          }
-          return CoursesPage(userId: userId);
+          return (userId == null || userId.isEmpty)
+              ? const LoginPage()
+              : CoursesPage(userId: userId);
         },
         '/teacher_attendancehistory': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments
-                  as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
-          if (userId == null || userId.isEmpty) return const LoginPage();
-          return AttendanceHistoryPage(userId: userId);
+          return (userId == null || userId.isEmpty)
+              ? const LoginPage()
+              : AttendanceHistoryPage(userId: userId);
         },
 
-        // 🔹 Admin Pages
+        // 🔹 Admin (ไม่ซ้ำ!)
         '/admin_home': (context) => const AdminHomePage(),
         '/admin_student': (context) => const AdminStudentPage(),
-        '/add_student': (context) => const AddStudentPage(),
         '/admin_teacher': (context) => const AdminTeacherPage(),
-        '/add_teacher': (context) => const AddTeacherPage(),
+        // '/add_student': (context) => const AddStudentPage(),
+        // '/add_teacher': (context) => const AddTeacherPage(),
         '/admin_history': (context) => const AdminHistoryPage(),
       },
 
-      // ======= Dynamic Routes =======
       onGenerateRoute: (settings) {
         if (settings.name == '/teacher_qr') {
-          final args = settings.arguments;
-          if (args is Map<String, dynamic>) {
-            final courseId = args['courseId'] as int?;
-            final courseName = args['courseName'] as String?;
-            if (courseId != null && courseName != null) {
-              return MaterialPageRoute(
-                builder: (_) =>
-                    TeacherQRPage(courseId: courseId, courseName: courseName),
-                settings: settings,
-              );
-            }
+          final args = settings.arguments as Map<String, dynamic>?;
+          final courseId = args?['courseId'] as int?;
+          final courseName = args?['courseName'] as String?;
+          if (courseId != null && courseName != null) {
+            return MaterialPageRoute(
+              builder: (_) => TeacherQRPage(
+                courseId: courseId,
+                courseName: courseName,
+              ),
+            );
           }
-          // ❌ อย่ากลับไป CoursesPage แบบไม่ส่ง userId อีกแล้ว
-          return MaterialPageRoute(builder: (_) => const LoginPage());
         }
-        return null;
+        return MaterialPageRoute(builder: (_) => const LoginPage());
       },
 
-      // กันหลงทาง
       onUnknownRoute: (_) =>
           MaterialPageRoute(builder: (_) => const LoginPage()),
 
-      // ธีมหลัก
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: const Color(0xFF4A86E8),

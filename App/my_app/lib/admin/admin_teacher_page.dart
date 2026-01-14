@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/admin/admin_class_page.dart'; // เพิ่ม import หน้ารายวิชา
+import 'package:my_app/admin/admin_class_page.dart';
+import 'package:my_app/components/custom_appbar.dart';
+import 'package:my_app/components/textbox.dart';
 
 class AdminTeacherPage extends StatefulWidget {
   const AdminTeacherPage({super.key});
 
   @override
-  State<AdminTeacherPage> createState() => _AdminTeachersPageState();
+  State<AdminTeacherPage> createState() => _AdminTeacherPageState();
 }
 
-class _AdminTeachersPageState extends State<AdminTeacherPage> {
+class _AdminTeacherPageState extends State<AdminTeacherPage> {
+  static const Color _borderBlue = Color(0xFF88A8E8);
+
   final List<Map<String, dynamic>> teachers = [
     {"user_id": "1", "name": "ดร.สมชาย ใจดี"},
     {"user_id": "2", "name": "ผศ.สมหญิง รักงาน"},
@@ -18,194 +22,249 @@ class _AdminTeachersPageState extends State<AdminTeacherPage> {
 
   String searchText = "";
 
-  // โทนสี
-  static const _blueBorder = Color(0xFFB0C4DE);
-  static const _plusBlue = Color(0xFF5C8DFF);
-  static const _cardShadow = Color(0x1A000000);
+  /// ===== ช่องค้นหา =====
+  InputDecoration _searchDeco(String label) => InputDecoration(
+    labelText: label,
+    isDense: true,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 2),
+    ),
+    suffixIcon: const Icon(Icons.search),
+  );
+
+  /// ===== InputDecoration ใน Modal =====
+  InputDecoration _dec(String label) => InputDecoration(
+    labelText: label,
+    isDense: true,
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
+    ),
+  );
+
+  /// ===== Modal เพิ่มอาจารย์ =====
+  void _openAddTeacherModal() {
+    final formKey = GlobalKey<FormState>();
+    final idCtl = TextEditingController();
+    final nameCtl = TextEditingController();
+
+    bool canSave = false;
+
+    void checkCanSave() {
+      canSave = idCtl.text.trim().isNotEmpty && nameCtl.text.trim().isNotEmpty;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'เพิ่มอาจารย์',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextFormField(
+                      controller: idCtl,
+                      decoration: _dec('รหัสอาจารย์'),
+                      onChanged: (_) => setModalState(() => checkCanSave()),
+                      validator: (v) => v == null || v.trim().isEmpty
+                          ? 'กรุณากรอกรหัสอาจารย์'
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+
+                    TextFormField(
+                      controller: idCtl,
+                      decoration: _dec('คำนำหน้า'),
+                      onChanged: (_) => setModalState(() => checkCanSave()),
+                      validator: (v) => v == null || v.trim().isEmpty
+                          ? 'กรุณากรอกคำนำหน้า'
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+
+                    TextFormField(
+                      controller: nameCtl,
+                      decoration: _dec('ชื่อ – นามสกุล'),
+                      onChanged: (_) => setModalState(() => checkCanSave()),
+                      validator: (v) => v == null || v.trim().isEmpty
+                          ? 'กรุณากรอกชื่อ–นามสกุล'
+                          : null,
+                    ),
+                    const SizedBox(height: 20),
+
+                    Row(
+                      children: [
+                        /// ยกเลิก
+                        OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red,
+                            side: const BorderSide(color: Colors.red),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                          child: const Text(
+                            'ยกเลิก',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+
+                        const Spacer(),
+
+                        FilledButton.icon(
+                          onPressed: () {
+                            if (!canSave) return;
+                            if (!formKey.currentState!.validate()) return;
+
+                            setState(() {
+                              teachers.add({
+                                "user_id": idCtl.text.trim(),
+                                "name": nameCtl.text.trim(),
+                              });
+                            });
+
+                            Navigator.pop(context);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('เพิ่มอาจารย์เรียบร้อย'),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.check_circle_outline),
+                          label: const Text('บันทึก'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: canSave
+                                ? const Color(0xFF22C55E)
+                                : const Color.fromARGB(255, 188, 246, 219),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _deleteTeacher(Map<String, dynamic> teacher) {
+    setState(() => teachers.remove(teacher));
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filtered = teachers
+    final filteredTeachers = teachers
         .where(
-          (t) => t["name"].toString().contains(searchText),
+          (t) => t['name'].toLowerCase().contains(searchText.toLowerCase()),
         )
         .toList();
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "จัดการอาจารย์",
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+      appBar: CustomAppBar(
+        title: 'อาจารย์',
         actions: [
-          // ปุ่มบวก -> ไปหน้าเพิ่มอาจารย์ และรอผลกลับมา
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: () async {
-                final newTeacher = await Navigator.pushNamed(
-                  context,
-                  '/add_teacher',
-                );
-                if (newTeacher is Map<String, dynamic>) {
-                  setState(() => teachers.insert(0, newTeacher));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('เพิ่มอาจารย์เรียบร้อย')),
-                  );
-                }
-              },
-              child: Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: _plusBlue,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: _cardShadow,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.add, size: 18, color: Colors.white),
-              ),
-            ),
+          IconButton(
+            icon: const Icon(Icons.add_circle, color: _borderBlue),
+            onPressed: _openAddTeacherModal,
           ),
         ],
       ),
-
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // กล่องค้นหา (กึ่งกลาง)
-            Align(
-              alignment: Alignment.center,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 260),
-                child: Container(
-                  height: 40,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: _blueBorder, width: 1.2),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          onChanged: (v) => setState(() => searchText = v),
-                          decoration: const InputDecoration(
-                            hintText: "ค้นหาอาจารย์",
-                            isCollapsed: true,
-                            border: InputBorder.none,
-                          ),
-                          style: const TextStyle(fontSize: 14.5),
-                        ),
-                      ),
-                      Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(11),
-                          border: Border.all(color: _blueBorder, width: 1.1),
-                        ),
-                        child: const Icon(Icons.search, size: 14),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            TextField(
+              decoration: _searchDeco('ค้นหาอาจารย์'),
+              onChanged: (v) => setState(() => searchText = v),
             ),
-            const SizedBox(height: 18),
-
-            // รายการอาจารย์
+            const SizedBox(height: 16),
             Expanded(
-              child: ListView.separated(
-                itemCount: filtered.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 16),
+              child: ListView.builder(
+                itemCount: filteredTeachers.length,
                 itemBuilder: (context, index) {
-                  final t = filtered[index];
-
-                  // เชื่อม ClassPage เมื่อแตะการ์ด
-                  return Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ClassPage(
-                              studentId: t["user_id"],
-                              studentName: t["name"],
-                              Function: (context) {},
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        padding: const EdgeInsets.fromLTRB(16, 14, 14, 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: _blueBorder, width: 1.2),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: _cardShadow,
-                              blurRadius: 6,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // ซ้าย: ชื่อ
-                            Expanded(
-                              child: Text(
-                                t["name"],
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ),
-                            // ขวา: ถังขยะ
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.redAccent,
-                                size: 22,
-                              ),
-                              onPressed: () =>
-                                  setState(() => teachers.removeAt(index)),
-                              tooltip: 'ลบ',
-                            ),
-                          ],
-                        ),
+                  final t = filteredTeachers[index];
+                  return TextBox(
+                    title: t['name'],
+                    subtitle: 'รหัสอาจารย์: ${t['user_id']}',
+                    trailing: IconButton(
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.redAccent,
                       ),
+                      onPressed: () => _deleteTeacher(t),
                     ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ClassPage(
+                            studentId: t['user_id'],
+                            studentName: t['name'],
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

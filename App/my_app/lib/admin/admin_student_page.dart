@@ -1,245 +1,267 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/admin/admin_class_page.dart'; // เพิ่ม import หน้ารายวิชา
+import 'package:my_app/components/custom_appbar.dart';
 
 class AdminStudentPage extends StatefulWidget {
   const AdminStudentPage({super.key});
 
   @override
-  State<AdminStudentPage> createState() => _AdminStudentsPageState();
+  State<AdminStudentPage> createState() => _AdminStudentPageState();
 }
 
-class _AdminStudentsPageState extends State<AdminStudentPage> {
-  final List<Map<String, dynamic>> students = [
-    {"id": "65200020", "name": "กวิสรา แซ่เซี้ย", "checked": false},
-    {"id": "65200128", "name": "ดนุนุช เกตุทองหลาง", "checked": true},
-    {"id": "65200020", "name": "กวิสรา แซ่เซี้ย", "checked": false},
-    {"id": "65200128", "name": "ดนุนุช เกตุทองหลาง", "checked": true},
-  ];
+class _AdminStudentPageState extends State<AdminStudentPage> {
+  static const Color _borderBlue = Color(0xFF88A8E8);
 
-  String searchText = "";
+  int? _selectedYear;
 
-  // โทนสี
-  static const _blueBorder = Color(0xFFB0C4DE);
-  static const _plusBlue = Color(0xFF5C8DFF);
-  static const _cardShadow = Color(0x1A000000);
+  /// ====== ช่องค้นหา ======
+  InputDecoration _searchDeco(String label) => InputDecoration(
+    labelText: label,
+    isDense: true,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 2),
+    ),
+    suffixIcon: const Icon(Icons.search),
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    final filtered = students
-        .where(
-          (s) =>
-              s["id"].toString().contains(searchText) ||
-              s["name"].toString().contains(searchText),
-        )
-        .toList();
+  /// ====== InputDecoration ใช้ใน Modal ======
+  InputDecoration _dec(String label) => InputDecoration(
+    labelText: label,
+    isDense: true,
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
+    ),
+  );
 
-    return Scaffold(
+  /// ====== Modal เพิ่มนักศึกษา ======
+  void _openAddStudentModal() {
+    final formKey = GlobalKey<FormState>();
+    final studentIdCtl = TextEditingController();
+    final nameCtl = TextEditingController();
+
+    bool canSave = false;
+
+    void checkCanSave() {
+      canSave =
+          studentIdCtl.text.trim().isNotEmpty && nameCtl.text.trim().isNotEmpty;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "จัดการนักศึกษา",
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        actions: [
-          // ปุ่มบวก -> ไปหน้าเพิ่มนักศึกษา และรอผลกลับมา
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: () async {
-                final newStudent = await Navigator.pushNamed(
-                  context,
-                  '/add_student',
-                );
-                if (newStudent is Map<String, dynamic>) {
-                  setState(() => students.insert(0, newStudent));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('เพิ่มนักศึกษาเรียบร้อย')),
-                  );
-                }
-              },
-              child: Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: _plusBlue,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: _cardShadow,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'เพิ่มนักศึกษา',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    /// รหัสนักศึกษา
+                    TextFormField(
+                      controller: studentIdCtl,
+                      decoration: _dec('รหัสนักศึกษา'),
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) {
+                        setModalState(() {
+                          checkCanSave();
+                        });
+                      },
+                      validator: (v) => v == null || v.trim().isEmpty
+                          ? 'กรุณากรอกรหัสนักศึกษา'
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+
+                    /// ชื่อ–นามสกุล
+                    TextFormField(
+                      controller: nameCtl,
+                      decoration: _dec('ชื่อ – นามสกุล'),
+                      onChanged: (_) {
+                        setModalState(() {
+                          checkCanSave();
+                        });
+                      },
+                      validator: (v) => v == null || v.trim().isEmpty
+                          ? 'กรุณากรอกชื่อ–นามสกุล'
+                          : null,
+                    ),
+                    const SizedBox(height: 20),
+
+                    Row(
+                      children: [
+                        /// ยกเลิก
+                        OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red,
+                            side: const BorderSide(color: Colors.red),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                          child: const Text(
+                            'ยกเลิก',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+
+                        const Spacer(),
+
+                        /// บันทึก (จาง → เข้ม)
+                        FilledButton.icon(
+                          onPressed: () {
+                            if (!canSave) return;
+
+                            if (!formKey.currentState!.validate()) return;
+
+                            final studentId = studentIdCtl.text.trim();
+                            final fullName = nameCtl.text.trim();
+
+                            // TODO: เรียก API เพิ่มนักศึกษา
+                            // print(studentId);
+                            // print(fullName);
+
+                            Navigator.pop(context);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('เพิ่มนักศึกษาเรียบร้อย'),
+                              ),
+                            );
+                          },
+                          label: const Text(
+                            'บันทึก',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          icon: const Icon(Icons.check_circle_outline),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: canSave
+                                ? const Color(0xFF22C55E) // เขียวเข้ม
+                                : const Color.fromARGB(255, 188, 246, 219), // 🟢 เขียวจาง
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                child: const Icon(Icons.add, size: 18, color: Colors.white),
               ),
-            ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// ====== UI หลัก ======
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: CustomAppBar(
+        title: 'นักศึกษา',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle, color: Color(0xFF88A8E8)),
+            onPressed: _openAddStudentModal,
           ),
+          const SizedBox(width: 6),
         ],
       ),
-
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // กล่องค้นหา (กึ่งกลาง)
-            Align(
-              alignment: Alignment.center,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 260),
-                child: Container(
-                  height: 40,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: _blueBorder, width: 1.2),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          onChanged: (v) => setState(() => searchText = v),
-                          decoration: const InputDecoration(
-                            hintText: "ค้นหานักศึกษา",
-                            isCollapsed: true,
-                            border: InputBorder.none,
-                          ),
-                          style: const TextStyle(fontSize: 14.5),
-                        ),
-                      ),
-                      Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(11),
-                          border: Border.all(color: _blueBorder, width: 1.1),
-                        ),
-                        child: const Icon(Icons.search, size: 14),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            const Text(
+              'ชั้นปี',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
 
-            // รายการนักศึกษา
-            Expanded(
-              child: ListView.separated(
-                itemCount: filtered.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final s = filtered[index];
-                  final checked = s["checked"] == true;
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(4, (i) {
+                final year = i + 1;
+                final selected = _selectedYear == year;
 
-                  // เชื่อม ClassPage เมื่อแตะการ์ด
-                  return Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ClassPage(
-                              studentId: s["id"],
-                              studentName: s["name"],
-                              Function: (context) {},
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        padding: const EdgeInsets.fromLTRB(16, 14, 14, 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: _blueBorder, width: 1.2),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: _cardShadow,
-                              blurRadius: 6,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // ซ้าย: รหัส + ชื่อ
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    s["id"],
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.2,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    s["name"],
-                                    style: const TextStyle(
-                                      fontSize: 14.5,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // ขวา: สถานะ + ถังขยะ
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  checked ? "เช็กชื่อ" : "ไม่ได้เช็กชื่อ",
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: checked ? Colors.green : Colors.red,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                    color: Colors.redAccent,
-                                    size: 22,
-                                  ),
-                                  onPressed: () =>
-                                      setState(() => students.removeAt(index)),
-                                  tooltip: 'ลบ',
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: selected ? _borderBlue : Colors.white,
+                      foregroundColor: selected ? Colors.white : Colors.black,
+                      side: const BorderSide(color: _borderBlue),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                  );
-                },
-              ),
+                    onPressed: () => setState(() => _selectedYear = year),
+                    child: Text('ปี $year'),
+                  ),
+                );
+              }),
             ),
+
+            const SizedBox(height: 24),
+
+            /// ช่องค้นหาอยู่ล่างชั้นปี
+            TextField(decoration: _searchDeco('รหัสนักศึกษา')),
           ],
         ),
       ),

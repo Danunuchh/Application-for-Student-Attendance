@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'admin_history_detail.dart';
+import 'package:my_app/components/custom_appbar.dart';
 
 //หน้าประวัติการเข้าเรียนของนักศึกษา
 class AdminHistoryPage extends StatelessWidget {
@@ -17,19 +18,7 @@ class AdminHistoryPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'ประวัติการเข้าเรียน',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w700),
-        ),
-      ),
+      appBar: const CustomAppBar(title: 'ประวัติการเข้าเรียน'),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: courses.length,

@@ -1,26 +1,23 @@
 services:
-  # ไม่ได้ใช่ nodejs
-  # backend:
-  #   build:
-  #     context: ./Services
-  #     dockerfile: Dockerfile-node
-  #   container_name: backend-app
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     NODE_ENV: development
-  #     DB_HOST: db
-  #     DB_USER: root
-  #     DB_PASSWORD: password
-  #     DB_NAME: Application_attendance
-  #     TZ: Asia/Bangkok
-  #   depends_on:
-  #     - db
-  #   restart: always
-  #   volumes:
-  #     - ./Services:/usr/src/app
-  #     - /usr/src/app/node_modules
-  #   command: npm run dev
+  backend:
+    build:
+      dockerfile: Dockerfile-node
+    container_name: backend-app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_NAME: Application_attendance
+      TZ: Asia/Bangkok
+    depends_on:
+      - db
+    restart: always
+    volumes:
+      - /usr/src/app/node_modules
+    command: npm run dev
 
   db:
     image: mysql:8.0
@@ -44,13 +41,11 @@ services:
 
   php:
     build:
-      context: ./Services
       dockerfile: Dockerfile-php
     container_name: php-app
     ports:
       - "8000:80"
     volumes:
-      - ./Services:/var/www/html
     depends_on:
       - db
     restart: always
@@ -69,4 +64,3 @@ services:
 
 volumes:
   db_data:
- 
