@@ -39,6 +39,7 @@ class MyApp extends StatelessWidget {
 
       // หน้าแรก:
       initialRoute: '/login',
+
       //student_home ,//teacher_home
       
       // ภาษาที่รองรับ
@@ -59,7 +60,8 @@ class MyApp extends StatelessWidget {
         // 🔹 Student
         '/student_home': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
           return (userId == null || userId.isEmpty)
               ? const LoginPage()
@@ -71,7 +73,8 @@ class MyApp extends StatelessWidget {
         // 🔹 Teacher
         '/teacher_home': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
           return (userId == null || userId.isEmpty)
               ? const LoginPage()
@@ -79,7 +82,8 @@ class MyApp extends StatelessWidget {
         },
         '/courses': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
           return (userId == null || userId.isEmpty)
               ? const LoginPage()
@@ -87,7 +91,8 @@ class MyApp extends StatelessWidget {
         },
         '/teacher_attendancehistory': (context) {
           final args =
-              ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>?;
           final userId = args?['userId'] as String?;
           return (userId == null || userId.isEmpty)
               ? const LoginPage()
@@ -110,10 +115,8 @@ class MyApp extends StatelessWidget {
           final courseName = args?['courseName'] as String?;
           if (courseId != null && courseName != null) {
             return MaterialPageRoute(
-              builder: (_) => TeacherQRPage(
-                courseId: courseId,
-                courseName: courseName,
-              ),
+              builder: (_) =>
+                  TeacherQRPage(courseId: courseId, courseName: courseName),
             );
           }
         }
