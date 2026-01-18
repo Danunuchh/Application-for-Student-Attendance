@@ -38,13 +38,14 @@ class TextBox extends StatelessWidget {
     final box = BoxDecoration(
       color: Colors.white,
       border: showBorder
-          ? Border.all(color: const Color(0xFFA6CAFA), width: 1.5)
+          ? Border.all(color: const Color(0xFF84A9EA), width: 1.5)  
           : null,
       borderRadius: BorderRadius.circular(20),
       boxShadow: const [
         BoxShadow(
           color: Color(0x14000000),
-          blurRadius: 8,
+          blurRadius: 6,
+          spreadRadius: 2,
           offset: Offset(0, 3),
         ),
       ],

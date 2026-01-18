@@ -211,9 +211,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 _title('Email'),
                 TextFormField(
                   controller: _email,
-                  readOnly: !_isEditing,
-                  keyboardType: TextInputType.emailAddress,
+                  readOnly: true,
+                  showCursor: false,
+                  enableInteractiveSelection: false,
+                  keyboardType: TextInputType.none,
+                  focusNode: FocusNode(canRequestFocus: false),
                   decoration: _field('Email'),
+                  // readOnly: !_isEditing,
+                  // keyboardType: TextInputType.emailAddress,
+                  // decoration: _field('Email'),
                   validator: (v) => (v == null || !v.contains('@'))
                       ? 'รูปแบบอีเมลไม่ถูกต้อง'
                       : null,
@@ -235,7 +241,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   _title('รหัสนักศึกษา'),
                   TextFormField(
                     controller: _studentId,
-                    readOnly: !_isEditing,
+                    readOnly: true,
+                    showCursor: false,
+                    enableInteractiveSelection: false,
+                    keyboardType: TextInputType.none,
+                    focusNode: FocusNode(canRequestFocus: false),
                     decoration: _field('รหัสนักศึกษา'),
                   ),
                 ],
@@ -244,7 +254,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   _title('รหัสอาจารย์'),
                   TextFormField(
                     controller: _teacherCode,
-                    readOnly: !_isEditing,
+                    readOnly: true,
+                    showCursor: false,
+                    enableInteractiveSelection: false,
+                    keyboardType: TextInputType.none,
+                    focusNode: FocusNode(canRequestFocus: false),
                     decoration: _field('รหัสอาจารย์'),
                   ),
                 ],

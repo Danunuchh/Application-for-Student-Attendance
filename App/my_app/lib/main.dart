@@ -36,15 +36,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Uni Check',
       debugShowCheckedModeBanner: false,
-      initialRoute: '/splash',
 
-<<<<<<< HEAD
       // หน้าแรก:
       initialRoute: '/login',
       //student_home ,//teacher_home
+      
       // ภาษาที่รองรับ
-=======
->>>>>>> 3ad59fe4ae5a05af2b799c8d8548c5bceb71baa6
       locale: const Locale('th'),
       supportedLocales: const [Locale('th'), Locale('en')],
       localizationsDelegates: const [

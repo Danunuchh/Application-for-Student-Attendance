@@ -22,7 +22,7 @@ class SubjectDetailPage extends StatelessWidget {
           decoration: BoxDecoration(  //ตกแต่งกรอบข้อมูลรายวิชา
               color: Colors.white,
               border: Border.all(
-                color: const Color(0xFFA6CAFA),
+                color: const Color(0xFF84A9EA),
                 width: 1.5, // ✅ เส้นขอบหนา 2
               ),
               borderRadius: BorderRadius.circular(16),

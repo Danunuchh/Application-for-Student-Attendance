@@ -190,7 +190,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
           Center(
             child: Text(
               widget.courseName,
-              style: const TextStyle(fontSize: 16, color: Colors.black54),
+              style: const TextStyle(fontSize: 16, color: Color(0xFF1F2937)),
             ),
           ),
           const SizedBox(height: 12),

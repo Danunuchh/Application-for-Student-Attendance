@@ -19,7 +19,7 @@ class CustomButton extends StatelessWidget {
     this.textColor = Colors.white,
     this.fontSize = 16,
     this.borderRadius = 30, // มุมโค้งมน (เหมือนในภาพ)
-    this.padding = const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+    this.padding = const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
   });
 
   @override

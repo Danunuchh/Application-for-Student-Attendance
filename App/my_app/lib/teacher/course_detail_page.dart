@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
-
+import 'package:my_app/components/upper_case_english_formatter.dart';
 import 'package:my_app/config.dart';
 
 /// ปรับให้ตรงกับเครื่อง/เซิร์ฟเวอร์ของคุณ
@@ -49,6 +48,52 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   // โหลด/ค้นหา
   bool _loading = true;
   final _searchCtl = TextEditingController();
+
+  Future<void> _deleteCourseFromServer() async {
+    final res = await http.post(
+      Uri.parse('$apiBase/courses_api.php?type=delete_course'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'course_id': widget.courseId}),
+    );
+
+    final json = jsonDecode(res.body);
+    if (json['success'] != true) {
+      throw Exception(json['message'] ?? 'delete failed');
+    }
+  }
+
+Future<void> _updateCourseToServer({
+  required String name,
+  required String code,
+  String? credit,
+  String? teacher,
+  String? day,
+  String? time,
+  String? room,
+  String? section,
+  String? sessions,
+}) async {
+    final res = await http.post(
+      Uri.parse('$apiBase/courses_api.php?type=update_course'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'course_id': widget.courseId,
+        'name': name,
+        'code': code,
+        'credit': credit ?? '',
+        'teacher': teacher ?? '',
+        'day': day ?? '',
+        'time': time ?? '',
+        'room': room ?? '',
+        'section': section ?? '',
+        'sessions': sessions ?? '',
+      }),
+    );
+    final json = jsonDecode(res.body);
+    if (json['success'] != true) {
+      throw Exception(json['message'] ?? 'update failed');
+    }
+  }
 
   @override
   void initState() {
@@ -217,7 +262,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         errorStyle: const TextStyle(height: 0, color: Colors.transparent),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF9CA3AF), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFFF44336), width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -263,7 +308,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             child: const Text('ยกเลิก'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFF44336)),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('ลบ'),
           ),
@@ -274,26 +319,60 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
   void _deleteCourse() async {
     final ok = await _confirmDeleteCourse();
-    if (ok == true) {
-      // TODO: call PHP ลบรายวิชา แล้ว pop กลับ
+    if (ok != true) return;
+
+    try {
+      await _deleteCourseFromServer();
+
       if (!mounted) return;
-      Navigator.pop(context, {'deleteCourse': true, 'courseCode': _code});
+      Navigator.pop(context, {
+        'deleteCourse': true,
+        'courseId': widget.courseId,
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('ลบรายวิชาเรียบร้อย')));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ลบไม่สำเร็จ: $e')));
     }
   }
 
   void _deleteStudentAt(int index) async {
     final s = _filtered[index];
-    final ok = await _confirmDeleteStudent(s['id'] ?? '-', s['name'] ?? '-');
-    if (ok == true) {
-      // TODO: call PHP ลบนักศึกษาคนนี้ (server)
-      setState(() {
-        _students.removeWhere((e) => e['id'] == s['id']);
-        _filtered.removeAt(index);
-      });
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ลบ ${s['id'] ?? '-'} - ${s['name'] ?? '-'}')),
+    final ok = await _confirmDeleteStudent(
+      s['student_id'] ?? '-',
+      s['name'] ?? '-',
+    );
+    if (ok != true) return;
+
+    try {
+      final res = await http.post(
+        Uri.parse('$apiBase/courses_api.php?type=delete_student'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'course_id': widget.courseId,
+          'user_id': s['user_id'],
+        }),
       );
+
+      final json = jsonDecode(res.body);
+      if (json['success'] == true) {
+        setState(() {
+          _students.removeWhere((e) => e['user_id'] == s['user_id']);
+          _filtered.removeAt(index);
+        });
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('ลบ ${s['student_id']} สำเร็จ')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('ลบไม่สำเร็จ: $e')));
     }
   }
 
@@ -340,6 +419,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 TextFormField(
                   controller: nameCtl,
                   decoration: _dec('วิชา'),
+                  inputFormatters: [
+                    UpperCaseEnglishFormatter(),
+                  ],
                   validator: (v) => (v == null || v.trim().isEmpty)
                       ? 'กรุณากรอกชื่อวิชา'
                       : null,
@@ -373,6 +455,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 TextFormField(
                   controller: roomCtl,
                   decoration: _dec('ห้องเรียน'),
+                  inputFormatters: [
+                    UpperCaseEnglishFormatter(),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
@@ -414,40 +499,63 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                     ),
                     const Spacer(),
                     FilledButton.icon(
-                      onPressed: () {
+                      onPressed: () async {
                         if (!formKey.currentState!.validate()) return;
-                        setState(() {
-                          _name = nameCtl.text.trim();
-                          _code = codeCtl.text.trim();
-                          _credit = creditCtl.text.trim().isEmpty
-                              ? null
-                              : creditCtl.text.trim();
-                          _teacher = teacherCtl.text.trim().isEmpty
-                              ? null
-                              : teacherCtl.text.trim();
-                          _day = dayCtl.text.trim().isEmpty
-                              ? null
-                              : dayCtl.text.trim();
-                          _time = timeCtl.text.trim().isEmpty
-                              ? null
-                              : timeCtl.text.trim();
-                          _room = roomCtl.text.trim().isEmpty
-                              ? null
-                              : roomCtl.text.trim();
-                          _section = sectionCtl.text.trim().isEmpty
-                              ? null
-                              : sectionCtl.text.trim();
-                          _sessions = sessionsCtl.text.trim().isEmpty
-                              ? null
-                              : sessionsCtl.text.trim();
-                        });
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('บันทึกการแก้ไขเรียบร้อย'),
-                          ),
-                        );
+
+                        try {
+                          await _updateCourseToServer(
+                            name: nameCtl.text.trim(),
+                            code: codeCtl.text.trim(),
+                            credit: creditCtl.text.trim(),
+                            teacher: teacherCtl.text.trim(),
+                            day: dayCtl.text.trim(),
+                            time: timeCtl.text.trim(),
+                            room: roomCtl.text.trim(),
+                            section: sectionCtl.text.trim(),
+                            sessions: sessionsCtl.text.trim(),
+                          );
+
+                          setState(() {
+                            _name = nameCtl.text.trim();
+                            _code = codeCtl.text.trim();
+                            _credit = creditCtl.text.trim().isEmpty
+                                ? null
+                                : creditCtl.text.trim();
+                            _teacher = teacherCtl.text.trim().isEmpty
+                                ? null
+                                : teacherCtl.text.trim();
+                            _day = dayCtl.text.trim().isEmpty
+                                ? null
+                                : dayCtl.text.trim();
+                            _time = timeCtl.text.trim().isEmpty
+                                ? null
+                                : timeCtl.text.trim();
+                            _room = roomCtl.text.trim().isEmpty
+                                ? null
+                                : roomCtl.text.trim();
+                            _section = sectionCtl.text.trim().isEmpty
+                                ? null
+                                : sectionCtl.text.trim();
+                            _sessions = sessionsCtl.text.trim().isEmpty
+                                ? null
+                                : sessionsCtl.text.trim();
+                          });
+
+                          if (!mounted) return;
+                          Navigator.pop(context);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('บันทึกการแก้ไขเรียบร้อย'),
+                            ),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('บันทึกไม่สำเร็จ: $e')),
+                          );
+                        }
                       },
+
                       label: const Text(
                         'บันทึก',
                         style: TextStyle(

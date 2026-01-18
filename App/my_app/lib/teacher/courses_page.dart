@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http; // ✅ ใช้ http
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
 import 'package:my_app/components/button.dart';
+import 'package:my_app/components/upper_case_english_formatter.dart';
 import 'package:my_app/teacher/course_detail_page.dart';
 import 'teacher_qr_page.dart';
 import 'package:my_app/config.dart';
@@ -689,6 +690,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
     final res = await showTimePicker(
       context: context,
       initialTime: now,
+      initialEntryMode: TimePickerEntryMode.input,
       builder: (c, child) => MediaQuery(
         data: MediaQuery.of(c).copyWith(alwaysUse24HourFormat: true),
         child: child!,
@@ -838,8 +840,12 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                   TextFormField(
                     controller: _name,
                     decoration: _dec('วิชา'),
+                    inputFormatters: [
+                      UpperCaseEnglishFormatter(), // ✅ ตัวนี้พอ
+                    ],
                     validator: (v) => _required(v, 'กรุณากรอกชื่อวิชา'),
                   ),
+
                   const SizedBox(height: 12),
 
                   Row(
@@ -953,10 +959,14 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                         child: TextFormField(
                           controller: _room,
                           decoration: _dec('ห้องเรียน'),
+                          inputFormatters: [
+                            UpperCaseEnglishFormatter(), 
+                          ],
                           validator: (v) => _required(v, 'กรุณากรอกห้องเรียน'),
                         ),
                       ),
                       const SizedBox(width: 12),
+
                       Expanded(
                         child: TextFormField(
                           controller: _section,

@@ -36,7 +36,7 @@ class AppCalendarTheme {
     todayDecoration: BoxDecoration(
       color: todayBg,
       shape: BoxShape.circle,
-      border: Border.all(color: primary, width: 1.5),
+      border: Border.all(color: const Color(0xFF4A86E8), width: 1.5),
     ),
     todayTextStyle: const TextStyle(
       color: primary,

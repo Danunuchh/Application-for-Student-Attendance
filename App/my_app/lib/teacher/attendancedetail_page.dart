@@ -216,12 +216,14 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Card(
+          color: Colors.white,
+          // surfaceTintColor: Colors.transparent,
           elevation: 3,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: cardBorder, width: 1),
+            side: BorderSide(color: cardBorder, width: 1.2),
           ),
-          shadowColor: cardShadow,
+          // shadowColor: cardShadow,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
@@ -257,7 +259,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: r.checkTime != null
+                    color: r.checkTime != null 
                         ? presentColor.withOpacity(0.1)
                         : absentColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),

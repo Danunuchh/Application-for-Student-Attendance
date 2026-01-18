@@ -86,7 +86,7 @@ class _AppCalendarState<T> extends State<AppCalendar<T>> {
                 width: 6,
                 height: 6,
                 decoration: const BoxDecoration(
-                  color: AppCalendarTheme.primary,
+                  color: Color.fromARGB(255, 24, 58, 112),
                   shape: BoxShape.circle,
                 ),
               ),

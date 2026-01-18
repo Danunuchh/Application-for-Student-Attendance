@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = true);
 
     try {
-      final url = Uri.parse('$baseUrl/login_api.php');
+      final url = Uri.parse('${baseUrl}login_api.php');
       //final url = Uri.parse(
       //'${baseUrl}login_api.php',
       //); //10.0.2.2 //192.168.0.101 //localhost

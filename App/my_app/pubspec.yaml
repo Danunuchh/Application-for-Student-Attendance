@@ -39,6 +39,9 @@ dependencies:
     sdk: flutter
   intl: ^0.20.2
 
+  # --- time ---
+  mask_text_input_formatter: ^2.7.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

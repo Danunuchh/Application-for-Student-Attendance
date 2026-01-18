@@ -249,7 +249,7 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
               children: [
                 Text('ชื่อวิชา: ${_qrData!['course_name'] ?? '-'}'),
                 Text('ชื่ออาจารย์: ${_qrData!['teacher_name'] ?? '-'}'),
-                Text('เวลาเรียน: ${_qrData!['time'] ?? '-'}'),
+                Text('เวลาเรียน: ${_qrData!['start_time'] ?? '-'} - ${_qrData!['end_time'] ?? '-'}'),
                 Text('วันที่: ${_qrData!['day'] ?? '-'}'),
                 const SizedBox(height: 12),
                 const Text(

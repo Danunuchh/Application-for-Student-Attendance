@@ -21,7 +21,7 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
   bool _submitting = false;
 
   // ===== Theme tokens =====
-  static const _borderBlue = Color(0xFFA6CAFA);
+  static const _borderBlue = Color(0xFF84A9EA);
   static const _chevronGrey = Color(0xFF6B7280);
   static const _ink = Color(0xFF1F2937);
   static const _hintGrey = Color(0xFF9CA3AF);
@@ -231,7 +231,7 @@ class _LeaveUploadPageState extends State<LeaveUploadPage> {
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                border: Border.all(color: const Color(0xFFA6CAFA), width: 1.5),
+                border: Border.all(color: const Color(0xFF84A9EA), width: 1.5),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
