@@ -740,7 +740,7 @@ Future<void> _updateCourseToServer({
                       trailing: IconButton(
                         tooltip: 'ลบนักศึกษา',
                         icon: const Icon(
-                          Icons.delete,
+                          Icons.delete_outline,
                           color: Color(0xFFF44336),
                         ),
                         onPressed: () => _deleteStudentAt(index),
