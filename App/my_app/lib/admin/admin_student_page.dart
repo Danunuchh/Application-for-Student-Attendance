@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:my_app/components/custom_appbar.dart';
+import 'package:my_app/config.dart';
 
 class AdminStudentPage extends StatefulWidget {
   const AdminStudentPage({super.key});
@@ -8,10 +12,63 @@ class AdminStudentPage extends StatefulWidget {
   State<AdminStudentPage> createState() => _AdminStudentPageState();
 }
 
+const String apiBase =
+    //'http://10.0.2.2:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
+    baseUrl; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
+
+class ApiService {
+  static Map<String, String> get _jsonHeaders => {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json; charset=utf-8',
+  };
+
+  static Future<Map<String, dynamic>> getJson(
+    String path, {
+    Map<String, String>? query,
+  }) async {
+    final uri = Uri.parse('$apiBase/$path').replace(queryParameters: query);
+    final res = await http.get(uri, headers: _jsonHeaders);
+    if (res.statusCode != 200) {
+      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> postJson(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    final uri = Uri.parse('$apiBase/$path');
+    final res = await http.post(
+      uri,
+      headers: _jsonHeaders,
+      body: jsonEncode(body),
+    );
+    if (res.statusCode != 200) {
+      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  // ✅ ย้ายเมธอดนี้เข้ามาในคลาส และยังเป็น static ได้
+  static Future<Map<String, dynamic>> addStudentToCourse({
+    required String studentId,
+    required int courseId,
+  }) async {
+    final body = {'student_id': studentId, 'course_id': courseId};
+    return await postJson('courses_api.php?type=add_student', body);
+  }
+}
+
 class _AdminStudentPageState extends State<AdminStudentPage> {
   static const Color _borderBlue = Color(0xFF88A8E8);
 
   int? _selectedYear;
+
+  /// ====== ตัวแปรนักศึกษา ======
+  List<Map<String, dynamic>> allStudents = [];
+  List<Map<String, dynamic>> filteredStudents = [];
+  Map<String, bool> selectedStudents = {};
 
   /// ====== ช่องค้นหา ======
   InputDecoration _searchDeco(String label) => InputDecoration(
@@ -20,7 +77,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+      borderSide: const BorderSide(color: Color(0xFF88A8E8), width: 1.5),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
@@ -53,6 +110,8 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
       borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
     ),
   );
+
+  /// ====== ดึงข้อมูลนักศึกษาจาก API ======
 
   /// ====== Modal เพิ่มนักศึกษา ======
   void _openAddStudentModal() {
@@ -105,9 +164,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
                       decoration: _dec('รหัสนักศึกษา'),
                       keyboardType: TextInputType.number,
                       onChanged: (_) {
-                        setModalState(() {
-                          checkCanSave();
-                        });
+                        setModalState(() => checkCanSave());
                       },
                       validator: (v) => v == null || v.trim().isEmpty
                           ? 'กรุณากรอกรหัสนักศึกษา'
@@ -120,9 +177,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
                       controller: nameCtl,
                       decoration: _dec('ชื่อ – นามสกุล'),
                       onChanged: (_) {
-                        setModalState(() {
-                          checkCanSave();
-                        });
+                        setModalState(() => checkCanSave());
                       },
                       validator: (v) => v == null || v.trim().isEmpty
                           ? 'กรุณากรอกชื่อ–นามสกุล'
@@ -132,7 +187,6 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
 
                     Row(
                       children: [
-                        /// ยกเลิก
                         OutlinedButton(
                           onPressed: () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
@@ -141,61 +195,26 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
                           ),
-                          child: const Text(
-                            'ยกเลิก',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
+                          child: const Text('ยกเลิก'),
                         ),
-
                         const Spacer(),
-
-                        /// บันทึก (จาง → เข้ม)
                         FilledButton.icon(
-                          onPressed: () {
-                            if (!canSave) return;
+                          onPressed: canSave
+                              ? () {
+                                  if (!formKey.currentState!.validate()) return;
 
-                            if (!formKey.currentState!.validate()) return;
+                                  Navigator.pop(context);
 
-                            final studentId = studentIdCtl.text.trim();
-                            final fullName = nameCtl.text.trim();
-
-                            // TODO: เรียก API เพิ่มนักศึกษา
-                            // print(studentId);
-                            // print(fullName);
-
-                            Navigator.pop(context);
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('เพิ่มนักศึกษาเรียบร้อย'),
-                              ),
-                            );
-                          },
-                          label: const Text(
-                            'บันทึก',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('เพิ่มนักศึกษาเรียบร้อย'),
+                                    ),
+                                  );
+                                }
+                              : null,
                           icon: const Icon(Icons.check_circle_outline),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: canSave
-                                ? const Color(0xFF22C55E) // เขียวเข้ม
-                                : const Color.fromARGB(255, 188, 246, 219), // 🟢 เขียวจาง
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                          ),
+                          label: const Text('บันทึก'),
                         ),
                       ],
                     ),
@@ -217,7 +236,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
         title: 'นักศึกษา',
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle, color: Color(0xFF88A8E8)),
+            icon: const Icon(Icons.add_circle, color: _borderBlue),
             onPressed: _openAddStudentModal,
           ),
           const SizedBox(width: 6),
@@ -260,7 +279,6 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
 
             const SizedBox(height: 24),
 
-            /// ช่องค้นหาอยู่ล่างชั้นปี
             TextField(decoration: _searchDeco('รหัสนักศึกษา')),
           ],
         ),

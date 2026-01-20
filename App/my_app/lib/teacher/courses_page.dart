@@ -79,6 +79,28 @@ class _CoursesPageState extends State<CoursesPage> {
     _fetchCourses();
   }
 
+  // ====== ช่องค้นหา ======
+  static const _borderBlue = Color(0xFF88A8E8);
+
+  InputDecoration _searchDeco(String label) => InputDecoration(
+    labelText: label,
+    isDense: true,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 2),
+    ),
+    suffixIcon: const Icon(Icons.search),
+  );
+
   void _showAddStudentSheet(int courseId) {
     List<Map<String, dynamic>> allStudents = [];
     List<Map<String, dynamic>> filteredStudents = [];
@@ -86,9 +108,21 @@ class _CoursesPageState extends State<CoursesPage> {
     bool isLoading = false;
 
     int calculateYearFromStartYear(String startYear) {
-      //การคำนวณชั้นปี
-      final currentYear = DateTime.now().year + 543;
-      final start = int.parse(startYear) + 2500;
+      // ปี พ.ศ. ปัจจุบัน
+      int currentYear = DateTime.now().year + 543;
+
+      // เดือนปัจจุบัน
+      int currentMonth = DateTime.now().month;
+
+      // ถ้ายังไม่เกินเดือนพฤษภาคม (1–5) ให้ใช้ปีการศึกษาปีก่อน
+      if (currentMonth <= 5) {
+        currentYear -= 1;
+      }
+
+      // ปีที่เริ่มเข้า (เช่น 65 -> 2565)
+      int start = int.parse(startYear) + 2500;
+
+      // คำนวณชั้นปี
       return currentYear - start + 1;
     }
 
@@ -187,42 +221,69 @@ class _CoursesPageState extends State<CoursesPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // ปุ่มปี 1-4
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(4, (i) {
-                        final year = i + 1;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                    // ปุ่มปี 1-5
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: List.generate(5, (i) {
+                          final year = i + 1;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
                               ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
-                              ),
+                              onPressed: () {
+                                setState(() {
+                                  filteredStudents = allStudents
+                                      .where(
+                                        (s) =>
+                                            calculateYearFromStartYear(
+                                              s['start_year'],
+                                            ) ==
+                                            year,
+                                      )
+                                      .toList();
+                                });
+                              },
+                              child: Text('ปี $year'),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                filteredStudents = allStudents
-                                    .where(
-                                      (s) =>
-                                          calculateYearFromStartYear(
-                                            s['start_year'],
-                                          ) ==
-                                          year,
-                                    )
-                                    .toList();
-                              });
-                            },
-                            child: Text('ปี $year'),
-                          ),
-                        );
-                      }),
+                          );
+                        }),
+                      ),
                     ),
                     const SizedBox(height: 20),
+
+                    // 🔍 ช่องค้นหานักศึกษา
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: TextField(
+                        decoration: _searchDeco('ค้นหานักศึกษา'),
+                        onChanged: (value) {
+                          setState(() {
+                            filteredStudents = allStudents.where((s) {
+                              final name = s['full_name']
+                                  .toString()
+                                  .toLowerCase();
+                              final sid = s['student_id']
+                                  .toString()
+                                  .toLowerCase();
+
+                              return name.contains(value.toLowerCase()) ||
+                                  sid.contains(value.toLowerCase());
+                            }).toList();
+                          });
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
 
                     // รายการนักศึกษา
                     Expanded(
@@ -959,9 +1020,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                         child: TextFormField(
                           controller: _room,
                           decoration: _dec('ห้องเรียน'),
-                          inputFormatters: [
-                            UpperCaseEnglishFormatter(), 
-                          ],
+                          inputFormatters: [UpperCaseEnglishFormatter()],
                           validator: (v) => _required(v, 'กรุณากรอกห้องเรียน'),
                         ),
                       ),

@@ -357,8 +357,8 @@ class _CoursesPageState extends State<QrCodePage> {
   }
 
   void _showSnack(String msg) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  //   if (!mounted) return;
+  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   Future<void> _sendQRCodeData(dynamic courseId) async {
@@ -399,20 +399,20 @@ class _CoursesPageState extends State<QrCodePage> {
                   (success ? 'ส่งข้อมูลสำเร็จ' : 'ส่งข้อมูลไม่สำเร็จ'))
               .toString();
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      // if (!mounted) return;
+      // ScaffoldMessenger.of(
+      //   context,
+      // ).showSnackBar(SnackBar(content: Text(message)));
     } catch (e, st) {
       debugPrint('❌ _sendQRCodeData failed: $e');
       debugPrint(st.toString());
 
       final String errMsg = e.toString();
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $errMsg')));
-      }
+      // if (mounted) {
+      //   ScaffoldMessenger.of(
+      //     context,
+      //   ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $errMsg')));
+      // }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -636,9 +636,9 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
         });
       }
     } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('โหลด “วันที่เรียน” ไม่สำเร็จ')),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text('โหลด “วันที่เรียน” ไม่สำเร็จ')),
+      // );
     } finally {
       if (mounted) setState(() => _loadingDays = false);
     }
@@ -823,8 +823,8 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
   }
 
   void _showLocalSnack(String msg) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    // if (!mounted) return;
+    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override

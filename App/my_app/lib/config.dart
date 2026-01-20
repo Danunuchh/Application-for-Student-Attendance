@@ -4,7 +4,7 @@
 // N: ลบ /Services ออก เพราะ Docker mount ./Services -> /var/www/html (document root)
 // const String baseUrl = 'http://10.0.2.2:8000'; // Android Emulator
 
-const String baseUrl = 'http://192.168.0.113:8000/Services/api/'; // Physical Device (เปลี่ยน IP ตามเครื่องคุณ)
+const String baseUrl = 'http://172.20.10.3:8000/Services/api/'; // Physical Device (เปลี่ยน IP ตามเครื่องคุณ)
 
 // const String baseUrl = 'http://localhost:8000'; // Physical Device (เปลี่ยน IP ตามเครื่องคุณ)
 // //const String baseUrl = 'http://192.168.1.64:8000'; // Physical Device (เปลี่ยน IP ตามเครื่องคุณ)

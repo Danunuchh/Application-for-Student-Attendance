@@ -58,7 +58,6 @@ class AdminHomePage extends StatelessWidget {
                     text: 'นักศึกษา',
                     onPressed: () {
                       Navigator.pushNamed(
-                        
                         context,
                         '/admin_student',
                         arguments: {'userId': userId},
@@ -152,7 +151,7 @@ class AdminHomePage extends StatelessWidget {
           foregroundColor: Colors.black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
-            side: const BorderSide(color: Color(0xFF84A9EA)),
+            side: const BorderSide(color: Color(0xFF84A9EA), width: 1.5),
           ),
           shadowColor: Colors.grey.shade400,
           elevation: 3,

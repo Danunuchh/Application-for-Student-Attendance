@@ -253,7 +253,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 if (widget.role == 'teacher') ...[
                   _title('รหัสอาจารย์'),
                   TextFormField(
-                    controller: _teacherCode,
+                    controller: _studentId,
                     readOnly: true,
                     showCursor: false,
                     enableInteractiveSelection: false,

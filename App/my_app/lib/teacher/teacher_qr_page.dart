@@ -140,20 +140,20 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
         return json;
       } else {
         final String msg = json['message'] ?? 'ส่งข้อมูลไม่สำเร็จ';
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(msg)));
-        }
+        // if (mounted) {
+        //   ScaffoldMessenger.of(
+        //     context,
+        //   ).showSnackBar(SnackBar(content: Text(msg)));
+        // }
         return null;
       }
     } catch (e) {
       debugPrint('❌ _sendQRCodeData failed: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ')),
-        );
-      }
+      // if (mounted) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text('เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ')),
+      //   );
+      // }
       return null;
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -327,7 +327,7 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
                       const SizedBox(height: 14),
 
                       // เวลานับถอยหลัง
-                      /*if (_expiresAt != null)
+                      if (_expiresAt != null)
                         Wrap(
                           alignment: WrapAlignment.center,
                           crossAxisAlignment: WrapCrossAlignment.center,
@@ -348,7 +348,7 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
                             ),
                           ],
                         ),
-                      const SizedBox(height: 30),*/
+                      const SizedBox(height: 30),
 
                       // ปุ่ม Refresh
                       /*CustomButton(

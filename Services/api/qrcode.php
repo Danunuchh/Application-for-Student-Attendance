@@ -1,30 +1,4 @@
 <?php
-/**
- * create_attendance_with_qr.php
- *
- * Usage:
- * POST JSON:
- * {
- *   "course_id": 9,
- *   "date": "2025-11-02"
- * }
- *
- * Recommended one-time SQL to run (adjust table/column names if needed):
- *
- * -- ป้องกันการสร้าง qr_code ซ้ำ (course_id + qr_date + schedule_id)
- * ALTER TABLE qr_code
- *   ADD UNIQUE uq_qr_course_date_schedule (course_id, qr_date, schedule_id);
- *
- * -- ป้องกันการสร้าง attendance ซ้ำ (course_id + day + section)
- * ALTER TABLE attendance
- *   ADD UNIQUE uq_attendance_course_day_section (course_id, day, section);
- *
- * -- (option) ป้องกัน duplicate ใน attendance_detail ตาม business rule:
- * -- ALTER TABLE attendance_detail ADD UNIQUE uq_att_detail_attid_studentid (attendance_id, student_id);
- *
- * ปรับ SQL ข้างต้นให้ตรงกับ schema จริงของคุณก่อนรัน
- */
-
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
@@ -170,7 +144,7 @@ try {
     if ($attendance) {
         echo json_encode([
             'success' => true,
-            'message' => 'Attendance already exists',
+            'message' => '',
             'attendance_id' => $attendance['attendance_id'],
             'qr_code_id' => $qr_code_id,
             'qr_password' => $qr_password
