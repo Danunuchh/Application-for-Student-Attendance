@@ -1,54 +1,44 @@
-import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import 'package:my_app/config.dart';
 import 'package:my_app/components/custom_appbar.dart';
-import 'package:my_app/components/textbox.dart';
+import 'package:my_app/teacher/dashbord_detail_page.dart';
+// ใช้ StudentStat จากไฟล์นี้ 👆
 
-import 'dart:math' as math;
-
-class StudentCourseReportPage extends StatelessWidget {
-  final String courseId;
+class StudentAttendanceDetailPage extends StatelessWidget {
+  final StudentStat student;
   final String courseName;
-  final String courseCode;
 
-  final int totalClasses;
-  final int attend;
-  final int absent;
-
-  const StudentCourseReportPage({
+  const StudentAttendanceDetailPage({
     super.key,
-    required this.courseId,
+    required this.student,
     required this.courseName,
-    required this.courseCode,
-    required this.totalClasses,
-    required this.attend,
-    required this.absent,
   });
 
   @override
   Widget build(BuildContext context) {
-    final int total = totalClasses;
-    final int attendCount = attend;
-    final int absentCount = absent;
+    final int total = student.totalClasses;
+    final int attend = student.attend;
+    final int absent = student.absent;
 
-    final double attendPercent = total > 0 ? (attendCount / total) * 100 : 0;
-    final double absentPercent = total > 0 ? (absentCount / total) * 100 : 0;
+    final double attendPercent = total > 0 ? (attend / total) * 100 : 0;
+    final double absentPercent = total > 0 ? (absent / total) * 100 : 0;
 
     return Scaffold(
-      appBar: const CustomAppBar(title: 'สรุปผลการเข้าเรียน'),
+      appBar: const CustomAppBar(title: 'รายละเอียดการเข้าเรียน'),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// ===== ชื่อวิชา =====
+            /// ===== ชื่อรายวิชา =====
             Text(
               courseName,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            Text(courseCode, style: const TextStyle(color: Colors.black54)),
 
             const SizedBox(height: 16),
 
@@ -67,11 +57,23 @@ class StudentCourseReportPage extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 24),
+                    /// ชื่อนักศึกษา
+                    Text(
+                      student.studentName,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('รหัสนักศึกษา : ${student.studentId}'),
 
-                    /// ===== PIE =====
+                    const SizedBox(height: 40),
+
+                    /// ===== PIE CHART =====
                     Center(
                       child: _AttendancePieChart(
                         attendPercent: attendPercent,
@@ -80,22 +82,24 @@ class StudentCourseReportPage extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 40),
                     const Divider(),
 
                     _infoRow(
                       'เข้าเรียน',
-                      '$attendCount ครั้ง (${attendPercent.toStringAsFixed(0)}%)',
+                      '${student.attend} ครั้ง (${attendPercent.toStringAsFixed(0)}%)',
                       Colors.green,
                     ),
-
                     _infoRow(
                       'ขาดเรียน',
-                      '$absentCount ครั้ง (${absentPercent.toStringAsFixed(0)}%)',
+                      '${student.absent} ครั้ง (${absentPercent.toStringAsFixed(0)}%)',
                       Colors.red,
                     ),
-
-                    _infoRow('จำนวนคาบทั้งหมด', '$total คาบ', Colors.blue),
+                    _infoRow(
+                      'จำนวนคาบทั้งหมด',
+                      '${student.totalClasses} คาบ',
+                      Colors.blue,
+                    ),
                   ],
                 ),
               ),
@@ -115,13 +119,20 @@ class StudentCourseReportPage extends StatelessWidget {
           Text(label),
           Text(
             value,
-            style: TextStyle(fontWeight: FontWeight.bold, color: color),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
         ],
       ),
     );
   }
 }
+
+/// =======================================================
+/// ================== PIE CHART (INLINE) =================
+/// =======================================================
 
 class _AttendancePieChart extends StatelessWidget {
   final double attendPercent;
@@ -171,7 +182,10 @@ class _PieChartPainter extends CustomPainter {
   final double attendPercent;
   final double absentPercent;
 
-  _PieChartPainter({required this.attendPercent, required this.absentPercent});
+  _PieChartPainter({
+    required this.attendPercent,
+    required this.absentPercent,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -183,22 +197,22 @@ class _PieChartPainter extends CustomPainter {
       ..strokeWidth = size.width * 0.15
       ..strokeCap = StrokeCap.round;
 
-    // 🔴 วงพื้นหลัง (ทั้งหมด = ขาดเรียน)
-    paint.color = Colors.red.shade300;
+    // 🔴 background (ทั้งหมด)
+    paint.color = const Color.fromARGB(255, 231, 72, 72);
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2,
-      2 * math.pi,
+      -pi / 2,
+      2 * pi,
       false,
       paint,
     );
 
-    // 🟢 เข้าเรียน
+    // 🟢 attend
     paint.color = Colors.green;
-    final sweepAngle = 2 * math.pi * (attendPercent / 100);
+    final sweepAngle = 2 * pi * (attendPercent / 100);
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2,
+      -pi / 2,
       sweepAngle,
       false,
       paint,

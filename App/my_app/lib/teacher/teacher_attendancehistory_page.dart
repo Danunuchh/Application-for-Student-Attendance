@@ -282,7 +282,7 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CustomAppBar(title: 'คลาสเรียน'),
+      appBar: CustomAppBar(title: 'ประวัติการเข้าเรียน'),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _courses.isEmpty
@@ -300,29 +300,23 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
                     title: c['name'],
                     subtitle: c['code'],
                     // 👇 ปรับตรงนี้
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // ปุ่มตรวจสอบนักศึกษา
-                        IconButton(
-                          icon: const Icon(
-                            Icons.chevron_right,
-                            color: Color(0xFF9CA3AF),
+                    trailing: IconButton(
+                      icon: const Icon(
+                        Icons.chevron_right,
+                        size: 22,
+                        color: Color(0xFF9CA3AF),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AttendanceDetailPage(
+                              courseName: c['name'] as String,
+                              courseId: (c['id'] as num).toString(),
+                            ),
                           ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => AttendanceDetailPage(
-                                  courseName: c['name'] as String,
-                                  courseId: (c['id'] as num).toString(),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 4),
-                      ],
+                        );
+                      },
                     ),
                   );
                 },

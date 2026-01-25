@@ -6,12 +6,13 @@ class TextBox extends StatelessWidget {
   final Subject? subject;
   final String? text;
 
-  // ใช้กับหน้าอื่น ๆ (เช่น Pending Approvals)
-  final String? title;        // หัวข้อหลัก (เช่น ชื่อวิชา)
-  final String? subtitle;     // ข้อความรอง (เช่น วันที่)
-  final String? code;         // รหัสวิชา (ถ้ามีให้แสดงแทน subject.code)
-  final String? status;       // สถานะ (อนุมัติ / ไม่อนุมัติ / รออนุมัติ)
-  final Color? statusColor;   // สีสถานะ
+  // ใช้กับหน้าอื่น ๆ
+  final String? title; // หัวข้อหลัก
+  final String? subtitle; // subtitle แบบข้อความ (เดิม)
+  final Widget? subtitleWidget; // ✅ subtitle แบบ Widget (ใหม่)
+  final String? code;
+  final String? status;
+  final Color? statusColor;
 
   final VoidCallback? onTap;
   final Widget? trailing;
@@ -24,6 +25,7 @@ class TextBox extends StatelessWidget {
     this.text,
     this.title,
     this.subtitle,
+    this.subtitleWidget, // ✅ เพิ่ม
     this.code,
     this.status,
     this.statusColor,
@@ -38,20 +40,19 @@ class TextBox extends StatelessWidget {
     final box = BoxDecoration(
       color: Colors.white,
       border: showBorder
-          ? Border.all(color: const Color(0xFF84A9EA), width: 1.5)  
+          ? Border.all(color: const Color(0xFF84A9EA), width: 1.5)
           : null,
       borderRadius: BorderRadius.circular(20),
       boxShadow: const [
         BoxShadow(
-          color: Color(0x14000000),
-          blurRadius: 6,
-          spreadRadius: 2,
-          offset: Offset(0, 3),
+          color: Color(0x1F000000),
+          blurRadius: 8,
+          offset: Offset(0, 4),
         ),
       ],
     );
 
-    // ข้อความหลัก/รองที่เลือกแหล่งข้อมูลได้
+    // ---------- แหล่งข้อมูลข้อความ ----------
     final displayMain = title ?? text ?? subject?.title ?? '-';
     final displaySub = subtitle ?? code ?? subject?.code;
 
@@ -61,7 +62,7 @@ class TextBox extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
-          borderRadius: BorderRadius.circular(20), // ให้โค้งเท่ากับกรอบ
+          borderRadius: BorderRadius.circular(20),
           onTap: onTap,
           child: Container(
             padding: padding,
@@ -69,12 +70,12 @@ class TextBox extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // เนื้อหาหลัก (ซ้าย)
+                // ---------- ฝั่งซ้าย ----------
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // บรรทัดบน: ชื่อ/หัวข้อ (รองรับ 2 บรรทัด)
+                      // ชื่อ / หัวข้อ
                       Text(
                         displayMain,
                         maxLines: 2,
@@ -86,9 +87,14 @@ class TextBox extends StatelessWidget {
                           height: 1.25,
                         ),
                       ),
-                      if (displaySub != null && displaySub.isNotEmpty) ...[
+
+                      // ---------- subtitle ----------
+                      if (subtitleWidget != null) ...[
+                        const SizedBox(height: 6),
+                        subtitleWidget!,
+                      ] else if (displaySub != null &&
+                          displaySub.isNotEmpty) ...[
                         const SizedBox(height: 4),
-                        // บรรทัดล่าง: รอง (1 บรรทัด)
                         Text(
                           displaySub,
                           maxLines: 1,
@@ -106,12 +112,10 @@ class TextBox extends StatelessWidget {
 
                 const SizedBox(width: 12),
 
-                // ส่วนขวา: สถานะ + ไอคอนท้าย (ถ้ามี)
+                // ---------- ฝั่งขวา ----------
                 if (status != null) ...[
                   Text(
                     status!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -121,12 +125,15 @@ class TextBox extends StatelessWidget {
                   const SizedBox(width: 8),
                 ],
 
-                trailing ??
-                    const Icon(
-                      Icons.chevron_right,
-                      size: 22,
-                      color: Color(0xFF9CA3AF),
-                    ),
+                Center(
+                  child:
+                      trailing ??
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 22,
+                        color: Color(0xFF9CA3AF),
+                      ),
+                ),
               ],
             ),
           ),

@@ -62,7 +62,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     setState(() => _sendingOtp = true);
 
     try {
-      final url = Uri.parse('${baseUrl}forgot_password_api.php');
+      final url = Uri.parse('${baseUrl}/forgot_password_api.php');
 
       final res = await http.post(
         url,
@@ -107,7 +107,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     setState(() => _submitting = true);
 
     try {
-      final url = Uri.parse('${baseUrl}verify_otp_api.php');
+      final url = Uri.parse('${baseUrl}/verify_otp_api.php');
 
       final res = await http.post(
         url,

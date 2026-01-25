@@ -205,7 +205,6 @@ class _CoursesPageState extends State<CoursesPage> {
               child: SafeArea(
                 child: Column(
                   children: [
-                    // ✅ ใช้ CustomAppBar เหมือนหน้า CoursesPage
                     CustomAppBar(
                       title: 'เพิ่มนักศึกษาเข้าคลาส',
                       leading: IconButton(
@@ -231,6 +230,15 @@ class _CoursesPageState extends State<CoursesPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 6),
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors
+                                    .white, 
+                                foregroundColor: Colors.black,
+                                side: const BorderSide(
+                                  color: Color(
+                                    0xFF88A8E8,
+                                  ), 
+                                  width: 1.5, 
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -238,6 +246,8 @@ class _CoursesPageState extends State<CoursesPage> {
                                   horizontal: 20,
                                   vertical: 12,
                                 ),
+                                elevation:
+                                    0, 
                               ),
                               onPressed: () {
                                 setState(() {

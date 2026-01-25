@@ -3,6 +3,33 @@ import 'package:my_app/admin/admin_dashboard_page.dart';
 import 'package:my_app/pages/login_page.dart'; // ✅ import LoginPage
 import 'package:my_app/components/button.dart'; // ✅ import CustomButton
 
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import 'package:my_app/config.dart';
+import 'admin_student_page.dart';
+
+class AdminApiService {
+  static Future<Map<String, dynamic>> getJson(
+    String endpoint, {
+    Map<String, String>? query,
+  }) async {
+    final uri = Uri.parse('$baseUrl/$endpoint').replace(queryParameters: query);
+
+    final response = await http.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Server error');
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> fetchData({required String type}) async {
+    return await getJson('admin_api.php', query: {'type': type});
+  }
+}
+
 class AppColors {
   static const Color sub = Color(0xFFC4C7D0);
   static const Color kPrimary = Color(0xFF3B82F6);
@@ -52,44 +79,63 @@ class AdminHomePage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 60),
 
                   _buildRoleButton(
                     text: 'นักศึกษา',
-                    onPressed: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/admin_student',
-                        arguments: {'userId': userId},
-                      );
+                    onPressed: () async {
+                      try {
+                        final json = await AdminApiService.fetchData(
+                          type: 'student_list',
+                        );
+
+                        if (json['success'] != true || json['data'] == null) {
+                          throw Exception('โหลดข้อมูลไม่สำเร็จ');
+                        }
+
+                        final List<Map<String, dynamic>> studentList =
+                            List<Map<String, dynamic>>.from(json['data']);
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AdminStudentPage(data: studentList),
+                          ),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(e.toString())));
+                      }
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
 
                   _buildRoleButton(
                     text: 'อาจารย์',
-                    onPressed: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/admin_teacher',
-                        arguments: {'userId': userId},
+                    onPressed: () async {
+                      final json = await AdminApiService.fetchData(
+                        type: 'teacher',
                       );
+
+                      final List data = json['data'];
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
 
-                  _buildRoleButton(
+                  /*_buildRoleButton(
                     text: 'Dashboard',
-                    onPressed: () {
+                    onPressed: () async {
+                      final res = await AdminApiService.fetchData('dashboard');
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const AdminDashboardPage(),
+                          builder: (_) => AdminDashboardPage(data: res['data']),
                         ),
                       );
                     },
-                  ),
-
+                  ),*/
                   const SizedBox(height: 120), // เว้นพื้นที่ให้ปุ่ม bottom
                 ],
               ),

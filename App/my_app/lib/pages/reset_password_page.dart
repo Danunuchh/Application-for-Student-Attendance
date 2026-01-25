@@ -55,7 +55,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     setState(() => _submitting = true);
 
     try {
-      final url = Uri.parse('${baseUrl}reset_password_api.php');
+      final url = Uri.parse('${baseUrl}/reset_password_api.php');
 
       final res = await http.post(
         url,

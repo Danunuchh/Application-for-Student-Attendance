@@ -93,7 +93,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
           '${day.month.toString().padLeft(2, '0')}-'
           '${day.day.toString().padLeft(2, '0')}';
 
-      final url = Uri.parse('${baseUrl}get_attandance.php').replace(
+      final url = Uri.parse('${baseUrl}/get_attandance.php').replace(
         queryParameters: {
           'course_id': widget.courseId,
           'type': 'student',
@@ -134,7 +134,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
     final lastDay = DateTime(year, month + 1, 0);
 
     try {
-      final url = Uri.parse('${baseUrl}get_attandance.php').replace(
+      final url = Uri.parse('${baseUrl}/get_attandance.php').replace(
         queryParameters: {
           'course_id': widget.courseId,
           'type': 'student',
@@ -251,11 +251,11 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
       child: Material(
         color: Colors.white,
         elevation: 2,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFF84A9EA), width: 1.2),
-            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF84A9EA), width: 1.5),
+            borderRadius: BorderRadius.circular(20),
           ),
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
           child: Row(

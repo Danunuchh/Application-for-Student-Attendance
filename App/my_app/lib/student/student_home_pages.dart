@@ -251,7 +251,9 @@ class StudentHomePage extends StatelessWidget {
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const StudentCoursesPage(),
+                                builder: (_) => StudentCoursesPage(
+                                  userId: userId, // ✅ ส่ง userId
+                                ),
                               ),
                             ),
                           ),

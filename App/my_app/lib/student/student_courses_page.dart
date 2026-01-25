@@ -3,57 +3,89 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:my_app/config.dart';
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
 import 'package:my_app/student/student_course_report_page.dart';
-import 'package:my_app/config.dart'; // N: เพิ่ม import config เพื่อใช้ baseUrl
 
+const String apiBase = baseUrl;
+
+/// ================= API =================
+class ApiService {
+  static Map<String, String> get _jsonHeaders => {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json; charset=utf-8',
+  };
+
+  static Future<Map<String, dynamic>> getJson(
+    String path, {
+    Map<String, String>? query,
+  }) async {
+    final uri = Uri.parse('$apiBase/$path').replace(queryParameters: query);
+
+    final res = await http.get(uri, headers: _jsonHeaders);
+
+    if (res.statusCode != 200) {
+      throw Exception('HTTP ${res.statusCode}');
+    }
+
+    return jsonDecode(res.body);
+  }
+}
+
+/// ================= PAGE =================
 class StudentCoursesPage extends StatefulWidget {
-  const StudentCoursesPage({super.key});
+  const StudentCoursesPage({super.key, required this.userId});
+
+  final String userId;
 
   @override
   State<StudentCoursesPage> createState() => _StudentCoursesPageState();
 }
 
 class _StudentCoursesPageState extends State<StudentCoursesPage> {
-  late Future<List<Map<String, String>>> _future;
-  static const Color ink = Color(0xFF1F2937);
   static const Color sub = Color(0xFF6B7280);
 
-  // N: เปลี่ยนจาก hardcode URL เป็นใช้ baseUrl จาก config.dart + path
-  late final Uri apiUrl = Uri.parse('$baseUrl/api/student/courses');
+  late Future<List<CourseOption>> _coursesFuture;
 
   @override
   void initState() {
     super.initState();
-    _future = _fetchCourses();
+    _coursesFuture = _loadCourses();
   }
 
-  Future<List<Map<String, String>>> _fetchCourses() async {
-    final res = await http.get(apiUrl);
-    if (res.statusCode != 200) {
-      throw Exception('โหลดรายวิชาไม่สำเร็จ (${res.statusCode})');
+  /// ---------- load courses ----------
+  Future<List<CourseOption>> _loadCourses() async {
+    final json = await ApiService.getJson(
+      'dashbord.php',
+      query: {'user_id': widget.userId, 'type': 'student'},
+    );
+
+    if (json['success'] != true || json['data'] == null) {
+      throw Exception('โหลดรายวิชาไม่สำเร็จ');
     }
 
-    final data = jsonDecode(res.body);
-    if (data is! List) {
-      throw Exception('รูปแบบข้อมูลไม่ถูกต้อง (ต้องเป็นลิสต์)');
-    }
+    final List list = json['data'];
 
-    // รองรับคีย์ที่พบบ่อย: name/title และ code/courseCode
-    // map ให้กลายเป็น {name, code} ที่เป็น String ทั้งคู่
-    return data.map<Map<String, String>>((e) {
-      final name = (e['name'] ?? e['title'] ?? '').toString();
-      final code = (e['code'] ?? e['courseCode'] ?? '').toString();
-      return {'name': name, 'code': code};
+    return list.map<CourseOption>((e) {
+      final student = (e['students'] as List).first;
+
+      return CourseOption(
+        id: e['course_id'].toString(),
+        name: e['course_name'].toString(),
+        code: e['code']?.toString(),
+        totalClasses: student['total_classes'] ?? 0,
+        attend: student['attend'] ?? 0,
+        absent: student['absent'] ?? 0,
+      );
     }).toList();
   }
 
   Future<void> _refresh() async {
     setState(() {
-      _future = _fetchCourses();
+      _coursesFuture = _loadCourses();
     });
-    await _future;
+    await _coursesFuture;
   }
 
   @override
@@ -61,82 +93,103 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CustomAppBar(title: 'สรุปผลรายงาน'),
-      body: FutureBuilder<List<Map<String, String>>>(
-        future: _future,
-        builder: (context, snap) {
-          // 🌀 กำลังโหลด
-          if (snap.connectionState != ConnectionState.done) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF4A86E8)),
-            );
-          }
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            /// -------- Courses --------
+            FutureBuilder<List<CourseOption>>(
+              future: _coursesFuture,
+              builder: (context, snap) {
+                if (snap.connectionState == ConnectionState.waiting) {
+                  return const LinearProgressIndicator();
+                }
 
-          // ❌ ผิดพลาด
-          if (snap.hasError) {
-            return RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView(
-                padding: const EdgeInsets.all(24),
-                children: [
-                  Text(
-                    'รอดึงข้อมูลมาแสดงจ้าาา\n${snap.error}',
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text('ดึงเพื่อรีเฟรชอีกครั้ง'),
-                ],
-              ),
-            );
-          }
+                if (snap.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      snap.error.toString(),
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
 
-          final courses = snap.data ?? [];
+                if (!snap.hasData || snap.data!.isEmpty) {
+                  return const _EmptyBox(text: 'ไม่พบรายวิชา', sub: sub);
+                }
 
-          // 🕳 ไม่มีข้อมูล
-          if (courses.isEmpty) {
-            return RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView(
-                padding: const EdgeInsets.all(24),
-                children: const [
-                  Text(
-                    'ไม่พบรายวิชา',
-                    style: TextStyle(color: sub, fontSize: 14),
-                  ),
-                ],
-              ),
-            );
-          }
+                final courses = snap.data!;
 
-          // ✅ แสดงรายการ (รองรับ Pull-to-refresh)
-          return RefreshIndicator(
-            onRefresh: _refresh,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: courses.length,
-              itemBuilder: (context, index) {
-                final c = courses[index];
-                final name = c['name'] ?? '-';
-                final code = c['code'] ?? '-';
-
-                return TextBox(
-                  text: name,        // บรรทัดบน: ชื่อรายวิชา
-                  subtitle: code,    // บรรทัดล่าง: รหัสวิชา
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => StudentCourseReportPage(
-                          courseName: name,
-                          courseCode: code,
-                        ),
+                return Column(
+                  children: courses.map((course) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: TextBox(
+                        title: course.name,
+                        subtitle: course.code ?? '-',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => StudentCourseReportPage(
+                                courseId: course.id,
+                                courseName: course.name,
+                                courseCode: course.code ?? '',
+                                totalClasses: course.totalClasses,
+                                attend: course.attend,
+                                absent: course.absent,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     );
-                  },
+                  }).toList(),
                 );
               },
             ),
-          );
-        },
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// ================= MODEL =================
+class CourseOption {
+  final String id;
+  final String name;
+  final String? code;
+
+  final int totalClasses;
+  final int attend;
+  final int absent;
+
+  const CourseOption({
+    required this.id,
+    required this.name,
+    this.code,
+    required this.totalClasses,
+    required this.attend,
+    required this.absent,
+  });
+}
+
+/// ================= UTILS =================
+class _EmptyBox extends StatelessWidget {
+  final String text;
+  final Color sub;
+
+  const _EmptyBox({required this.text, required this.sub});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: Text(text, style: TextStyle(color: sub)),
       ),
     );
   }

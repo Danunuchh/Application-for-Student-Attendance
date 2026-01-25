@@ -201,7 +201,7 @@ try {
             ':longitude' => null,
             ':qr_code_id' => $qr_code_id,
             ':schedule_id' => $schedule['schedule_id'],
-            ':leave_status' => '',
+            ':leave_status' => 1,
             ':device_id' => $d['device_id'] ?? null
         ]);
     }

@@ -15,11 +15,34 @@ import 'package:my_app/teacher/qr_code_page.dart';
 
 import 'package:my_app/config.dart';
 
+const String apiBase = baseUrl;
+
 class AppColors {
   static const primary = Color(0xFF4A86E8);
   static const ink = Color(0xFF1F2937);
   static const sub = Color.fromARGB(255, 196, 199, 208);
   static const fabRing = Color(0xFFA6CAFA);
+}
+
+class ApiService {
+  static Map<String, String> get _jsonHeaders => {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json; charset=utf-8',
+  };
+
+  static Future<Map<String, dynamic>> getJson(
+    String path, {
+    Map<String, String>? query,
+  }) async {
+    final uri = Uri.parse('$apiBase/$path').replace(queryParameters: query);
+    final res = await http.get(uri, headers: _jsonHeaders);
+
+    if (res.statusCode != 200) {
+      throw Exception('HTTP ${res.statusCode}');
+    }
+
+    return jsonDecode(res.body);
+  }
 }
 
 class MenuItemData {
@@ -255,42 +278,7 @@ class TeacherHomePage extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => DashboardPage(
-                                  userId: userId,
-                                  loadCourses: (id) async {
-                                    // N: เปลี่ยนจาก hardcode IP 192.168.0.111 เป็นใช้ baseUrl จาก config.dart
-                                    final res = await http.get(
-                                      Uri.parse(
-                                        '$baseUrl/api/get_courses.php?teacher_id=$id',
-                                      ),
-                                    );
-                                    final data =
-                                        jsonDecode(res.body) as List<dynamic>;
-                                    return data
-                                        .map(
-                                          (e) => CourseOption(
-                                            id: e['course_id'].toString(),
-                                            name: e['course_name'].toString(),
-                                          ),
-                                        )
-                                        .toList();
-                                  },
-                                  loadDashboard:
-                                      ({
-                                        required userId,
-                                        required courseId,
-                                        required range,
-                                      }) async {
-                                        // N: เปลี่ยนจาก hardcode IP 192.168.0.111 เป็นใช้ baseUrl จาก config.dart
-                                        final res = await http.get(
-                                          Uri.parse(
-                                            '$baseUrl/api/get_dashboard.php?teacher_id=$userId&course_id=$courseId&range=$range',
-                                          ),
-                                        );
-                                        final json =
-                                            jsonDecode(res.body)
-                                                as Map<String, dynamic>;
-                                        return DashboardData.fromJson(json);
-                                      },
+                                  userId: userId, // ✅ ส่งแค่นี้พอ
                                 ),
                               ),
                             ),

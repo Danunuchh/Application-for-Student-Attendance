@@ -105,11 +105,12 @@ try {
             // update เวลา
             $updateStmt = $pdo->prepare("
             UPDATE attendance_detail
-            SET time = :time
+            SET time = :time , leave_status = :status 
             WHERE attendance_id = :attendance_id AND user_id = :user_id
         ");
             $updateStmt->execute([
                 ':time' => $time,
+                ':status' => 0 ,
                 ':attendance_id' => $attendance_id,
                 ':user_id' => $user_id,
             ]);

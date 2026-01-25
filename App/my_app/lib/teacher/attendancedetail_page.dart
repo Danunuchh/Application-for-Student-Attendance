@@ -160,7 +160,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
     };
 
     try {
-      final uri = Uri.parse('${baseUrl}get_attandance.php');
+      final uri = Uri.parse('${baseUrl}/get_attandance.php');
       final resp = await http.post(
         uri,
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -220,8 +220,8 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
           // surfaceTintColor: Colors.transparent,
           elevation: 3,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: cardBorder, width: 1.2),
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: cardBorder, width: 1.5),
           ),
           // shadowColor: cardShadow,
           child: Padding(

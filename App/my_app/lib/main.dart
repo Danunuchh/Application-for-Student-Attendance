@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/login',
 
       //student_home ,//teacher_home
-      
+
       // ภาษาที่รองรับ
       locale: const Locale('th'),
       supportedLocales: const [Locale('th'), Locale('en')],
@@ -101,7 +101,15 @@ class MyApp extends StatelessWidget {
 
         // 🔹 Admin (ไม่ซ้ำ!)
         '/admin_home': (context) => const AdminHomePage(),
-        '/admin_student': (context) => const AdminStudentPage(),
+        '/admin_student': (context) {
+          final args =
+              ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>;
+
+          return AdminStudentPage(
+            data: List<Map<String, dynamic>>.from(args['data']),
+          );
+        },
         '/admin_teacher': (context) => const AdminTeacherPage(),
         // '/add_student': (context) => const AddStudentPage(),
         // '/add_teacher': (context) => const AddTeacherPage(),
