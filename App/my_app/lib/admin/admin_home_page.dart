@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/admin/admin_dashboard_page.dart';
+import 'package:my_app/admin/admin_teacher_page.dart';
 import 'package:my_app/pages/login_page.dart'; // ✅ import LoginPage
 import 'package:my_app/components/button.dart'; // ✅ import CustomButton
 
@@ -114,15 +114,33 @@ class AdminHomePage extends StatelessWidget {
                   _buildRoleButton(
                     text: 'อาจารย์',
                     onPressed: () async {
-                      final json = await AdminApiService.fetchData(
-                        type: 'teacher',
-                      );
+                      try {
+                        final json = await AdminApiService.fetchData(
+                          type: 'teacher_list',
+                        );
 
-                      final List data = json['data'];
+                        if (json['success'] != true || json['data'] == null) {
+                          throw Exception('โหลดข้อมูลไม่สำเร็จ');
+                        }
+
+                        final List<Map<String, dynamic>> teacherList =
+                            List<Map<String, dynamic>>.from(json['data']);
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AdminTeacherPage(data: teacherList),
+                          ),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(e.toString())));
+                      }
                     },
                   ),
-                  const SizedBox(height: 30),
 
+                  const SizedBox(height: 30),
                   /*_buildRoleButton(
                     text: 'Dashboard',
                     onPressed: () async {

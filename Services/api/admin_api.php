@@ -27,7 +27,26 @@ if ($type === 'student_list') {
         'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)
     ]);
     exit;
-} else if ($type === 'student_detail') {
+} if ($type === 'teacher_list') {
+
+    $sql = "
+        SELECT 
+            u.student_id,
+            u.full_name
+        FROM users u
+        WHERE u.role_id = 'teacher'
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+
+    echo json_encode([
+        'success' => true,
+        'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)
+    ]);
+    exit;
+}
+else if ($type === 'student_detail') {
 
     $studentId = $_GET['student_id'] ?? null;
 
@@ -38,6 +57,7 @@ if ($type === 'student_list') {
         ]);
         exit;
     }
+                    // ad.leave_status = 1 AND 
 
     $sql = "
         SELECT 
@@ -55,8 +75,8 @@ if ($type === 'student_list') {
             ) AS attend_count,
             SUM(
                 CASE 
-                    WHEN ad.leave_status = 1 
-                     OR ad.time IS NULL 
+                    WHEN 
+                      ad.time IS NULL 
                     THEN 1 ELSE 0 
                 END
             ) AS absent_count

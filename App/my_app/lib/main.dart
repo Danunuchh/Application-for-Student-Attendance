@@ -5,9 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:my_app/admin/admin_home_page.dart';
 import 'package:my_app/admin/admin_student_page.dart';
 import 'package:my_app/admin/admin_teacher_page.dart';
-import 'package:my_app/admin/admin_history_page.dart';
 // import 'package:my_app/admin/add_student_page.dart';
-import 'package:my_app/admin/admin_add_teacher_page.dart';
 
 // --- Student side ---
 import 'package:my_app/student/student_home_pages.dart';
@@ -110,10 +108,15 @@ class MyApp extends StatelessWidget {
             data: List<Map<String, dynamic>>.from(args['data']),
           );
         },
-        '/admin_teacher': (context) => const AdminTeacherPage(),
-        // '/add_student': (context) => const AddStudentPage(),
-        // '/add_teacher': (context) => const AddTeacherPage(),
-        '/admin_history': (context) => const AdminHistoryPage(),
+        '/admin_teacher': (context) {
+          final args =
+              ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>;
+
+          return AdminTeacherPage(
+            data: List<Map<String, dynamic>>.from(args['data']),
+          );
+        },
       },
 
       onGenerateRoute: (settings) {

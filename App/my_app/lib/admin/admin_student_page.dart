@@ -79,6 +79,14 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
     suffixIcon: const Icon(Icons.search),
   );
 
+  void _deleteStudentAt(int index) {
+    setState(() {
+      final student = filteredStudents[index];
+      filteredStudents.removeAt(index);
+      allStudents.remove(student);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -186,32 +194,49 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
                               ),
                               boxShadow: const [
                                 BoxShadow(
-                                  color: Color(
-                                    0x1F000000,
-                                  ), 
+                                  color: Color(0x1F000000),
                                   blurRadius: 8,
                                   offset: Offset(0, 4),
                                 ),
                               ],
                             ),
-                            child: Column(
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  s['full_name'],
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1F2937),
+                                /// ===== ข้อมูลนักศึกษา =====
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        s['full_name'],
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF1F2937),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        s['student_id'],
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Color(0xFF6B7280),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  s['student_id'],
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF6B7280),
+
+                                /// ===== ปุ่มลบ =====
+                                IconButton(
+                                  tooltip: 'ลบนักศึกษา',
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Color(0xFFF44336),
                                   ),
+                                  onPressed: () => _deleteStudentAt(index),
                                 ),
                               ],
                             ),
