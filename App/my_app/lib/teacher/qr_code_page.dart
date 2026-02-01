@@ -340,6 +340,7 @@ class _CoursesPageState extends State<QrCodePage> {
                       'id': e['id'],
                       'name': e['name'],
                       'code': e['code'],
+                      'section': e['section'],
                       'user_id': e['user_id'],
                     },
                   )
@@ -357,8 +358,8 @@ class _CoursesPageState extends State<QrCodePage> {
   }
 
   void _showSnack(String msg) {
-  //   if (!mounted) return;
-  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    //   if (!mounted) return;
+    //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   Future<void> _sendQRCodeData(dynamic courseId) async {
@@ -475,7 +476,7 @@ class _CoursesPageState extends State<QrCodePage> {
 
                   return TextBox(
                     title: c['name'],
-                    subtitle: c['code'],
+                    subtitle: '${c['code']} | S.${c['section']}',
                     onTap: () {},
 
                     // 👇 ปรับตรงนี้

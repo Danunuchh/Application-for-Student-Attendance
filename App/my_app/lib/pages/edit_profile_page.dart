@@ -148,20 +148,36 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-  InputDecoration _field(String hint) => InputDecoration(
-    hintText: hint,
-    filled: true,
-    fillColor: Colors.white,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFF84A9EA), width: 1.5),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFF6A9BF5), width: 2),
-    ),
-  );
+InputDecoration _field(String hint) => InputDecoration(
+      hintText: hint,
+      filled: true,
+
+      // ✅ พื้นหลัง "ขาวตลอด" ไม่ว่าโหมดไหน
+      fillColor: Colors.white,
+
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: _isEditing
+              ? Colors.grey.shade400 // ✅ เทา (โหมดแก้ไข)
+              : const Color(0xFF84A9EA), // 🔵 ฟ้า (โหมดดู)
+          width: 1.5,
+        ),
+      ),
+
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: _isEditing
+              ? Colors.grey.shade600 // ✅ เทาเข้ม ตอน focus
+              : const Color(0xFF6A9BF5), // 🔵 ฟ้าเข้ม
+          width: 2,
+        ),
+      ),
+    );
 
   Widget _title(String text) => Padding(
     padding: const EdgeInsets.only(left: 4, bottom: 8, top: 18),
@@ -254,12 +270,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   _title('รหัสอาจารย์'),
                   TextFormField(
                     controller: _studentId,
-                    readOnly: true,
-                    showCursor: false,
-                    enableInteractiveSelection: false,
-                    keyboardType: TextInputType.none,
-                    focusNode: FocusNode(canRequestFocus: false),
                     decoration: _field('รหัสอาจารย์'),
+                    keyboardType: TextInputType.text, // หรือ number
                   ),
                 ],
 

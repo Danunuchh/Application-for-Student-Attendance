@@ -356,6 +356,7 @@ class _CoursesPageState extends State<CoursesPage> {
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
+                              backgroundColor: Colors.white,
                               title: const Text('ยืนยันการบันทึก'),
                               content: Text(
                                 'คุณต้องการบันทึก ${selected.length} นักศึกษาที่เลือกใช่หรือไม่?',
@@ -420,6 +421,7 @@ class _CoursesPageState extends State<CoursesPage> {
                       'id': e['id'],
                       'name': e['name'],
                       'code': e['code'],
+                      'section': e['section'],
                       'user_id': e['user_id'],
                     },
                   )
@@ -508,7 +510,7 @@ class _CoursesPageState extends State<CoursesPage> {
 
                   return TextBox(
                     title: c['name'],
-                    subtitle: c['code'],
+                    subtitle: '${c['code']} | S.${c['section']}',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -844,7 +846,9 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
     final controller = TextEditingController();
     return await showDialog<String>(
       context: context,
+      barrierColor: Colors.white,
       builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
         title: const Text('เพิ่มนักศึกษาเข้าคลาส'),
         content: TextField(
           controller: controller,

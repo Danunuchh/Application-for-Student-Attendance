@@ -32,6 +32,13 @@ class _AdminStudentDetailPageState extends State<AdminStudentDetailPage> {
     _future = _loadCourses();
   }
 
+  Future<void> _refresh() async {
+    setState(() {
+      _future = _loadCourses();
+    });
+    await _future;
+  }
+
   Future<List<CourseStat>> _loadCourses() async {
     final uri = Uri.parse('$apiBase/admin_api.php').replace(
       queryParameters: {
@@ -54,6 +61,7 @@ class _AdminStudentDetailPageState extends State<AdminStudentDetailPage> {
       return CourseStat(
         courseName: e['course_name'],
         courseCode: e['course_code'],
+        section: e['section']?.toString() ?? '',
         total: e['total_classes'],
         attend: e['attend_count'],
         absent: e['absent_count'],
@@ -65,51 +73,54 @@ class _AdminStudentDetailPageState extends State<AdminStudentDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(title: widget.fullName),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          FutureBuilder<List<CourseStat>>(
-            future: _future,
-            builder: (context, snap) {
-              if (snap.connectionState == ConnectionState.waiting) {
-                return const LinearProgressIndicator();
-              }
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            FutureBuilder<List<CourseStat>>(
+              future: _future,
+              builder: (context, snap) {
+                if (snap.connectionState == ConnectionState.waiting) {
+                  return const LinearProgressIndicator();
+                }
 
-              if (!snap.hasData || snap.data!.isEmpty) {
-                return const Center(child: Text('ไม่มีรายวิชา'));
-              }
+                if (!snap.hasData || snap.data!.isEmpty) {
+                  return const Center(child: Text('ไม่มีรายวิชา'));
+                }
 
-              return Column(
-                children: snap.data!.map((c) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: TextBox(
-                      title: c.courseName,
-                      subtitle: c.courseCode,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AdminStudentDashboardPage(
-                              courseName: c.courseName,
-                              stat: StudentCourseStat(
-                                studentId: widget.studentId,
-                                studentName: widget.fullName,
-                                attend: c.attend,
-                                absent: c.absent,
-                                total: c.total,
+                return Column(
+                  children: snap.data!.map((c) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: TextBox(
+                        title: c.courseName,
+                        subtitle: '${c.courseCode} | S.${c.section}',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AdminStudentDashboardPage(
+                                courseName: c.courseName,
+                                stat: StudentCourseStat(
+                                  studentId: widget.studentId,
+                                  studentName: widget.fullName,
+                                  attend: c.attend,
+                                  absent: c.absent,
+                                  total: c.total,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                }).toList(),
-              );
-            },
-          ),
-        ],
+                          );
+                        },
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -144,6 +155,7 @@ class StudentCourseStat {
 class CourseStat {
   final String courseName;
   final String courseCode;
+  final String section;
   final int total;
   final int attend;
   final int absent;
@@ -151,6 +163,7 @@ class CourseStat {
   CourseStat({
     required this.courseName,
     required this.courseCode,
+    required this.section,
     required this.total,
     required this.attend,
     required this.absent,

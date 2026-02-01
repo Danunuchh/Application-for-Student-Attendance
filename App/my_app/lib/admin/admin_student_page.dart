@@ -2,6 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:my_app/admin/admin_student_detail_page.dart';
 import 'package:my_app/components/custom_appbar.dart';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'package:my_app/config.dart';
+
+class AdminApiService {
+  static Future<Map<String, dynamic>> getJson(
+    String endpoint, {
+    Map<String, String>? query,
+  }) async {
+    final uri = Uri.parse('$baseUrl/$endpoint').replace(queryParameters: query);
+
+    final response = await http.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Server error');
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<Map<String, dynamic>> fetchData({required String type}) async {
+    return await getJson('admin_api.php', query: {'type': type});
+  }
+}
+
 class AdminStudentPage extends StatefulWidget {
   final List<Map<String, dynamic>> data;
 
@@ -27,9 +53,25 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
     filteredStudents = allStudents;
   }
 
+  /// ===== โหลดข้อมูลนักศึกษาใหม่ =====
+  Future<void> _loadStudents() async {
+    final json = await AdminApiService.fetchData(type: 'student_list');
+
+    if (json['success'] == true && json['data'] != null) {
+      setState(() {
+        allStudents = List<Map<String, dynamic>>.from(json['data']);
+        _applyFilter(); // คง filter เดิม
+      });
+    }
+  }
+
+  /// ===== pull to refresh =====
+  Future<void> _refresh() async {
+    await _loadStudents();
+  }
+
   /// ====== คำนวณชั้นปีจาก student_id ======
   int calculateYearFromStudentId(String studentId) {
-    // 65200128 -> 65
     final startYear = int.parse(studentId.substring(0, 2));
 
     int currentYear = DateTime.now().year + 543;
@@ -45,47 +87,38 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
 
   /// ====== filter รวม (ปี + search) ======
   void _applyFilter() {
-    setState(() {
-      filteredStudents = allStudents.where((s) {
-        final year = calculateYearFromStudentId(s['student_id']);
-        final matchYear = _selectedYear == null || year == _selectedYear;
+    filteredStudents = allStudents.where((s) {
+      final year = calculateYearFromStudentId(s['student_id']);
+      final matchYear = _selectedYear == null || year == _selectedYear;
 
-        final name = s['full_name'].toString().toLowerCase();
-        final sid = s['student_id'].toString().toLowerCase();
-        final matchSearch =
-            name.contains(_searchText) || sid.contains(_searchText);
+      final name = s['full_name'].toString().toLowerCase();
+      final sid = s['student_id'].toString().toLowerCase();
+      final matchSearch =
+          name.contains(_searchText) || sid.contains(_searchText);
 
-        return matchYear && matchSearch;
-      }).toList();
-    });
+      return matchYear && matchSearch;
+    }).toList();
   }
 
   InputDecoration _searchDeco(String label) => InputDecoration(
-    labelText: label,
-    isDense: true,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: _borderBlue, width: 2),
-    ),
-    suffixIcon: const Icon(Icons.search),
-  );
-
-  void _deleteStudentAt(int index) {
-    setState(() {
-      final student = filteredStudents[index];
-      filteredStudents.removeAt(index);
-      allStudents.remove(student);
-    });
-  }
+        labelText: label,
+        isDense: true,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: _borderBlue, width: 2),
+        ),
+        suffixIcon: const Icon(Icons.search),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -96,13 +129,13 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// ====== ปุ่มเลือกชั้นปี ======
             const Text(
               'ชั้นปี',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
 
+            /// ====== ปุ่มเลือกปี ======
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -115,7 +148,8 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: selected ? _borderBlue : Colors.white,
-                        foregroundColor: selected ? Colors.white : Colors.black,
+                        foregroundColor:
+                            selected ? Colors.white : Colors.black,
                         side: const BorderSide(color: _borderBlue),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -140,110 +174,110 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
             TextField(
               decoration: _searchDeco('ค้นหารหัสนักศึกษา'),
               onChanged: (v) {
-                _searchText = v.toLowerCase();
-                _applyFilter();
+                setState(() {
+                  _searchText = v.toLowerCase();
+                  _applyFilter();
+                });
               },
             ),
 
             const SizedBox(height: 20),
 
-            /// ====== รายชื่อนักศึกษา ======
+            /// ====== รายชื่อนักศึกษา (Refresh) ======
             Expanded(
-              child: filteredStudents.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'ไม่พบข้อมูลนักศึกษา',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: filteredStudents.length,
-                      itemBuilder: (_, index) {
-                        final s = filteredStudents[index];
-                        final year = calculateYearFromStudentId(
-                          s['student_id'],
-                        );
-
-                        return InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => AdminStudentDetailPage(
-                                  studentId: s['student_id'],
-                                  fullName: s['full_name'],
-                                ),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(
-                              bottom: 14,
-                            ), // 👈 เพิ่มระยะห่างระหว่างช่อง
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: const Color(0xFF84A9EA),
-                                width: 1.5,
-                              ),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x1F000000),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                /// ===== ข้อมูลนักศึกษา =====
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        s['full_name'],
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF1F2937),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        s['student_id'],
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFF6B7280),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                /// ===== ปุ่มลบ =====
-                                IconButton(
-                                  tooltip: 'ลบนักศึกษา',
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                    color: Color(0xFFF44336),
-                                  ),
-                                  onPressed: () => _deleteStudentAt(index),
-                                ),
-                              ],
+              child: RefreshIndicator(
+                onRefresh: _refresh,
+                child: filteredStudents.isEmpty
+                    ? ListView(
+                        physics:
+                            const AlwaysScrollableScrollPhysics(),
+                        children: const [
+                          SizedBox(height: 200),
+                          Center(
+                            child: Text(
+                              'ไม่พบข้อมูลนักศึกษา',
+                              style: TextStyle(color: Colors.grey),
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ],
+                      )
+                    : ListView.builder(
+                        physics:
+                            const AlwaysScrollableScrollPhysics(),
+                        itemCount: filteredStudents.length,
+                        itemBuilder: (_, index) {
+                          final s = filteredStudents[index];
+
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => AdminStudentDetailPage(
+                                    studentId: s['student_id'],
+                                    fullName: s['full_name'],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 14),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: const Color(0xFF84A9EA),
+                                  width: 1.5,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x1F000000),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          s['full_name'],
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          s['student_id'],
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xFF6B7280),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.chevron_right,
+                                    color: Colors.grey,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
             ),
           ],
         ),

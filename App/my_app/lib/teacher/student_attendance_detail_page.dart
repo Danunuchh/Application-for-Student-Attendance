@@ -44,6 +44,7 @@ class StudentAttendanceDetailPage extends StatelessWidget {
 
             /// ===== CARD =====
             Card(
+              color: Colors.white,
               elevation: 3,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20), // มุมโค้ง (ปรับได้)
@@ -161,7 +162,7 @@ class _AttendancePieChart extends StatelessWidget {
             children: [
               const Text(
                 'เข้าเรียน',
-                style: TextStyle(fontSize: 12, color: Colors.green),
+                style: TextStyle(fontSize: 12, color: Color.fromARGB(255, 0, 0, 0)),
               ),
               Text(
                 '${attendPercent.toStringAsFixed(0)}%',
@@ -198,7 +199,7 @@ class _PieChartPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     // 🔴 background (ทั้งหมด)
-    paint.color = const Color.fromARGB(255, 231, 72, 72);
+    paint.color = const Color(0xFFE74848);
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       -pi / 2,

@@ -2,9 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/admin/admin_student_detail_page.dart';
-// ใช้ StudentStat จากไฟล์นี้ 👆
 
-class AdminStudentDashboardPage extends StatelessWidget {
+class AdminStudentDashboardPage extends StatefulWidget {
   final String courseName;
   final StudentCourseStat stat;
 
@@ -15,22 +14,53 @@ class AdminStudentDashboardPage extends StatelessWidget {
   });
 
   @override
+  State<AdminStudentDashboardPage> createState() =>
+      _AdminStudentDashboardPageState();
+}
+
+class _AdminStudentDashboardPageState
+    extends State<AdminStudentDashboardPage> {
+  late StudentCourseStat _stat;
+
+  @override
+  void initState() {
+    super.initState();
+    _stat = widget.stat;
+  }
+
+  /// ===== โหลดข้อมูลใหม่ (ตอนนี้ยังใช้ค่าเดิม) =====
+  Future<void> _loadStat() async {
+    // 🔹 ถ้ามี API ในอนาคต → เรียกตรงนี้
+    // final newStat = await Api.getStudentStat(...);
+
+    await Future.delayed(const Duration(milliseconds: 500)); // fake loading
+
+    setState(() {
+      _stat = widget.stat; // ตอนนี้ยังใช้ข้อมูลเดิม
+    });
+  }
+
+  Future<void> _refresh() async {
+    await _loadStat();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final int total = stat.total;
-    final int attend = stat.attend;
-    final int absent = stat.absent;
+    final int total = _stat.total;
+    final int attend = _stat.attend;
+    final int absent = _stat.absent;
 
     final double attendPercent = total > 0 ? (attend / total) * 100 : 0;
     final double absentPercent = total > 0 ? (absent / total) * 100 : 0;
 
     return Scaffold(
-      appBar: CustomAppBar(title: courseName),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: CustomAppBar(title: widget.courseName),
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
           children: [
-
             /// ===== CARD DASHBOARD =====
             Card(
               color: Colors.white,
@@ -47,16 +77,15 @@ class AdminStudentDashboardPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// ชื่อนักศึกษา
                     Text(
-                      stat.studentName,
+                      _stat.studentName,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text('รหัสนักศึกษา : ${stat.studentId}'),
+                    Text('รหัสนักศึกษา : ${_stat.studentId}'),
 
                     const SizedBox(height: 40),
 
@@ -144,7 +173,7 @@ class _AttendancePieChart extends StatelessWidget {
             children: [
               const Text(
                 'เข้าเรียน',
-                style: TextStyle(fontSize: 12, color: Colors.green),
+                style: TextStyle(fontSize: 12),
               ),
               Text(
                 '${attendPercent.toStringAsFixed(0)}%',
@@ -180,8 +209,8 @@ class _PieChartPainter extends CustomPainter {
       ..strokeWidth = size.width * 0.15
       ..strokeCap = StrokeCap.round;
 
-    // 🔴 background (ทั้งหมด)
-    paint.color = Colors.red.shade300;
+    // 🔴 background
+    paint.color = const Color(0xFFE74848);
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       -pi / 2,
@@ -205,4 +234,3 @@ class _PieChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
-

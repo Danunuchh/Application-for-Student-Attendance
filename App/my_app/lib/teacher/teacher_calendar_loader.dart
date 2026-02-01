@@ -68,6 +68,7 @@ class _TeacherCalendarLoaderState extends State<TeacherCalendarLoader> {
         id: '${raw['id'] ?? ''}',
         title: '${raw['name'] ?? ''}',
         code: '${raw['code'] ?? ''}',
+        section: '${raw['section'] ?? ''}',
         credits: '${raw['credit'] ?? ''}',
         teacher: '${raw['teacher_name'] ?? ''}',
         time: '${raw['start_time'] ?? ''} - ${raw['end_time'] ?? ''}',

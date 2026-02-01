@@ -220,6 +220,7 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
                       'id': e['id'],
                       'name': e['name'],
                       'code': e['code'],
+                      'section': e['section'],
                       'user_id': e['user_id'],
                     },
                   )
@@ -298,26 +299,23 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
 
                   return TextBox(
                     title: c['name'],
-                    subtitle: c['code'],
-                    // 👇 ปรับตรงนี้
-                    trailing: IconButton(
-                      icon: const Icon(
-                        Icons.chevron_right,
-                        size: 22,
-                        color: Color(0xFF9CA3AF),
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AttendanceDetailPage(
-                              courseName: c['name'] as String,
-                              courseId: (c['id'] as num).toString(),
-                            ),
-                          ),
-                        );
-                      },
+                    subtitle: '${c['code']} | S.${c['section']}',
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      size: 22,
+                      color: Color(0xFF9CA3AF),
                     ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AttendanceDetailPage(
+                            courseName: c['name'] as String,
+                            courseId: (c['id'] as num).toString(),
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

@@ -31,52 +31,63 @@ class _StudentCalendarPageState extends State<StudentCalendarPage> {
     return widget.events[_key(_selectedDay!)] ?? [];
   }
 
+  /// ===== REFRESH =====
+  Future<void> _refresh() async {
+    // หน้านี้รับ events มาจากข้างนอก
+    // แค่ setState เพื่อบังคับ rebuild
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final items = _itemsForSelectedDay();
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'ปฏิทิน'),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          AppCalendar<Subject>(
-            events: widget.events,
-            onDaySelected: (d) {
-              setState(() => _selectedDay = d);
-            },
-          ),
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          children: [
+            AppCalendar<Subject>(
+              events: widget.events,
+              onDaySelected: (d) {
+                setState(() => _selectedDay = d);
+              },
+            ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          if (_selectedDay == null)
-            const SizedBox.shrink()
-          else if (items.isEmpty)
-            const Center(
-              child: Text(
-                'ไม่มีรายวิชาที่เรียนในวันนี้',
-                style: TextStyle(
-                  color: AppCalendarTheme.sub,
-                  fontSize: 14,
+            if (_selectedDay == null)
+              const SizedBox.shrink()
+            else if (items.isEmpty)
+              const Center(
+                child: Text(
+                  'ไม่มีรายวิชาที่เรียนในวันนี้',
+                  style: TextStyle(
+                    color: AppCalendarTheme.sub,
+                    fontSize: 14,
+                  ),
+                ),
+              )
+            else
+              ...items.map(
+                (s) => TextBox(
+                  subject: s,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            SubjectDetailPage(subject: s),
+                      ),
+                    );
+                  },
                 ),
               ),
-            )
-          else
-            ...items.map(
-              (s) => TextBox(
-                subject: s,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          SubjectDetailPage(subject: s),
-                    ),
-                  );
-                },
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

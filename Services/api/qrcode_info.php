@@ -21,6 +21,8 @@ $time       = $data['time'] ?? null;
 $latitude   = $data['latitude'] ?? null;
 $longitude  = $data['longitude'] ?? null;
 $device_id  = $data['device_id'] ?? null;
+$latitude  = $data['latitude'] ?? null;
+$longitude  = $data['longitude'] ?? null;
 
 if (!$qr_code_id || !$user_id || !$day) {
     echo json_encode(['success' => false, 'message' => 'Missing required data']);
@@ -50,7 +52,7 @@ try {
 
     // หา attendance ของวันนั้น สำหรับ qr_code_id
     $attStmt = $pdo->prepare("
-        SELECT attendance_id, course_name, teacher_name, day, time
+        SELECT attendance_id, course_name, teacher_name, day , time
         FROM attendance
         WHERE course_id = :course_id AND qr_code_id = :qr_code_id AND day = :day
         LIMIT 1
@@ -58,7 +60,7 @@ try {
     $attStmt->execute([
         ':course_id' => $course_id,
         ':qr_code_id' => $qr_code_id,
-        ':day'       => $day
+        ':day'       => $day,
     ]);
     $attendance = $attStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -102,19 +104,27 @@ try {
         $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
         if ($existing) {
-            // update เวลา
             $updateStmt = $pdo->prepare("
-            UPDATE attendance_detail
-            SET time = :time , leave_status = :status 
-            WHERE attendance_id = :attendance_id AND user_id = :user_id
-        ");
+                UPDATE attendance_detail
+                SET 
+                    time = :time,
+                    leave_status = :status,
+                    latitude = :latitude,
+                    longitude = :longitude
+                WHERE attendance_id = :attendance_id
+                AND user_id = :user_id
+            ");
+
             $updateStmt->execute([
-                ':time' => $time,
-                ':status' => 0 ,
-                ':attendance_id' => $attendance_id,
-                ':user_id' => $user_id,
+                ':time'           => $time,
+                ':status'         => 0,
+                ':latitude'       => $latitude,
+                ':longitude'      => $longitude,
+                ':attendance_id'  => $attendance_id,
+                ':user_id'        => $user_id,
             ]);
         }
+
 
         $pdo->commit();
         echo json_encode(['success' => true, 'message' => 'บันทึกเวลาเรียบร้อย']);

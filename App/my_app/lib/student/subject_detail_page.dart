@@ -19,22 +19,23 @@ class SubjectDetailPage extends StatelessWidget {
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(  //ตกแต่งกรอบข้อมูลรายวิชา
-              color: Colors.white,
-              border: Border.all(
-                color: const Color(0xFF84A9EA),
-                width: 1.5, // ✅ เส้นขอบหนา 2
-              ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 6,
-                  spreadRadius: 2, // ✅ เงาชัดขึ้น
-                  offset: const Offset(0, 3),
-                ),
-              ],
+          decoration: BoxDecoration(
+            //ตกแต่งกรอบข้อมูลรายวิชา
+            color: Colors.white,
+            border: Border.all(
+              color: const Color(0xFF84A9EA),
+              width: 1.5, // ✅ เส้นขอบหนา 2
             ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 6,
+                spreadRadius: 2, // ✅ เงาชัดขึ้น
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -67,6 +68,7 @@ class SubjectDetailPage extends StatelessWidget {
                     _KV(k: "รหัสวิชา", v: subject.code),
                     _KV(k: "หน่วยกิต", v: subject.credits),
                   ];
+
                   if (narrow) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,6 +89,8 @@ class SubjectDetailPage extends StatelessWidget {
                   );
                 },
               ),
+              const SizedBox(height: 16),
+              _KV(k: "กลุ่มที่เรียน", v: subject.section),
 
               const SizedBox(height: 20),
 

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 // Database config - แก้ให้ตรงกับ environment ของคุณ
-$host = 'db';                      // Docker service name; ถ้าไม่ใช้ docker อาจเป็น '127.0.0.1' หรือ '192.168.0.111'
+$host = 'db';                      // Docker service name localhost ถ้าเป็นเครื่องใช้ db
 $db   = 'Application_attendance';
 $user = 'Admin';
 $pass = 'Password';

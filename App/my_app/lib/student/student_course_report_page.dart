@@ -12,6 +12,7 @@ class StudentCourseReportPage extends StatelessWidget {
   final String courseId;
   final String courseName;
   final String courseCode;
+  final String? section;
 
   final int totalClasses;
   final int attend;
@@ -22,6 +23,7 @@ class StudentCourseReportPage extends StatelessWidget {
     required this.courseId,
     required this.courseName,
     required this.courseCode,
+    this.section,
     required this.totalClasses,
     required this.attend,
     required this.absent,
@@ -48,12 +50,18 @@ class StudentCourseReportPage extends StatelessWidget {
               courseName,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            Text(courseCode, style: const TextStyle(color: Colors.black54)),
+            Text(
+              (section == null || section!.isEmpty)
+                  ? courseCode
+                  : '$courseCode | S.$section',
+              style: const TextStyle(color: Colors.black54),
+            ),
 
             const SizedBox(height: 16),
 
             /// ===== CARD =====
             Card(
+              color: Colors.white,
               elevation: 3,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20), // มุมโค้ง (ปรับได้)
@@ -150,7 +158,10 @@ class _AttendancePieChart extends StatelessWidget {
             children: [
               const Text(
                 'เข้าเรียน',
-                style: TextStyle(fontSize: 12, color: Colors.green),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color.fromARGB(255, 0, 0, 0),
+                ),
               ),
               Text(
                 '${attendPercent.toStringAsFixed(0)}%',
@@ -184,7 +195,7 @@ class _PieChartPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     // 🔴 วงพื้นหลัง (ทั้งหมด = ขาดเรียน)
-    paint.color = Colors.red.shade300;
+    paint.color = const Color(0xFFE74848);
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       -math.pi / 2,

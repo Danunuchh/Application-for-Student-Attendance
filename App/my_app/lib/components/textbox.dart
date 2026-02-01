@@ -54,7 +54,13 @@ class TextBox extends StatelessWidget {
 
     // ---------- แหล่งข้อมูลข้อความ ----------
     final displayMain = title ?? text ?? subject?.title ?? '-';
-    final displaySub = subtitle ?? code ?? subject?.code;
+    final displaySub = subtitle ??
+    code ??
+    (subject == null
+        ? null
+        : subject!.section.isEmpty
+            ? subject!.code
+            : '${subject!.code} | S.${subject!.section}');
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),

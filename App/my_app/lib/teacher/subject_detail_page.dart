@@ -4,6 +4,7 @@ import 'package:my_app/components/custom_appbar.dart';
 class Subject {
   final String title;
   final String code;
+  final String section;
   final String credits;
   final String teacher;
   final String time;
@@ -12,6 +13,7 @@ class Subject {
   const Subject({
     required this.title,
     required this.code,
+    required this.section,
     required this.credits,
     required this.teacher,
     required this.time,
@@ -23,6 +25,7 @@ class Subject {
     return Subject(
       title: (m['name'] ?? m['title'] ?? '').toString(),
       code: (m['code'] ?? '').toString(),
+      section: (m['section'] ?? '').toString(),
       credits: (m['credits'] ?? m['credit'] ?? '–').toString(),
       teacher: (m['teacher'] ?? m['lecturer'] ?? '–').toString(),
       time: (m['time'] ?? m['schedule'] ?? '–').toString(),

@@ -16,6 +16,7 @@ if ($type === 'teacher') {
             c.course_id,
             c.course_name,
             c.code,
+            c.section,
             sd.student_id,
             sd.user_name,
 
@@ -49,6 +50,7 @@ if ($type === 'teacher') {
         GROUP BY
             c.course_id,
             c.course_name,
+            c.section,
             sd.student_id,
             sd.user_name
         ORDER BY c.course_id
@@ -70,6 +72,7 @@ if ($type === 'teacher') {
                 'course_id'   => $cid,
                 'course_name' => $row['course_name'],
                 'code' => $row['code'],
+                'section' => $row['section'],
                 'students'    => []
             ];
         }
@@ -104,6 +107,7 @@ if ($type === 'teacher') {
             u.student_id,
             s.course_id,
             c.code,
+            c.section,
             s.course_name,
 
             COUNT(ad.schedule_id) AS total_classes,
@@ -164,6 +168,7 @@ if ($type === 'teacher') {
                 'course_id'   => $cid,
                 'course_name' => $row['course_name'],
                 'code'        => $row['code'],
+                'section'     => $row['section'],
                 'students'    => []
             ];
         }

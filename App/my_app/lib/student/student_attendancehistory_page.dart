@@ -92,11 +92,14 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
                   final c = _courses[i];
                   final name = c['name'] ?? '-';
                   final code = c['code'] ?? '-';
+                  final section = c['section'];
                   final courseId = c['id']?.toString() ?? '';
 
                   return TextBox(
                     text: name,
-                    subtitle: code,
+                    subtitle: (section == null || section.toString().isEmpty)
+                        ? code
+                        : '$code | S.$section',
                     onTap: () {
                       Navigator.push(
                         context,

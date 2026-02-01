@@ -8,6 +8,38 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:my_app/config.dart';
 
+import 'package:geolocator/geolocator.dart';
+
+Future<Position?> getCurrentLocation() async {
+  bool serviceEnabled;
+  LocationPermission permission;
+
+  // เปิด location service ไหม
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    debugPrint('Location service disabled');
+    return null;
+  }
+
+  permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      debugPrint('Location permission denied');
+      return null;
+    }
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    debugPrint('Location permission denied forever');
+    return null;
+  }
+
+  return await Geolocator.getCurrentPosition(
+    desiredAccuracy: LocationAccuracy.high,
+  );
+}
+
 class Student {
   final String userId;
   final String studentId;
@@ -241,6 +273,7 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
       await showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
+          backgroundColor: Colors.white,
           title: const Text('ยืนยันการเช็คชื่อ'),
           content: SingleChildScrollView(
             child: Column(
@@ -249,16 +282,8 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
               children: [
                 Text('ชื่อวิชา: ${_qrData!['course_name'] ?? '-'}'),
                 Text('ชื่ออาจารย์: ${_qrData!['teacher_name'] ?? '-'}'),
-                Text('เวลาเรียน: ${_qrData!['start_time'] ?? '-'} - ${_qrData!['end_time'] ?? '-'}'),
+                Text('เวลาเรียน: ${_qrData!['time'] ?? '-'}'),
                 Text('วันที่: ${_qrData!['day'] ?? '-'}'),
-                const SizedBox(height: 12),
-                const Text(
-                  'รายชื่อนักศึกษา:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                ...students.map(
-                  (s) => Text('${s['student_name']} (${s['student_id']})'),
-                ),
               ],
             ),
           ),
@@ -314,13 +339,20 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
       final formattedTime =
           "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
 
+      final position = await getCurrentLocation();
+
       final payload = {
-        'qr_code_id': _qrData!['qr_code_id'].toString(), // แปลงเป็น String
-        'user_id': userId.toString(), // แปลงเป็น String
-        'day': formattedDate, // ต้องใช้ key 'day' ให้ตรงกับ PHP
+        'qr_code_id': _qrData!['qr_code_id'].toString(),
+        'qr_password': _qrData!['qr_password'].toString(),
+        'user_id': userId.toString(),
+        'day': formattedDate,
         'time': formattedTime,
+        'latitude': position?.latitude,
+        'longitude': position?.longitude,
         'type': 'save',
       };
+
+      debugPrint('Sending payload with location: $payload');
 
       debugPrint('Sending payload: $payload');
 

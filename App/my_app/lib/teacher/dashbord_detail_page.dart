@@ -74,10 +74,21 @@ class _CourseDetailPageState extends State<DashbordDetailPage> {
     _future = _loadDetail();
   }
 
+  /// ===== REFRESH =====
+  Future<void> _refresh() async {
+    setState(() {
+      _future = _loadDetail();
+    });
+    await _future;
+  }
+
   Future<List<StudentStat>> _loadDetail() async {
     final uri = Uri.parse(
       '$apiBase/dashbord.php',
-    ).replace(queryParameters: {'type': 'teacher', 'user_id': widget.userId});
+    ).replace(queryParameters: {
+      'type': 'teacher',
+      'user_id': widget.userId,
+    });
 
     final res = await http.get(uri);
 
@@ -93,7 +104,6 @@ class _CourseDetailPageState extends State<DashbordDetailPage> {
 
     final List courses = json['data'];
 
-    /// 🔑 หา course ที่ตรงกับ courseId
     final course = courses.firstWhere(
       (c) => c['course_id'].toString() == widget.courseId,
       orElse: () => null,
@@ -112,60 +122,77 @@ class _CourseDetailPageState extends State<DashbordDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(title: widget.courseName),
-      body: FutureBuilder<List<StudentStat>>(
-        future: _future,
-        builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: FutureBuilder<List<StudentStat>>(
+          future: _future,
+          builder: (context, snap) {
+            if (snap.connectionState == ConnectionState.waiting) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 200),
+                  Center(child: CircularProgressIndicator()),
+                ],
+              );
+            }
 
-          if (!snap.hasData || snap.data!.isEmpty) {
-            return const Center(child: Text('ไม่มีข้อมูลนักศึกษา'));
-          }
+            if (!snap.hasData || snap.data!.isEmpty) {
+              return ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 200),
+                  Center(child: Text('ไม่มีข้อมูลนักศึกษา')),
+                ],
+              );
+            }
 
-          final students = snap.data!;
+            final students = snap.data!;
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: students.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, i) {
-              final s = students[i];
+            return ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              itemCount: students.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, i) {
+                final s = students[i];
 
-              return TextBox(
-                title: s.studentName,
-                subtitleWidget: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    /// ====== รายละเอียดฝั่งซ้าย ======
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${s.studentId}',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF6B7280),
+                return TextBox(
+                  title: s.studentName,
+                  subtitleWidget: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              s.studentId,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF6B7280),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 6,
-                            children: [
-                              _statChip('เข้า', s.attend, Colors.green),
-                              _statChip('ขาด', s.absent, Colors.red),
-                              _statChip('ทั้งหมด', s.totalClasses, Colors.blue),
-                            ],
-                          ),
-                        ],
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 6,
+                              children: [
+                                _statChip('เข้า', s.attend, Colors.green),
+                                _statChip('ขาด', s.absent, Colors.red),
+                                _statChip(
+                                  'ทั้งหมด',
+                                  s.totalClasses,
+                                  Colors.blue,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                onTap: () {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    ],
+                  ),
+                  onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -175,12 +202,12 @@ class _CourseDetailPageState extends State<DashbordDetailPage> {
                         ),
                       ),
                     );
-                  });
-                },
-              );
-            },
-          );
-        },
+                  },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

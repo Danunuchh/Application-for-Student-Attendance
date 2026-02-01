@@ -36,7 +36,7 @@ if ($courseId <= 0 || empty($students) || $type !== 'insert') {
 
 try {
     // ดึงข้อมูล course และ teacher สำหรับ schedule
-    $stCourse = $pdo->prepare("SELECT c.course_name, c.user_id AS teacher_id, u.full_name AS teacher_name, c.day_id, d.day_name
+    $stCourse = $pdo->prepare("SELECT c.course_name, c.user_id AS teacher_id, u.full_name AS teacher_name, c.day_id, d.day_name , c.start_time , c.end_time
                                FROM course c
                                LEFT JOIN users u ON u.user_id = c.user_id
                                LEFT JOIN day d ON d.day_id = c.day_id
@@ -66,8 +66,8 @@ try {
         // Insert schedule ใหม่
         $stSchedule = $pdo->prepare("
             INSERT INTO schedule
-            (course_id, course_name, teacher_id, teacher_name, day_id, day_name)
-            VALUES (:course_id, :course_name, :teacher_id, :teacher_name, :day_id, :day_name)
+            (course_id, course_name, teacher_id, teacher_name, day_id, day_name , time)
+            VALUES (:course_id, :course_name, :teacher_id, :teacher_name, :day_id, :day_name , :time)
         ");
         $stSchedule->execute([
             ':course_id'    => $courseId,
@@ -76,6 +76,7 @@ try {
             ':teacher_name' => $course['teacher_name'],
             ':day_id'       => $course['day_id'],
             ':day_name'     => $course['day_name'],
+            ':time' => $course['start_time'] . '-' . $course['end_time'],
         ]);
         $scheduleId = (int)$pdo->lastInsertId();
     }

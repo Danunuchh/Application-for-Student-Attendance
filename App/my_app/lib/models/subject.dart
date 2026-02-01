@@ -3,6 +3,7 @@ class Subject {
   final String id;
   final String title;
   final String code;
+  final String section;
   final String credits;
   final String teacher;
   final String time;   // เช่น "17:00 - 20:00"
@@ -12,6 +13,7 @@ class Subject {
     required this.id,
     required this.title,
     required this.code,
+    required this.section,
     required this.credits,
     required this.teacher,
     required this.time,
@@ -23,6 +25,7 @@ class Subject {
         id: (json['id'] ?? '').toString(),
         title: (json['title'] ?? '').toString(),
         code: (json['code'] ?? '').toString(),
+        section: (json['section'] ?? '').toString(),
         credits: (json['credits'] ?? '').toString(),
         teacher: (json['teacher'] ?? '').toString(),
         time: (json['time'] ?? '').toString(),
@@ -34,6 +37,7 @@ class Subject {
         'id': id,
         'title': title,
         'code': code,
+        'section' : section,
         'credits': credits,
         'teacher': teacher,
         'time': time,
@@ -45,6 +49,7 @@ class Subject {
     String? id,
     String? title,
     String? code,
+    String? section,
     String? credits,
     String? teacher,
     String? time,
@@ -54,6 +59,7 @@ class Subject {
       id: id ?? this.id,
       title: title ?? this.title,
       code: code ?? this.code,
+      section: section ?? this.section,
       credits: credits ?? this.credits,
       teacher: teacher ?? this.teacher,
       time: time ?? this.time,
@@ -63,7 +69,7 @@ class Subject {
 
   @override
   String toString() =>
-      'Subject(title: $title, code: $code, credits: $credits, teacher: $teacher, time: $time, room: $room)';
+      'Subject(title: $title, code: $code, section: $section, credits: $credits, teacher: $teacher, time: $time, room: $room)';
 
   // เทียบค่า (เพื่อประโยชน์เวลาทดสอบ/เทียบรายการ)
   @override
@@ -72,6 +78,7 @@ class Subject {
     return other is Subject &&
         other.title == title &&
         other.code == code &&
+        other.section == section &&
         other.credits == credits &&
         other.teacher == teacher &&
         other.time == time &&
@@ -82,6 +89,7 @@ class Subject {
   int get hashCode =>
       title.hashCode ^
       code.hashCode ^
+      section.hashCode ^
       credits.hashCode ^
       teacher.hashCode ^
       time.hashCode ^

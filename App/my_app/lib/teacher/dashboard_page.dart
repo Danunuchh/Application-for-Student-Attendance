@@ -55,6 +55,13 @@ class _DashboardPageState extends State<DashboardPage> {
     _coursesFuture = _loadCourses();
   }
 
+  Future<void> _refresh() async {
+    setState(() {
+      _coursesFuture = _loadCourses();
+    });
+    await _coursesFuture;
+  }
+
   /// ---------- load courses ----------
   Future<List<CourseOption>> _loadCourses() async {
     final json = await ApiService.getJson(
@@ -73,6 +80,7 @@ class _DashboardPageState extends State<DashboardPage> {
         id: e['course_id'].toString(),
         name: e['course_name'].toString(),
         code: e['code'].toString(),
+        section: e['section']?.toString(),
       );
     }).toList();
   }
@@ -81,51 +89,53 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const CustomAppBar(title: 'รายวิชาที่สอน'),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+      appBar: const CustomAppBar(title: 'ผลรายงานวิชาที่สอน'),
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            /// -------- Courses --------
+            FutureBuilder<List<CourseOption>>(
+              future: _coursesFuture,
+              builder: (context, snap) {
+                if (snap.connectionState == ConnectionState.waiting) {
+                  return const LinearProgressIndicator();
+                }
 
-          /// -------- Courses --------
-          FutureBuilder<List<CourseOption>>(
-            future: _coursesFuture,
-            builder: (context, snap) {
-              if (snap.connectionState == ConnectionState.waiting) {
-                return const LinearProgressIndicator();
-              }
+                if (!snap.hasData || snap.data!.isEmpty) {
+                  return const _EmptyBox(text: 'ไม่มีรายวิชา', sub: sub);
+                }
 
-              if (!snap.hasData || snap.data!.isEmpty) {
-                return const _EmptyBox(text: 'ไม่มีรายวิชา', sub: sub);
-              }
+                final courses = snap.data!;
 
-              final courses = snap.data!;
-
-              return Column(
-                children: courses.map((course) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: TextBox(
-                      title: course.name,
-                      subtitle: course.code,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => DashbordDetailPage(
-                              userId: widget.userId,
-                              courseId: course.id,
-                              courseName: course.name,
+                return Column(
+                  children: courses.map((course) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: TextBox(
+                        title: course.name,
+                        subtitle: '${course.code} | S.${course.section}',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DashbordDetailPage(
+                                userId: widget.userId,
+                                courseId: course.id,
+                                courseName: course.name,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                }).toList(),
-              );
-            },
-          ),
-        ],
+                          );
+                        },
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -136,8 +146,14 @@ class CourseOption {
   final String id;
   final String name;
   final String? code;
+  final String? section;
 
-  const CourseOption({required this.id, required this.name, this.code});
+  const CourseOption({
+    required this.id,
+    required this.name,
+    this.code,
+    this.section,
+  });
 }
 
 /// ================= UTILS =================

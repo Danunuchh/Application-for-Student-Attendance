@@ -74,6 +74,7 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
         id: e['course_id'].toString(),
         name: e['course_name'].toString(),
         code: e['code']?.toString(),
+        section: e['section']?.toString(),
         totalClasses: student['total_classes'] ?? 0,
         attend: student['attend'] ?? 0,
         absent: student['absent'] ?? 0,
@@ -128,7 +129,11 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: TextBox(
                         title: course.name,
-                        subtitle: course.code ?? '-',
+                        subtitle:
+                            (course.section == null || course.section!.isEmpty)
+                            ? (course.code ?? '-')
+                            : '${course.code ?? '-'} | S.${course.section}',
+
                         onTap: () {
                           Navigator.push(
                             context,
@@ -137,6 +142,7 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
                                 courseId: course.id,
                                 courseName: course.name,
                                 courseCode: course.code ?? '',
+                                
                                 totalClasses: course.totalClasses,
                                 attend: course.attend,
                                 absent: course.absent,
@@ -162,6 +168,7 @@ class CourseOption {
   final String id;
   final String name;
   final String? code;
+  final String? section;
 
   final int totalClasses;
   final int attend;
@@ -171,6 +178,7 @@ class CourseOption {
     required this.id,
     required this.name,
     this.code,
+    this.section,
     required this.totalClasses,
     required this.attend,
     required this.absent,
