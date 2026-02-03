@@ -7,13 +7,13 @@ import 'dart:convert';
 
 import 'package:my_app/config.dart';
 
+/// ================= API SERVICE =================
 class AdminApiService {
   static Future<Map<String, dynamic>> getJson(
     String endpoint, {
     Map<String, String>? query,
   }) async {
     final uri = Uri.parse('$baseUrl/$endpoint').replace(queryParameters: query);
-
     final response = await http.get(uri);
 
     if (response.statusCode != 200) {
@@ -26,8 +26,19 @@ class AdminApiService {
   static Future<Map<String, dynamic>> fetchData({required String type}) async {
     return await getJson('admin_api.php', query: {'type': type});
   }
+
+  /// ===== ลบนักศึกษา =====
+  static Future<bool> deleteStudent(String studentId) async {
+    final res = await getJson(
+      'admin_api.php',
+      query: {'type': 'delete_student', 'student_id': studentId},
+    );
+
+    return res['success'] == true;
+  }
 }
 
+/// ================= PAGE =================
 class AdminStudentPage extends StatefulWidget {
   final List<Map<String, dynamic>> data;
 
@@ -53,39 +64,32 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
     filteredStudents = allStudents;
   }
 
-  /// ===== โหลดข้อมูลนักศึกษาใหม่ =====
+  /// ===== โหลดข้อมูลใหม่ =====
   Future<void> _loadStudents() async {
     final json = await AdminApiService.fetchData(type: 'student_list');
 
     if (json['success'] == true && json['data'] != null) {
       setState(() {
         allStudents = List<Map<String, dynamic>>.from(json['data']);
-        _applyFilter(); // คง filter เดิม
+        _applyFilter();
       });
     }
   }
 
-  /// ===== pull to refresh =====
-  Future<void> _refresh() async {
-    await _loadStudents();
-  }
+  Future<void> _refresh() async => _loadStudents();
 
-  /// ====== คำนวณชั้นปีจาก student_id ======
+  /// ===== คำนวณชั้นปี =====
   int calculateYearFromStudentId(String studentId) {
     final startYear = int.parse(studentId.substring(0, 2));
 
     int currentYear = DateTime.now().year + 543;
-    int currentMonth = DateTime.now().month;
-
-    if (currentMonth <= 5) {
-      currentYear -= 1;
-    }
+    if (DateTime.now().month <= 5) currentYear -= 1;
 
     final start = startYear + 2500;
     return currentYear - start + 1;
   }
 
-  /// ====== filter รวม (ปี + search) ======
+  /// ===== filter =====
   void _applyFilter() {
     filteredStudents = allStudents.where((s) {
       final year = calculateYearFromStudentId(s['student_id']);
@@ -100,25 +104,88 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
     }).toList();
   }
 
-  InputDecoration _searchDeco(String label) => InputDecoration(
-        labelText: label,
-        isDense: true,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+  /// ===== confirm delete =====
+  Future<void> _confirmDeleteStudent(
+    BuildContext context,
+    String studentId,
+    String fullName,
+  ) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('ยืนยันการลบ'),
+        content: Text(
+          'คุณต้องการลบนักศึกษา\n\n$fullName ($studentId)\n\nใช่หรือไม่?',
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('ยกเลิก'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('ลบ'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await _deleteStudent(studentId);
+    }
+  }
+
+  /// ===== delete =====
+  Future<void> _deleteStudent(String studentId) async {
+    try {
+      final success = await AdminApiService.deleteStudent(studentId);
+
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ลบนักศึกษาเรียบร้อยแล้ว'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        await _loadStudents();
+      } else {
+        throw Exception();
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('เกิดข้อผิดพลาด ไม่สามารถลบได้'),
+          backgroundColor: Colors.red,
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _borderBlue, width: 2),
-        ),
-        suffixIcon: const Icon(Icons.search),
       );
+    }
+  }
+
+  InputDecoration _searchDeco(String label) => InputDecoration(
+    labelText: label,
+    isDense: true,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 1.5),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: _borderBlue, width: 2),
+    ),
+    suffixIcon: const Icon(Icons.search),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +202,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
             ),
             const SizedBox(height: 12),
 
-            /// ====== ปุ่มเลือกปี ======
+            /// ===== เลือกปี =====
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -148,8 +215,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: selected ? _borderBlue : Colors.white,
-                        foregroundColor:
-                            selected ? Colors.white : Colors.black,
+                        foregroundColor: selected ? Colors.white : Colors.black,
                         side: const BorderSide(color: _borderBlue),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -170,7 +236,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
 
             const SizedBox(height: 20),
 
-            /// ====== ค้นหา ======
+            /// ===== search =====
             TextField(
               decoration: _searchDeco('ค้นหารหัสนักศึกษา'),
               onChanged: (v) {
@@ -183,14 +249,13 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
 
             const SizedBox(height: 20),
 
-            /// ====== รายชื่อนักศึกษา (Refresh) ======
+            /// ===== list =====
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refresh,
                 child: filteredStudents.isEmpty
                     ? ListView(
-                        physics:
-                            const AlwaysScrollableScrollPhysics(),
+                        physics: const AlwaysScrollableScrollPhysics(),
                         children: const [
                           SizedBox(height: 200),
                           Center(
@@ -202,49 +267,48 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
                         ],
                       )
                     : ListView.builder(
-                        physics:
-                            const AlwaysScrollableScrollPhysics(),
+                        physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: filteredStudents.length,
                         itemBuilder: (_, index) {
                           final s = filteredStudents[index];
 
-                          return InkWell(
-                            borderRadius: BorderRadius.circular(20),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => AdminStudentDetailPage(
-                                    studentId: s['student_id'],
-                                    fullName: s['full_name'],
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 14),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 12,
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 14),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(0xFF84A9EA),
+                                width: 1.5,
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: const Color(0xFF84A9EA),
-                                  width: 1.5,
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x1F000000),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 4),
                                 ),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x1F000000),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              AdminStudentDetailPage(
+                                                studentId: s['student_id'],
+                                                fullName: s['full_name'],
+                                              ),
+                                        ),
+                                      );
+                                    },
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -267,12 +331,21 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
                                       ],
                                     ),
                                   ),
-                                  const Icon(
-                                    Icons.chevron_right,
-                                    color: Colors.grey,
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red,
                                   ),
-                                ],
-                              ),
+                                  onPressed: () {
+                                    _confirmDeleteStudent(
+                                      context,
+                                      s['student_id'],
+                                      s['full_name'],
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           );
                         },
