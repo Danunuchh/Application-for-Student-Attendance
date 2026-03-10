@@ -10,13 +10,11 @@ const String apiBase = baseUrl;
 class AdminTeacherCourseStudentPage extends StatefulWidget {
   final String courseCode;
   final String courseName;
-  final String section;
 
   const AdminTeacherCourseStudentPage({
     super.key,
     required this.courseCode,
     required this.courseName,
-    required this.section,
   });
 
   @override
@@ -40,7 +38,6 @@ class _AdminTeacherCourseStudentPageState
       queryParameters: {
         'type': 'teacher_course_students',
         'course_code': widget.courseCode,
-        'section': widget.section,
       },
     );
 
@@ -48,126 +45,97 @@ class _AdminTeacherCourseStudentPageState
     final json = jsonDecode(res.body);
 
     if (json['success'] != true || json['data'] == null) {
-      throw Exception('โหลดข้อมูลไม่สำเร็จ');
+      return []; // 🔥 คืน list ว่างแทน throw
     }
 
     final List students = json['data']['students'];
 
     return students.map<StudentItem>((e) {
-      return StudentItem(
-        studentId: e['student_id'],
-        fullName: e['full_name'],
-      );
+      return StudentItem(studentId: e['student_id'], fullName: e['full_name']);
     }).toList();
-  }
-
-  /// ===== refresh =====
-  Future<void> _refresh() async {
-    setState(() {
-      _future = _loadStudents();
-    });
-    await _future;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(title: widget.courseName),
-      body: RefreshIndicator(
-        onRefresh: _refresh,
-        child: FutureBuilder<List<StudentItem>>(
-          future: _future,
-          builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting) {
-              return ListView(
-                children: const [
-                  SizedBox(height: 200),
-                  Center(child: CircularProgressIndicator()),
-                ],
-              );
-            }
+      body: FutureBuilder<List<StudentItem>>(
+        future: _future,
+        builder: (context, snap) {
+          if (snap.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            if (snap.hasError) {
-              return ListView(
-                children: [
-                  const SizedBox(height: 200),
-                  Center(
-                    child: Text(
-                      snap.error.toString(),
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ),
-                ],
-              );
-            }
-
-            if (!snap.hasData || snap.data!.isEmpty) {
-              return ListView(
-                children: const [
-                  SizedBox(height: 200),
-                  Center(
-                    child: Text(
-                      'ไม่มีนักศึกษาลงทะเบียนในรายวิชานี้',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ],
-              );
-            }
-
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: snap.data!.length,
-              itemBuilder: (context, index) {
-                final s = snap.data![index];
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 14),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF84A9EA),
-                      width: 1.5,
-                    ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x1F000000),
-                        blurRadius: 8,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        s.fullName,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1F2937),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        s.studentId,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF6B7280),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+          if (snap.hasError) {
+            return Center(
+              child: Text(
+                snap.error.toString(),
+                style: const TextStyle(color: Colors.red),
+              ),
             );
-          },
-        ),
+          }
+
+          if (!snap.hasData || snap.data!.isEmpty) {
+            return const Center(
+              child: Text(
+                'ไม่พบข้อมูล',
+                style: TextStyle(color: Colors.grey),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: snap.data!.length,
+            itemBuilder: (context, index) {
+              final s = snap.data![index];
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF84A9EA),
+                    width: 1.5,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x1F000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      s.fullName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      s.studentId,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -178,8 +146,5 @@ class StudentItem {
   final String studentId;
   final String fullName;
 
-  StudentItem({
-    required this.studentId,
-    required this.fullName,
-  });
+  StudentItem({required this.studentId, required this.fullName});
 }

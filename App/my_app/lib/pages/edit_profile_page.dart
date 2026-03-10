@@ -270,8 +270,12 @@ InputDecoration _field(String hint) => InputDecoration(
                   _title('รหัสอาจารย์'),
                   TextFormField(
                     controller: _studentId,
+                    readOnly: true,
+                    showCursor: false,
+                    enableInteractiveSelection: false,
+                    keyboardType: TextInputType.none,
+                    focusNode: FocusNode(canRequestFocus: false),
                     decoration: _field('รหัสอาจารย์'),
-                    keyboardType: TextInputType.text, // หรือ number
                   ),
                 ],
 

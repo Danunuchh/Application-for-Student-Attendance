@@ -67,8 +67,10 @@ class _StudentCalendarLoaderState extends State<StudentCalendarLoader> {
         id: '${raw['id'] ?? ''}',
         title: '${raw['name'] ?? ''}', // course_name
         code: '${raw['code'] ?? ''}',
-        section: '${raw['section'] ?? ''}',
         credits: '${raw['credit'] ?? ''}',
+        section: '${raw['section'] ?? ''}',
+        year: '${raw['year'] ?? ''}',
+        term: '${raw['term'] ?? ''}',
         teacher: '${raw['teacher_name'] ?? ''}',
         time: '${raw['start_time'] ?? ''} - ${raw['end_time'] ?? ''}',
         room: '${raw['room'] ?? ''}',

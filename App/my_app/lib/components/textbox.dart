@@ -52,15 +52,14 @@ class TextBox extends StatelessWidget {
       ],
     );
 
-    // ---------- แหล่งข้อมูลข้อความ ----------
-    final displayMain = title ?? text ?? subject?.title ?? '-';
-    final displaySub = subtitle ??
-    code ??
-    (subject == null
-        ? null
-        : subject!.section.isEmpty
-            ? subject!.code
-            : '${subject!.code} | S.${subject!.section}');
+    // -------- แสดง Code + Course Name --------
+    final displayMain = subject != null
+        ? '${subject!.code ?? '-'}  ${subject!.title ?? '-'}'
+        : (title ?? text ?? '-');
+
+    final displaySub = subject != null
+        ? 'ปีการศึกษา ${subject!.year ?? '-'} | ภาคเรียน ${subject!.term ?? '-'} | Sec ${subject!.section ?? '-'}'
+        : subtitle;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),

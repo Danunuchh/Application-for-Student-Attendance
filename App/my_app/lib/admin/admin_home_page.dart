@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/admin/admin_teacher_page.dart';
-import 'package:my_app/pages/login_page.dart'; // ✅ import LoginPage
-import 'package:my_app/components/button.dart'; // ✅ import CustomButton
+import 'package:my_app/admin/admin_student_page.dart';
+import 'package:my_app/pages/login_page.dart';
+import 'package:my_app/components/button.dart';
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
 import 'package:my_app/config.dart';
-import 'admin_student_page.dart';
 
 class AdminApiService {
   static Future<Map<String, dynamic>> getJson(
@@ -30,12 +29,6 @@ class AdminApiService {
   }
 }
 
-class AppColors {
-  static const Color sub = Color(0xFFC4C7D0);
-  static const Color kPrimary = Color(0xFF3B82F6);
-  static const Color kBottom = Color(0xFFF3F4F6);
-}
-
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});
 
@@ -45,158 +38,181 @@ class AdminHomePage extends StatelessWidget {
     final String userId = (args is Map && args['userId'] != null)
         ? args['userId'].toString()
         : '';
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // โลโก้
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final screenHeight = constraints.maxHeight;
+            final screenWidth = constraints.maxWidth;
+
+            final double logoHeight =
+    (screenHeight * 0.28).clamp(120.0, 260.0).toDouble();
+            final buttonWidth = screenWidth > 600
+                ? 350.0 // tablet
+                : screenWidth * 0.7;
+
+            return Column(
+              children: [
+                // ===== CONTENT =====
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 15),
+
+                        // ===== LOGO =====
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          child: Center(
+                            child: Image.asset(
+                              'assets/mainlogo.png',
+                              height: logoHeight,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+
+                        // ===== BUTTON SECTION =====
+                        SizedBox(
+                          height: screenHeight * 0.35,
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildRoleButton(
+                                  text: 'นักศึกษา',
+                                  width: buttonWidth,
+                                  onPressed: () async {
+                                    try {
+                                      final json =
+                                          await AdminApiService.fetchData(
+                                            type: 'student_list',
+                                          );
+
+                                      if (json['success'] != true ||
+                                          json['data'] == null) {
+                                        throw Exception('โหลดข้อมูลไม่สำเร็จ');
+                                      }
+
+                                      final List<Map<String, dynamic>>
+                                      studentList =
+                                          List<Map<String, dynamic>>.from(
+                                            json['data'],
+                                          );
+
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => AdminStudentPage(
+                                            data: studentList,
+                                          ),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(content: Text(e.toString())),
+                                      );
+                                    }
+                                  },
+                                ),
+
+                                const SizedBox(height: 30),
+
+                                _buildRoleButton(
+                                  text: 'อาจารย์',
+                                  width: buttonWidth,
+                                  onPressed: () async {
+                                    try {
+                                      final json =
+                                          await AdminApiService.fetchData(
+                                            type: 'teacher_list',
+                                          );
+
+                                      if (json['success'] != true ||
+                                          json['data'] == null) {
+                                        throw Exception('โหลดข้อมูลไม่สำเร็จ');
+                                      }
+
+                                      final List<Map<String, dynamic>>
+                                      teacherList =
+                                          List<Map<String, dynamic>>.from(
+                                            json['data'],
+                                          );
+
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => AdminTeacherPage(
+                                            data: teacherList,
+                                          ),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(content: Text(e.toString())),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxHeight: MediaQuery.of(context).size.height * 0.28,
-                          minHeight: 120,
-                        ),
-                        child: Image.asset(
-                          'assets/logounimai.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const Icon(
-                            Icons.image,
-                            size: 80,
-                            color: AppColors.sub,
-                          ),
-                        ),
-                      ),
-                    ),
                   ),
-                  const SizedBox(height: 60),
-
-                  _buildRoleButton(
-                    text: 'นักศึกษา',
-                    onPressed: () async {
-                      try {
-                        final json = await AdminApiService.fetchData(
-                          type: 'student_list',
-                        );
-
-                        if (json['success'] != true || json['data'] == null) {
-                          throw Exception('โหลดข้อมูลไม่สำเร็จ');
-                        }
-
-                        final List<Map<String, dynamic>> studentList =
-                            List<Map<String, dynamic>>.from(json['data']);
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AdminStudentPage(data: studentList),
-                          ),
-                        );
-                      } catch (e) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(e.toString())));
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 30),
-
-                  _buildRoleButton(
-                    text: 'อาจารย์',
-                    onPressed: () async {
-                      try {
-                        final json = await AdminApiService.fetchData(
-                          type: 'teacher_list',
-                        );
-
-                        if (json['success'] != true || json['data'] == null) {
-                          throw Exception('โหลดข้อมูลไม่สำเร็จ');
-                        }
-
-                        final List<Map<String, dynamic>> teacherList =
-                            List<Map<String, dynamic>>.from(json['data']);
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AdminTeacherPage(data: teacherList),
-                          ),
-                        );
-                      } catch (e) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(e.toString())));
-                      }
-                    },
-                  ),
-
-                  const SizedBox(height: 30),
-                  /*_buildRoleButton(
-                    text: 'Dashboard',
-                    onPressed: () async {
-                      final res = await AdminApiService.fetchData('dashboard');
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AdminDashboardPage(data: res['data']),
-                        ),
-                      );
-                    },
-                  ),*/
-                  const SizedBox(height: 120), // เว้นพื้นที่ให้ปุ่ม bottom
-                ],
-              ),
-            ),
-          ),
-
-          // ปุ่มเข้าสู่ระบบด้านล่าง
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-              decoration: const BoxDecoration(
-                color: Color(0xFFA6CAFA),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(22),
-                  topRight: Radius.circular(22),
                 ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomButton(
-                      text: 'ออกจากระบบ',
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginPage(),
-                          ),
-                        );
-                      },
-                      backgroundColor: const Color(0xFF84A9EA),
-                      textColor: Colors.white,
-                      fontSize: 16,
+
+                // ===== BOTTOM BAR =====
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 30,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFA6CAFA),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(22),
+                      topRight: Radius.circular(22),
                     ),
-                  ],
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomButton(
+                          text: 'ออกจากระบบ',
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginPage(),
+                              ),
+                            );
+                          },
+                          backgroundColor: const Color(0xFF84A9EA),
+                          textColor: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-        ],
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -204,27 +220,34 @@ class AdminHomePage extends StatelessWidget {
   Widget _buildRoleButton({
     required String text,
     required VoidCallback onPressed,
+    required double width,
   }) {
     return SizedBox(
-      width: 250,
-      height: 55,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side: const BorderSide(color: Color(0xFF84A9EA), width: 1.5),
+    width: width,
+    height: 55,
+    child: ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: const BorderSide(
+            color: Color(0xFF84A9EA),
+            width: 1.5,
           ),
-          shadowColor: Colors.grey.shade400,
-          elevation: 3,
         ),
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        shadowColor: Colors.grey,
+        elevation: 3,
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
         ),
       ),
-    );
+    ),
+  );
   }
 }

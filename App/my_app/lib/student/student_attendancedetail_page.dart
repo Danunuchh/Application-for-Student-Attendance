@@ -37,8 +37,8 @@ class AttendanceRecord {
     return AttendanceRecord(
       date: parsedDate,
       studentId: (json['student_id'] ?? json['studentId'] ?? '').toString(),
-      studentName:
-          (json['student_name'] ?? json['studentName'] ?? '').toString(),
+      studentName: (json['student_name'] ?? json['studentName'] ?? '')
+          .toString(),
       present: t != null && t.toString().isNotEmpty,
       checkTime: t?.toString(),
     );
@@ -65,6 +65,7 @@ class AttendanceDetailPage extends StatefulWidget {
 }
 
 class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
+  /// ❗️เริ่มต้นยังไม่เลือกวัน → today จะเป็นวงกลมขอบ
   DateTime? _selectedDay;
   DateTime _focusedDay = DateTime.now();
 
@@ -78,21 +79,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   void initState() {
     super.initState();
     _fetchMonth(_focusedDay);
-  }
-
-  /// =====================
-  /// REFRESH
-  /// =====================
-  Future<void> _refresh() async {
-    setState(() {
-      _events.clear();
-    });
-
-    await _fetchMonth(_focusedDay);
-
-    if (_selectedDay != null) {
-      await _fetchAttendance(_selectedDay!);
-    }
+    // ยังไม่โหลดจนกว่าจะเลือกวัน
   }
 
   /// =====================
@@ -123,8 +110,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
 
       final records = list
           .whereType<Map>()
-          .map((e) => AttendanceRecord.fromJson(
-              Map<String, dynamic>.from(e)))
+          .map((e) => AttendanceRecord.fromJson(Map<String, dynamic>.from(e)))
           .toList();
 
       setState(() {
@@ -135,7 +121,12 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
     }
   }
 
+  List<AttendanceRecord> _recordsOf(DateTime day) {
+    return _events[_key(day)] ?? [];
+  }
+
   Future<void> _fetchMonth(DateTime focused) async {
+    // เอาเดือน/ปี ปัจจุบัน
     final year = focused.year;
     final month = focused.month;
 
@@ -175,15 +166,11 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
       }
 
       setState(() {
-        _events.addAll(monthEvents);
+        _events.addAll(monthEvents); // ⭐ สำคัญ: เติม event ลง calendar
       });
     } catch (e) {
       debugPrint('fetchMonth error: $e');
     }
-  }
-
-  List<AttendanceRecord> _recordsOf(DateTime day) {
-    return _events[_key(day)] ?? [];
   }
 
   /// =====================
@@ -197,60 +184,55 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'ประวัติการเข้าเรียน'),
-      body: RefreshIndicator(
-        onRefresh: _refresh,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Center(
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Center(
+            child: Text(
+              widget.courseName,
+              style: const TextStyle(fontSize: 16, color: Color(0xFF1F2937)),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          /// ===== AppCalendar (เหมือนอีกหน้า) =====
+          AppCalendar<AttendanceRecord>(
+            key: ValueKey(_events.length), // ⭐ สำคัญ
+            events: _events,
+            initialFocusedDay: _focusedDay,
+            initialSelectedDay: _selectedDay,
+            onDaySelected: (day) {
+              setState(() {
+                _selectedDay = day;
+                _focusedDay = day;
+              });
+              _fetchAttendance(day);
+            },
+            onMonthChanged: (focused) {
+              _fetchMonth(focused);
+            },
+          ),
+          const SizedBox(height: 18),
+
+          if (_selectedDay == null)
+            const Center(
               child: Text(
-                widget.courseName,
-                style:
-                    const TextStyle(fontSize: 16, color: Color(0xFF1F2937)),
+                'กรุณาเลือกวันที่จากปฏิทิน',
+                style: TextStyle(color: AppCalendarTheme.sub),
               ),
-            ),
-            const SizedBox(height: 12),
-
-            AppCalendar<AttendanceRecord>(
-              key: ValueKey(_events.length),
-              events: _events,
-              initialFocusedDay: _focusedDay,
-              initialSelectedDay: _selectedDay,
-              onDaySelected: (day) {
-                setState(() {
-                  _selectedDay = day;
-                  _focusedDay = day;
-                });
-                _fetchAttendance(day);
-              },
-              onMonthChanged: (focused) {
-                _focusedDay = focused;
-                _fetchMonth(focused);
-              },
-            ),
-
-            const SizedBox(height: 18),
-
-            if (_selectedDay == null)
-              const Center(
-                child: Text(
-                  'กรุณาเลือกวันที่จากปฏิทิน',
-                  style: TextStyle(color: AppCalendarTheme.sub),
-                ),
-              )
-            else if (_loading)
-              const Center(child: CircularProgressIndicator())
-            else if (records.isEmpty)
-              const Center(
-                child: Text(
-                  'ไม่มีข้อมูลการเช็คชื่อในวันนี้',
-                  style: TextStyle(color: AppCalendarTheme.sub),
-                ),
-              )
-            else
-              ...records.map(_buildCard),
-          ],
-        ),
+            )
+          else if (_loading)
+            const Center(child: CircularProgressIndicator())
+          else if (records.isEmpty)
+            const Center(
+              child: Text(
+                'ไม่มีข้อมูลการเช็คชื่อในวันนี้',
+                style: TextStyle(color: AppCalendarTheme.sub),
+              ),
+            )
+          else
+            ...records.map(_buildCard),
+        ],
       ),
     );
   }
@@ -259,8 +241,10 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   /// CARD
   /// =====================
   Widget _buildCard(AttendanceRecord r) {
-    final Color presentColor = const Color(0xFF34D399);
-    final Color absentColor = const Color(0xFFF87171);
+    final Color presentColor = const Color(0xFF34D399); // เขียว
+    final Color absentColor = const Color(0xFFF87171); // แดง
+    final Color bgPresent = presentColor.withOpacity(0.2); // พื้นหลังเขียวอ่อน
+    final Color bgAbsent = absentColor.withOpacity(0.2); // พื้นหลังแดงอ่อน
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -276,6 +260,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
           child: Row(
             children: [
+              // ซ้าย: รหัส + ชื่อ
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,28 +270,38 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(r.studentName),
+                    Text(
+                      r.studentName,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
                   ],
                 ),
               ),
+              // ขวา: เวลาเช็คชื่อ หรือ "ไม่ได้เช็คชื่อ"
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: r.checkTime != null
-                      ? presentColor.withOpacity(0.2)
-                      : absentColor.withOpacity(0.2),
+                      ? bgPresent
+                      : bgAbsent, // ✅ พื้นหลังอ่อน
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   r.checkTime ?? 'ไม่ได้เช็คชื่อ',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color:
-                        r.checkTime != null ? presentColor : absentColor,
+                    color: r.checkTime != null ? presentColor : absentColor,
+                    fontSize: 14,
                   ),
                 ),
               ),

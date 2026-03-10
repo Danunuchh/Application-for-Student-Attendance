@@ -126,8 +126,11 @@ class MyApp extends StatelessWidget {
           final courseName = args?['courseName'] as String?;
           if (courseId != null && courseName != null) {
             return MaterialPageRoute(
-              builder: (_) =>
-                  TeacherQRPage(courseId: courseId, courseName: courseName),
+              builder: (_) => TeacherQRPage(
+                courseId: courseId,
+                courseName: courseName,
+                token: '', // ใส่ค่าว่างถ้ายังไม่มี
+              ),
             );
           }
         }

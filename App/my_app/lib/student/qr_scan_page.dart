@@ -10,6 +10,8 @@ import 'package:my_app/config.dart';
 
 import 'package:geolocator/geolocator.dart';
 
+import 'package:flutter/foundation.dart';
+
 Future<Position?> getCurrentLocation() async {
   bool serviceEnabled;
   LocationPermission permission;
@@ -123,6 +125,8 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
   bool _permissionGranted = false;
   bool _checkingPermission = true;
   bool _loading = false;
+  bool _completed = false;
+  bool _enableSnackBar = false;
 
   Map<String, dynamic>? _qrData;
 
@@ -151,9 +155,55 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _showPopup({
+    required String title,
+    required String message,
+    bool isSuccess = false,
+  }) async {
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(
+              isSuccess ? Icons.check_circle : Icons.error,
+              color: isSuccess ? Colors.green : Colors.red,
+            ),
+            const SizedBox(width: 8),
+            Text(title),
+          ],
+        ),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('ตกลง'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _initPermission() async {
+    if (kIsWeb) {
+      // ✅ Web: ไม่ต้องขอ permission
+      _permissionGranted = true;
+      _checkingPermission = false;
+
+      _controller = MobileScannerController(
+        detectionSpeed: DetectionSpeed.noDuplicates,
+        facing: CameraFacing.back,
+      );
+
+      if (mounted) setState(() {});
+      return;
+    }
+
     final status = await Permission.camera.request();
     if (!mounted) return;
+
     _permissionGranted = status.isGranted;
     _checkingPermission = false;
 
@@ -182,54 +232,49 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
   }
 
   void _onDetect(BarcodeCapture capture) async {
-    if (_handling) return;
+    if (_handling || _completed) return;
     _handling = true;
 
     try {
       final code = _firstRawValue(capture);
-      if (code != null && mounted) {
-        Map<String, dynamic> qrData;
-        try {
-          final outer = jsonDecode(code) as Map<String, dynamic>;
-          qrData = jsonDecode(outer['t'] as String) as Map<String, dynamic>;
-        } catch (_) {
-          qrData = {};
-        }
+      if (code == null || !mounted) return;
 
-        final prefs = await SharedPreferences.getInstance();
-        final userId = prefs.getString('userId') ?? '';
-        final today = DateTime.now();
-        final dayString =
-            "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
-
-        if (qrData.isEmpty) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('QR Code ไม่ถูกต้อง')));
-          return;
-        }
-
-        // แปลง qr_code_id และ qr_password เป็น String ป้องกัน type error
-        qrData['qr_code_id'] = qrData['qr_code_id']?.toString() ?? '';
-        qrData['qr_password'] = qrData['qr_password']?.toString() ?? '';
-
-        debugPrint('QR Data: $qrData $userId $dayString');
-
-        _qrData = qrData;
-
-        // ดึง user_id จาก SharedPreferences
-
-        if (userId.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('กรุณาล็อกอินก่อนสแกน QR')),
-          );
-          return;
-        }
-
-        // ส่ง qr_code_id พร้อม user_id
-        await _fetchQRCodeInfo(qrData['qr_code_id'], userId, dayString);
-        Navigator.pop(context);
+      Map<String, dynamic> qrData;
+      try {
+        qrData = jsonDecode(code);
+      } catch (_) {
+        qrData = {};
       }
+
+      if (qrData['qr_id'] == null || qrData['password'] == null) {
+        await _showPopup(title: 'QR ไม่ถูกต้อง', message: 'กรุณาลองใหม่');
+        return;
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId') ?? '';
+
+      if (userId.isEmpty) {
+        await _showPopup(
+          title: 'ยังไม่ได้ล็อกอิน',
+          message: 'กรุณาเข้าสู่ระบบก่อน',
+        );
+        return;
+      }
+
+      await _controller?.stop();
+
+      final now = DateTime.now();
+
+      final formattedDate =
+          "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+      await _fetchQRCodeInfo(
+        qrData['qr_id'].toString(),
+        qrData['password'].toString(), // ✅ ส่ง password ไปด้วย
+        userId,
+        formattedDate,
+      );
     } finally {
       _handling = false;
     }
@@ -237,13 +282,19 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
 
   Future<void> _fetchQRCodeInfo(
     String qrCodeId,
+    String qrPassword,
     String userId,
     String day,
   ) async {
     setState(() => _loading = true);
 
     try {
-      final payload = {'qr_code_id': qrCodeId, 'user_id': userId, 'day': day};
+      final payload = {
+        'qr_code_id': qrCodeId,
+        'qr_password': qrPassword, // 🔥 เพิ่มบรรทัดนี้
+        'user_id': userId,
+        'day': day,
+      };
 
       final json = await ApiService.postJson('qrcode_info.php', payload);
       debugPrint('QR Info: $json');
@@ -280,10 +331,10 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('ชื่อวิชา: ${_qrData!['course_name'] ?? '-'}'),
-                Text('ชื่ออาจารย์: ${_qrData!['teacher_name'] ?? '-'}'),
-                Text('เวลาเรียน: ${_qrData!['time'] ?? '-'}'),
-                Text('วันที่: ${_qrData!['day'] ?? '-'}'),
+                Text('ชื่อวิชา : ${_qrData!['course_name'] ?? '-'}'),
+                Text('ชื่ออาจารย์ : ${_qrData!['teacher_name'] ?? '-'}'),
+                Text('เวลาเรียน : ${_qrData!['time'] ?? '-'}'),
+                Text('วันที่ : ${_qrData!['day'] ?? '-'}'),
               ],
             ),
           ),
@@ -325,21 +376,35 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
     if (!_loading) setState(() => _loading = true);
 
     try {
-      final userId = await getUserId(); // ตรวจสอบว่ามีค่า
+      final userId = await getUserId();
+
       if (userId == null || userId.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('กรุณาล็อกอินก่อนสแกน QR')),
+        await _showPopup(
+          title: 'ข้อผิดพลาด',
+          message: 'กรุณาล็อกอินก่อนสแกน QR',
         );
         return;
       }
 
       final now = DateTime.now();
+
       final formattedDate =
           "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
       final formattedTime =
           "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
 
       final position = await getCurrentLocation();
+
+      if (position == null) {
+        setState(() => _loading = false);
+
+        await _showPopup(
+          title: 'ไม่สามารถดึงตำแหน่งได้',
+          message: 'กรุณาเปิด GPS แล้วลองใหม่อีกครั้ง',
+        );
+        return;
+      }
 
       final payload = {
         'qr_code_id': _qrData!['qr_code_id'].toString(),
@@ -347,46 +412,49 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
         'user_id': userId.toString(),
         'day': formattedDate,
         'time': formattedTime,
-        'latitude': position?.latitude,
-        'longitude': position?.longitude,
+        'latitude': position.latitude,
+        'longitude': position.longitude,
         'type': 'save',
       };
 
-      debugPrint('Sending payload with location: $payload');
-
-      debugPrint('Sending payload: $payload');
-
       final json = await ApiService.postJson('qrcode_info.php', payload);
-      debugPrint('QR Save Response: $json');
 
-      // แปลง students เป็น List<Student>
-      final students =
-          (json['students'] as List<dynamic>?)
-              ?.map((s) => Student.fromJson(s))
-              .toList() ??
-          [];
+      if (json['success'] != true) {
+        final msg = json['message']?.toString() ?? '';
 
-      final bool success = json['success'] == true;
-      final String message =
-          (json['message'] ?? (success ? 'บันทึกสำเร็จ' : 'บันทึกไม่สำเร็จ'))
-              .toString();
+        if (msg == 'OUT_OF_RANGE') {
+          final distance = json['distance']?.toString() ?? '';
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-
-      // ตัวอย่าง: ใช้งาน students
-      if (students.isNotEmpty) {
-        for (var s in students) {
-          debugPrint(
-            'Student: ${s.studentName} (${s.studentId}), Schedule: ${s.scheduleId}',
+          await _showPopup(
+            title: 'อยู่นอกระยะ',
+            message: distance.isNotEmpty
+                ? 'คุณอยู่ห่างจากจุดเช็คชื่อ ${distance} เมตร\nไม่สามารถเช็คชื่อได้'
+                : 'คุณอยู่นอกระยะ 50 เมตร\nไม่สามารถเช็คชื่อได้',
+          );
+        } else {
+          await _showPopup(
+            title: 'เกิดข้อผิดพลาด',
+            message: msg.isNotEmpty ? msg : 'ไม่สามารถเช็คชื่อได้',
           );
         }
+
+        return;
+      }
+      await _showPopup(
+        title: 'เช็คชื่อสำเร็จ',
+        message: 'ระบบได้บันทึกเวลาเรียบร้อยแล้ว',
+        isSuccess: true,
+      );
+
+      _completed = true; // 🔥 เพิ่มบรรทัดนี้
+
+      if (mounted) {
+        Navigator.of(context).pop();
       }
     } catch (e) {
-      debugPrint('❌ _confirmAndSaveQRCode failed: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ')),
+      await _showPopup(
+        title: 'เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ',
+        message: 'กรุณาลองใหม่อีกครั้ง',
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -433,7 +501,7 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
       ),
       body: _checkingPermission
           ? const Center(child: CircularProgressIndicator(color: Colors.white))
-          : !_permissionGranted
+          : (!_permissionGranted && !kIsWeb)
           ? _PermissionDeniedView(onOpenSettings: () => openAppSettings())
           : c == null
           ? const Center(

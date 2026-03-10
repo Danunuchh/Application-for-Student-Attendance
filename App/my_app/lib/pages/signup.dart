@@ -62,27 +62,35 @@ class _SignUpPageState extends State<SignUpPage> {
       hintStyle: const TextStyle(color: _hintGrey),
       labelStyle: const TextStyle(color: Colors.black87),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: _borderBlue, width: 1.4),
+        borderSide: const BorderSide(color: kBorder, width: 1.4),
       ),
+
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: kBorder, width: 1.4),
       ),
+
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
       ),
-      errorStyle: const TextStyle(height: 0, color: Colors.transparent),
+
+      // ⭐ เพิ่มตรงนี้
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: _borderBlue, width: 1.4),
+        borderSide: const BorderSide(color: Colors.red, width: 1.6),
       ),
+
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: _borderBlue, width: 2),
+        borderSide: const BorderSide(color: Colors.red, width: 2),
       ),
+
+      errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
+
       suffixIcon: suffix,
     );
   }
@@ -154,183 +162,186 @@ class _SignUpPageState extends State<SignUpPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 8),
-                    Center(
-                      child: SizedBox(
-                        height: size.height * 0.26,
-                        child: AspectRatio(
-                          aspectRatio: 16 / 10,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(24),
-                            child: Image.asset(
-                              'assets/logoregister.png',
-                              height: 230,
-                              fit: BoxFit.contain,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: IntrinsicHeight(
+                        child: Column(
+                          mainAxisAlignment:
+                              MainAxisAlignment.center, // ⭐ สำคัญ
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // ===== LOGO =====
+                            Center(
+                              child: SizedBox(
+                                height: constraints.maxHeight * 0.26,
+                                child: AspectRatio(
+                                  aspectRatio: 16 / 10,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(24),
+                                    child: Image.asset(
+                                      'assets/logoregister.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+
+                            const SizedBox(height: 30),
+
+                            // ===== FORM =====
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Flexible(
+                                        flex: 5,
+                                        child: DropdownButtonFormField<String>(
+                                          initialValue: _prefix,
+                                          isExpanded: true,
+                                          decoration: _dec('คำนำหน้า'),
+                                          items: _titles
+                                              .map(
+                                                (t) => DropdownMenuItem(
+                                                  value: t,
+                                                  child: Text(
+                                                    t,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              )
+                                              .toList(),
+                                          onChanged: (v) {
+                                            setState(() {
+                                              _prefix = v;
+                                              if (_prefix != kOtherTitle) {
+                                                _customTitleCtrl.clear();
+                                              }
+                                            });
+                                          },
+                                          validator: (v) =>
+                                              v == null ? 'คำนำหน้า' : null,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Flexible(
+                                        flex: 10,
+                                        child: TextFormField(
+                                          controller: _nameCtrl,
+                                          decoration: _dec('ชื่อ-นามสกุล'),
+                                          validator: (v) =>
+                                              (v == null || v.trim().length < 3)
+                                              ? 'กรุณากรอกชื่อ'
+                                              : null,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  if (_prefix == kOtherTitle) ...[
+                                    const SizedBox(height: 20),
+                                    TextFormField(
+                                      controller: _customTitleCtrl,
+                                      decoration: _dec('ระบุคำนำหน้าเอง'),
+                                    ),
+                                  ],
+
+                                  const SizedBox(height: 20),
+                                  TextFormField(
+                                    controller: _emailCtrl,
+                                    keyboardType: TextInputType.emailAddress,
+                                    decoration: _dec('อีเมล'),
+                                    validator: (v) {
+                                      if (v == null || v.isEmpty)
+                                        return 'กรอกอีเมล';
+                                      final ok =
+                                          RegExp(
+                                            r'^[^@]+@[^@]+\.[^@]+',
+                                          ).hasMatch(v.trim()) &&
+                                          v.trim().endsWith('@kmitl.ac.th');
+                                      return ok
+                                          ? null
+                                          : 'กรุณากรอกอีเมล @kmitl.ac.th';
+                                    },
+                                  ),
+
+                                  const SizedBox(height: 20),
+                                  
+                                  TextFormField(
+                                    controller: _passwordCtrl,
+                                    obscureText: _obscure1,
+                                    decoration: _dec(
+                                      'รหัสผ่าน',
+                                      suffix: IconButton(
+                                        icon: Icon(
+                                          _obscure1
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                        ),
+                                        onPressed: () => setState(
+                                          () => _obscure1 = !_obscure1,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 20),
+                                  TextFormField(
+                                    controller: _confirmCtrl,
+                                    obscureText: _obscure2,
+                                    decoration: _dec(
+                                      'ยืนยันรหัสผ่าน',
+                                      suffix: IconButton(
+                                        icon: Icon(
+                                          _obscure2
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                        ),
+                                        onPressed: () => setState(
+                                          () => _obscure2 = !_obscure2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 30),
+                                  Center(
+                                    child: CustomButton(
+                                      text: 'ลงทะเบียน',
+                                      onPressed: _signingUp ? null : _onSignUp,
+                                      loading: _signingUp,
+                                      backgroundColor: const Color(0xFF84A9EA),
+                                      textColor: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Flexible(
-                                flex: 5,
-                                child: DropdownButtonFormField<String>(
-                                  initialValue: _prefix,
-                                  isExpanded: true,
-                                  decoration: _dec('คำนำหน้า').copyWith(
-                                    floatingLabelBehavior:
-                                        FloatingLabelBehavior.auto,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 12,
-                                    ),
-                                  ),
-                                  dropdownColor: Colors.white,
-                                  items: _titles
-                                      .map(
-                                        (t) => DropdownMenuItem(
-                                          value: t,
-                                          child: Text(
-                                            t,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (v) {
-                                    setState(() {
-                                      _prefix = v;
-                                      if (_prefix != kOtherTitle) {
-                                        _customTitleCtrl.clear();
-                                      }
-                                    });
-                                  },
-                                  validator: (v) =>
-                                      v == null ? 'คำนำหน้า' : null,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Flexible(
-                                flex: 10,
-                                child: TextFormField(
-                                  controller: _nameCtrl,
-                                  textInputAction: TextInputAction.next,
-                                  decoration: _dec('ชื่อ-นามสกุล'),
-                                  validator: (v) =>
-                                      (v == null || v.trim().length < 3)
-                                      ? 'กรุณากรอกชื่อ'
-                                      : null,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (_prefix == kOtherTitle) ...[
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _customTitleCtrl,
-                              textInputAction: TextInputAction.next,
-                              decoration: _dec('ระบุคำนำหน้าเอง'),
-                              validator: (_) {
-                                if (_prefix == kOtherTitle &&
-                                    _customTitleCtrl.text.trim().isEmpty) {
-                                  return 'โปรดระบุคำนำหน้าที่ต้องการ';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
-                          const SizedBox(height: 14),
-                          TextFormField(
-                            controller: _emailCtrl,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            decoration: _dec('อีเมล'),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return 'กรอกอีเมล';
-                              final ok =
-                                  RegExp(
-                                    r'^[^@]+@[^@]+\.[^@]+',
-                                  ).hasMatch(v.trim()) &&
-                                  v.trim().endsWith('@kmitl.ac.th');
-                              return ok ? null : 'กรุณากรอกอีเมล @kmitl.ac.th';
-                            },
-                          ),
-                          const SizedBox(height: 14),
-                          TextFormField(
-                            controller: _passwordCtrl,
-                            obscureText: _obscure1,
-                            textInputAction: TextInputAction.next,
-                            decoration: _dec(
-                              'รหัสผ่าน',
-                              suffix: IconButton(
-                                onPressed: () =>
-                                    setState(() => _obscure1 = !_obscure1),
-                                icon: Icon(
-                                  _obscure1
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                ),
-                              ),
-                            ),
-                            validator: (v) => (v != null && v.length >= 6)
-                                ? null
-                                : 'รหัสผ่านอย่างน้อย 6 ตัว',
-                          ),
-                          const SizedBox(height: 14),
-                          TextFormField(
-                            controller: _confirmCtrl,
-                            obscureText: _obscure2,
-                            decoration: _dec(
-                              'ยืนยันรหัสผ่าน',
-                              suffix: IconButton(
-                                onPressed: () =>
-                                    setState(() => _obscure2 = !_obscure2),
-                                icon: Icon(
-                                  _obscure2
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                ),
-                              ),
-                            ),
-                            validator: (v) => (v == _passwordCtrl.text)
-                                ? null
-                                : 'รหัสผ่านไม่ตรงกัน',
-                          ),
-                          const SizedBox(height: 24),
-                          Center(
-                            child: CustomButton(
-                              text: 'ลงทะเบียน',
-                              onPressed: _signingUp ? null : _onSignUp,
-                              loading: _signingUp,
-                              backgroundColor: const Color(0xFF84A9EA),
-                              textColor: Colors.white,
-                              fontSize: 16,
-                              // expanded: true, // อยากให้เต็มความกว้างเปิดบรรทัดนี้
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
+
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
               decoration: const BoxDecoration(

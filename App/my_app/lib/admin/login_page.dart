@@ -181,7 +181,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               child: Center(
                                 child: Image.asset(
-                                  'assets/logonewlogin.png',
+                                  'assets/logologin.png',
                                   height: 230,
                                   fit: BoxFit.contain,
                                 ),

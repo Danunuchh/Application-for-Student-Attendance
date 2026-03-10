@@ -74,9 +74,12 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
         id: e['course_id'].toString(),
         name: e['course_name'].toString(),
         code: e['code']?.toString(),
+        year: e['year']?.toString(),
+        term: e['term']?.toString(),
         section: e['section']?.toString(),
         totalClasses: student['total_classes'] ?? 0,
         attend: student['attend'] ?? 0,
+        leave: student['leave'] ?? 0, 
         absent: student['absent'] ?? 0,
       );
     }).toList();
@@ -99,7 +102,6 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            /// -------- Courses --------
             FutureBuilder<List<CourseOption>>(
               future: _coursesFuture,
               builder: (context, snap) {
@@ -128,12 +130,9 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: TextBox(
-                        title: course.name,
+                        title: '${course.code ?? '-'}  ${course.name}',
                         subtitle:
-                            (course.section == null || course.section!.isEmpty)
-                            ? (course.code ?? '-')
-                            : '${course.code ?? '-'} | S.${course.section}',
-
+                            'ปีการศึกษา ${course.year ?? '-'} | ภาคเรียน ${course.term ?? '-'} | Sec ${course.section ?? '-'}',
                         onTap: () {
                           Navigator.push(
                             context,
@@ -142,9 +141,12 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
                                 courseId: course.id,
                                 courseName: course.name,
                                 courseCode: course.code ?? '',
-                                
+                                year: course.year,
+                                term: course.term,
+                                section: course.section,
                                 totalClasses: course.totalClasses,
                                 attend: course.attend,
+                                leave: course.leave, // ← เพิ่มตรงนี้
                                 absent: course.absent,
                               ),
                             ),
@@ -168,19 +170,26 @@ class CourseOption {
   final String id;
   final String name;
   final String? code;
+
+  final String? year;
+  final String? term;
   final String? section;
 
   final int totalClasses;
   final int attend;
+  final int leave; // ← เพิ่ม
   final int absent;
 
   const CourseOption({
     required this.id,
     required this.name,
     this.code,
+    this.year,
+    this.term,
     this.section,
     required this.totalClasses,
     required this.attend,
+    required this.leave,
     required this.absent,
   });
 }

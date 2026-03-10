@@ -7,13 +7,13 @@ import 'dart:convert';
 
 import 'package:my_app/config.dart';
 
-/// ================= API SERVICE =================
 class AdminApiService {
   static Future<Map<String, dynamic>> getJson(
     String endpoint, {
     Map<String, String>? query,
   }) async {
     final uri = Uri.parse('$baseUrl/$endpoint').replace(queryParameters: query);
+
     final response = await http.get(uri);
 
     if (response.statusCode != 200) {
@@ -26,19 +26,8 @@ class AdminApiService {
   static Future<Map<String, dynamic>> fetchData({required String type}) async {
     return await getJson('admin_api.php', query: {'type': type});
   }
-
-  /// ===== ลบนักศึกษา =====
-  static Future<bool> deleteStudent(String studentId) async {
-    final res = await getJson(
-      'admin_api.php',
-      query: {'type': 'delete_student', 'student_id': studentId},
-    );
-
-    return res['success'] == true;
-  }
 }
 
-/// ================= PAGE =================
 class AdminStudentPage extends StatefulWidget {
   final List<Map<String, dynamic>> data;
 
@@ -64,108 +53,50 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
     filteredStudents = allStudents;
   }
 
-  /// ===== โหลดข้อมูลใหม่ =====
-  Future<void> _loadStudents() async {
-    final json = await AdminApiService.fetchData(type: 'student_list');
+  List<int> _getAvailableYears() {
+    final studentYears = allStudents
+        .map((s) => calculateYearFromStudentId(s['student_id']))
+        .toSet();
 
-    if (json['success'] == true && json['data'] != null) {
-      setState(() {
-        allStudents = List<Map<String, dynamic>>.from(json['data']);
-        _applyFilter();
-      });
-    }
+    final maxYear = studentYears.isEmpty
+        ? 4
+        : studentYears.reduce((a, b) => a > b ? a : b);
+
+    final upperLimit = maxYear < 4 ? 4 : maxYear;
+
+    return List.generate(upperLimit, (index) => index + 1);
   }
 
-  Future<void> _refresh() async => _loadStudents();
-
-  /// ===== คำนวณชั้นปี =====
+  /// ====== คำนวณชั้นปีจาก student_id ======
   int calculateYearFromStudentId(String studentId) {
     final startYear = int.parse(studentId.substring(0, 2));
 
     int currentYear = DateTime.now().year + 543;
-    if (DateTime.now().month <= 5) currentYear -= 1;
+    int currentMonth = DateTime.now().month;
+
+    if (currentMonth <= 5) {
+      currentYear -= 1;
+    }
 
     final start = startYear + 2500;
     return currentYear - start + 1;
   }
 
-  /// ===== filter =====
+  /// ====== filter รวม (ปี + search) ======
   void _applyFilter() {
-    filteredStudents = allStudents.where((s) {
-      final year = calculateYearFromStudentId(s['student_id']);
-      final matchYear = _selectedYear == null || year == _selectedYear;
+    setState(() {
+      filteredStudents = allStudents.where((s) {
+        final year = calculateYearFromStudentId(s['student_id']);
+        final matchYear = _selectedYear == null || year == _selectedYear;
 
-      final name = s['full_name'].toString().toLowerCase();
-      final sid = s['student_id'].toString().toLowerCase();
-      final matchSearch =
-          name.contains(_searchText) || sid.contains(_searchText);
+        final name = s['full_name'].toString().toLowerCase();
+        final sid = s['student_id'].toString().toLowerCase();
+        final matchSearch =
+            name.contains(_searchText) || sid.contains(_searchText);
 
-      return matchYear && matchSearch;
-    }).toList();
-  }
-
-  /// ===== confirm delete =====
-  Future<void> _confirmDeleteStudent(
-    BuildContext context,
-    String studentId,
-    String fullName,
-  ) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('ยืนยันการลบ'),
-        content: Text(
-          'คุณต้องการลบนักศึกษา\n\n$fullName ($studentId)\n\nใช่หรือไม่?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('ยกเลิก'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('ลบ'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      await _deleteStudent(studentId);
-    }
-  }
-
-  /// ===== delete =====
-  Future<void> _deleteStudent(String studentId) async {
-    try {
-      final success = await AdminApiService.deleteStudent(studentId);
-
-      if (!mounted) return;
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ลบนักศึกษาเรียบร้อยแล้ว'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        await _loadStudents();
-      } else {
-        throw Exception();
-      }
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('เกิดข้อผิดพลาด ไม่สามารถลบได้'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+        return matchYear && matchSearch;
+      }).toList();
+    });
   }
 
   InputDecoration _searchDeco(String label) => InputDecoration(
@@ -187,6 +118,55 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
     suffixIcon: const Icon(Icons.search),
   );
 
+  Future<void> _deleteStudentAt(int index) async {
+    final student = filteredStudents[index];
+    final studentId = student['student_id'];
+
+    // ลบออกจาก UI ทันที
+    setState(() {
+      filteredStudents.removeAt(index);
+      allStudents.removeWhere(
+        (s) => s['student_id'].toString() == studentId.toString(),
+      );
+    });
+
+    final uri = Uri.parse('$apiBase/admin_api.php').replace(
+      queryParameters: {
+        'type': 'delete_student',
+        'student_id': studentId.toString(),
+      },
+    );
+
+    try {
+      final response = await http.get(uri);
+      final result = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && result['status'] == 'success') {
+        final json = await AdminApiService.fetchData(type: 'student_list');
+
+        if (json['success'] == true && json['data'] != null) {
+          final List<Map<String, dynamic>> studentList =
+              List<Map<String, dynamic>>.from(json['data']);
+
+          setState(() {
+            allStudents = studentList;
+          });
+
+          // 🔥 รีเฟรชตาม filter ปัจจุบัน
+          _applyFilter();
+        }
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('ลบนักศึกษาเรียบร้อย')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -196,84 +176,102 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            /// ====== ปุ่มเลือกชั้นปี ======
             const Text(
               'ชั้นปี',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
 
-            /// ===== เลือกปี =====
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: List.generate(8, (i) {
-                  final year = i + 1;
-                  final selected = _selectedYear == year;
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: _getAvailableYears().map((year) {
+                        final selected = _selectedYear == year;
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: selected ? _borderBlue : Colors.white,
-                        foregroundColor: selected ? Colors.white : Colors.black,
-                        side: const BorderSide(color: _borderBlue),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _selectedYear = selected ? null : year;
-                          _applyFilter();
-                        });
-                      },
-                      child: Text('ปี $year'),
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: selected
+                                  ? _borderBlue
+                                  : Colors.white,
+                              foregroundColor: selected
+                                  ? Colors.white
+                                  : Colors.black,
+                              side: const BorderSide(color: _borderBlue),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _selectedYear = selected ? null : year;
+                                _applyFilter();
+                              });
+                            },
+                            child: Text('ปี $year'),
+                          ),
+                        );
+                      }).toList(),
                     ),
-                  );
-                }),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// ===== search =====
-            TextField(
-              decoration: _searchDeco('ค้นหารหัสนักศึกษา'),
-              onChanged: (v) {
-                setState(() {
-                  _searchText = v.toLowerCase();
-                  _applyFilter();
-                });
+                  ),
+                );
               },
             ),
 
             const SizedBox(height: 20),
 
-            /// ===== list =====
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _refresh,
-                child: filteredStudents.isEmpty
-                    ? ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children: const [
-                          SizedBox(height: 200),
-                          Center(
-                            child: Text(
-                              'ไม่พบข้อมูลนักศึกษา',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                        ],
-                      )
-                    : ListView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: filteredStudents.length,
-                        itemBuilder: (_, index) {
-                          final s = filteredStudents[index];
+            /// ====== ค้นหา ======
+            TextField(
+              decoration: _searchDeco('ค้นหารหัสนักศึกษา'),
+              onChanged: (v) {
+                _searchText = v.toLowerCase();
+                _applyFilter();
+              },
+            ),
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 14),
+            const SizedBox(height: 20),
+
+            /// ====== รายชื่อนักศึกษา ======
+            Expanded(
+              child: filteredStudents.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'ไม่พบข้อมูลนักศึกษา',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: filteredStudents.length,
+                      itemBuilder: (_, index) {
+                        final s = filteredStudents[index];
+                        final year = calculateYearFromStudentId(
+                          s['student_id'],
+                        );
+
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AdminStudentDetailPage(
+                                  studentId: s['student_id'],
+                                  fullName: s['full_name'],
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 14,
+                            ), // 👈 เพิ่มระยะห่างระหว่างช่อง
                             padding: const EdgeInsets.symmetric(
                               horizontal: 14,
                               vertical: 12,
@@ -294,63 +292,80 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
                               ],
                             ),
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                /// ===== ข้อมูลนักศึกษา =====
                                 Expanded(
-                                  child: InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              AdminStudentDetailPage(
-                                                studentId: s['student_id'],
-                                                fullName: s['full_name'],
-                                              ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        s['full_name'],
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF1F2937),
                                         ),
-                                      );
-                                    },
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          s['full_name'],
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        s['student_id'],
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Color(0xFF6B7280),
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          s['student_id'],
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Color(0xFF6B7280),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
+
+                                /// ===== ปุ่มลบ =====
                                 IconButton(
+                                  tooltip: 'ลบนักศึกษา',
                                   icon: const Icon(
                                     Icons.delete_outline,
-                                    color: Colors.red,
+                                    color: Color(0xFFF44336),
                                   ),
-                                  onPressed: () {
-                                    _confirmDeleteStudent(
-                                      context,
-                                      s['student_id'],
-                                      s['full_name'],
+                                  onPressed: () async {
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (context) => AlertDialog(
+                                        backgroundColor: Colors.white,
+                                        title: const Text('ยืนยันการลบ'),
+                                        content: const Text(
+                                          'คุณต้องการลบนักศึกษาคนนี้ใช่หรือไม่?',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
+                                            child: const Text('ยกเลิก'),
+                                          ),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                            ),
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                            child: const Text('ลบ'),
+                                          ),
+                                        ],
+                                      ),
                                     );
+
+                                    if (confirm == true) {
+                                      await _deleteStudentAt(index);
+                                    }
                                   },
                                 ),
                               ],
                             ),
-                          );
-                        },
-                      ),
-              ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

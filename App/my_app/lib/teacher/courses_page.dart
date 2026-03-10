@@ -106,6 +106,7 @@ class _CoursesPageState extends State<CoursesPage> {
     List<Map<String, dynamic>> filteredStudents = [];
     Map<String, bool> selectedStudents = {};
     bool isLoading = false;
+    int? selectedYear;
 
     int calculateYearFromStartYear(String startYear) {
       // ปี พ.ศ. ปัจจุบัน
@@ -126,6 +127,31 @@ class _CoursesPageState extends State<CoursesPage> {
       return currentYear - start + 1;
     }
 
+    void applyFilter(String search) {
+      filteredStudents = allStudents.where((s) {
+        final matchesYear =
+            selectedYear == null ||
+            calculateYearFromStartYear(s['start_year']) == selectedYear;
+
+        final name = s['full_name'].toString().toLowerCase();
+        final sid = s['student_id'].toString().toLowerCase();
+
+        final matchesSearch =
+            name.contains(search.toLowerCase()) ||
+            sid.contains(search.toLowerCase());
+
+        return matchesYear && matchesSearch;
+      }).toList();
+    }
+
+    int getMaxYear() {
+      if (allStudents.isEmpty) return 4;
+
+      return allStudents
+          .map((s) => calculateYearFromStartYear(s['start_year']))
+          .reduce((a, b) => a > b ? a : b);
+    }
+
     Future<void> fetchStudents(int courseId) async {
       try {
         final json = await ApiService.getJson(
@@ -136,13 +162,11 @@ class _CoursesPageState extends State<CoursesPage> {
         if (json['success'] == true && json['students'] is List) {
           final List data = json['students'];
 
-          setState(() {
-            allStudents = data.cast<Map<String, dynamic>>();
-            filteredStudents = allStudents;
-            selectedStudents = {
-              for (var s in allStudents) s['user_id'].toString(): false,
-            };
-          });
+          allStudents = data.cast<Map<String, dynamic>>();
+          filteredStudents = allStudents;
+          selectedStudents = {
+            for (var s in allStudents) s['user_id'].toString(): false,
+          };
 
           print('✅ Loaded students: ${allStudents.length}');
         } else {
@@ -189,11 +213,11 @@ class _CoursesPageState extends State<CoursesPage> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (context, setModalState) {
             // โหลดข้อมูลครั้งแรก
             if (!isLoading) {
               isLoading = true;
-              fetchStudents(courseId).then((_) => setState(() {}));
+              fetchStudents(courseId).then((_) => setModalState(() {}));
             }
 
             return Container(
@@ -220,46 +244,35 @@ class _CoursesPageState extends State<CoursesPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // ปุ่มปี 1-5
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: List.generate(5, (i) {
+                        children: List.generate(getMaxYear(), (i) {
                           final year = i + 1;
+                          final isSelected = selectedYear == year;
+
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 6),
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors
-                                    .white, 
-                                foregroundColor: Colors.black,
+                                backgroundColor: isSelected
+                                    ? const Color(0xFF88A8E8)
+                                    : Colors.white,
+                                foregroundColor: isSelected
+                                    ? Colors.white
+                                    : Colors.black,
                                 side: const BorderSide(
-                                  color: Color(
-                                    0xFF88A8E8,
-                                  ), 
-                                  width: 1.5, 
+                                  color: Color(0xFF88A8E8),
+                                  width: 1.5,
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12,
-                                ),
-                                elevation:
-                                    0, 
                               ),
                               onPressed: () {
-                                setState(() {
-                                  filteredStudents = allStudents
-                                      .where(
-                                        (s) =>
-                                            calculateYearFromStartYear(
-                                              s['start_year'],
-                                            ) ==
-                                            year,
-                                      )
-                                      .toList();
+                                setModalState(() {
+                                  selectedYear = year;
+                                  applyFilter('');
                                 });
                               },
                               child: Text('ปี $year'),
@@ -269,31 +282,116 @@ class _CoursesPageState extends State<CoursesPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
                     // 🔍 ช่องค้นหานักศึกษา
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: TextField(
                         decoration: _searchDeco('ค้นหานักศึกษา'),
                         onChanged: (value) {
-                          setState(() {
-                            filteredStudents = allStudents.where((s) {
-                              final name = s['full_name']
-                                  .toString()
-                                  .toLowerCase();
-                              final sid = s['student_id']
-                                  .toString()
-                                  .toLowerCase();
-
-                              return name.contains(value.toLowerCase()) ||
-                                  sid.contains(value.toLowerCase());
-                            }).toList();
+                          setModalState(() {
+                            applyFilter(value);
                           });
                         },
                       ),
                     ),
 
                     const SizedBox(height: 16),
+
+                    // ✅ Smart Select All Box
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Builder(
+                        builder: (_) {
+                          int selectedCount = filteredStudents
+                              .where(
+                                (s) =>
+                                    selectedStudents[s['user_id'].toString()] ==
+                                    true,
+                              )
+                              .length;
+
+                          bool allSelected =
+                              filteredStudents.isNotEmpty &&
+                              selectedCount == filteredStudents.length;
+
+                          return Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: selectedYear == null
+                                  ? null
+                                  : () {
+                                      setModalState(() {
+                                        for (var s in filteredStudents) {
+                                          selectedStudents[s['user_id']
+                                                  .toString()] =
+                                              !allSelected;
+                                        }
+                                      });
+                                    },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(
+                                    12,
+                                  ), // เท่าช่องค้นหา
+                                  border: Border.all(
+                                    color: selectedYear == null
+                                        ? Colors.grey.shade300
+                                        : allSelected
+                                        ? const Color(0xFF4A7DFF)
+                                        : const Color(0xFF88A8E8),
+                                    width: 1.2,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // checkbox style
+                                    Container(
+                                      width: 16,
+                                      height: 16,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4),
+                                        color: allSelected
+                                            ? const Color(0xFF4A7DFF)
+                                            : Colors.transparent,
+                                        border: Border.all(
+                                          color: const Color(0xFF4A7DFF),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: allSelected
+                                          ? const Icon(
+                                              Icons.check,
+                                              size: 12,
+                                              color: Colors.white,
+                                            )
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Select all',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: selectedYear == null
+                                            ? Colors.grey
+                                            : Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
 
                     // รายการนักศึกษา
                     Expanded(
@@ -326,7 +424,7 @@ class _CoursesPageState extends State<CoursesPage> {
                                   trailing: Checkbox(
                                     value: selectedStudents[id] ?? false,
                                     onChanged: (val) {
-                                      setState(() {
+                                      setModalState(() {
                                         selectedStudents[id] = val ?? false;
                                       });
                                     },
@@ -356,7 +454,6 @@ class _CoursesPageState extends State<CoursesPage> {
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
-                              backgroundColor: Colors.white,
                               title: const Text('ยืนยันการบันทึก'),
                               content: Text(
                                 'คุณต้องการบันทึก ${selected.length} นักศึกษาที่เลือกใช่หรือไม่?',
@@ -421,6 +518,8 @@ class _CoursesPageState extends State<CoursesPage> {
                       'id': e['id'],
                       'name': e['name'],
                       'code': e['code'],
+                      'year': e['year'],
+                      'term': e['term'],
                       'section': e['section'],
                       'user_id': e['user_id'],
                     },
@@ -450,7 +549,8 @@ class _CoursesPageState extends State<CoursesPage> {
       MaterialPageRoute(
         builder: (_) => TeacherQRPage(
           courseId: (c['id'] as num).toInt(),
-          courseName: c['name'] as String,
+          courseName: c['name'],
+          token: '',
         ),
       ),
     );
@@ -509,8 +609,9 @@ class _CoursesPageState extends State<CoursesPage> {
                   final c = _courses[i];
 
                   return TextBox(
-                    title: c['name'],
-                    subtitle: '${c['code']} | S.${c['section']}',
+                    title: '${c['code']}  ${c['name']}',
+                    subtitle:
+                        'ปีการศึกษา ${c['year']} | ภาคเรียน ${c['term']} | Sec ${c['section']}',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -542,16 +643,6 @@ class _CoursesPageState extends State<CoursesPage> {
                         ),
 
                         const SizedBox(width: 4),
-
-                        // ปุ่ม QR เดิม
-                        // IconButton(
-                        //   icon: const Icon(
-                        //     Icons.qr_code_2,
-                        //     color: Color(0xFF9CA3AF),
-                        //   ),
-                        //   onPressed: () => _goToQR(c),
-                        //   tooltip: 'QR เช็กชื่อ',
-                        // ),
                       ],
                     ),
                   );
@@ -609,6 +700,8 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
   final _end = TextEditingController();
   final _room = TextEditingController();
   final _section = TextEditingController();
+  final _year = TextEditingController();
+  final _term = TextEditingController();
   final _sessions = TextEditingController();
 
   bool _canSubmit = false;
@@ -635,6 +728,8 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
       _end,
       _room,
       _section,
+      _year,
+      _term,
       _sessions,
     ]) {
       c.addListener(_recalcCanSubmit);
@@ -701,6 +796,8 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
         _end.text.trim().isNotEmpty &&
         _room.text.trim().isNotEmpty &&
         _section.text.trim().isNotEmpty &&
+        _year.text.trim().isNotEmpty &&
+        _term.text.trim().isNotEmpty &&
         _sessions.text.trim().isNotEmpty;
     if (ok != _canSubmit) setState(() => _canSubmit = ok);
   }
@@ -754,6 +851,8 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
     _end.dispose();
     _room.dispose();
     _section.dispose();
+    _year.dispose();
+    _term.dispose();
     _sessions.dispose();
     super.dispose();
   }
@@ -795,6 +894,8 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
         'end_time': _end.text.trim(),
         'room': _room.text.trim(),
         'section': _section.text.trim(),
+        'year': _year.text.trim(),
+        'term': _term.text.trim(),
         'sessions': _sessions.text.trim(), // เช่น "3"
         // ไม่ต้องใส่ 'type' ใน body
       };
@@ -846,9 +947,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
     final controller = TextEditingController();
     return await showDialog<String>(
       context: context,
-      barrierColor: Colors.white,
       builder: (_) => AlertDialog(
-        backgroundColor: Colors.white,
         title: const Text('เพิ่มนักศึกษาเข้าคลาส'),
         content: TextField(
           controller: controller,
@@ -942,6 +1041,30 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                             FilteringTextInputFormatter.digitsOnly,
                           ],
                           validator: (v) => _required(v, 'กรุณากรอกหน่วยกิต'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _year,
+                          decoration: _dec('ปีการศึกษา'),
+                          validator: (v) => _required(v, 'กรุณากรอกปีการศึกษา'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _term,
+                          decoration: _dec('ภาคเรียน'),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          validator: (v) => _required(v, 'กรุณากรอกภาคเรียน'),
                         ),
                       ),
                     ],

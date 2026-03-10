@@ -38,9 +38,6 @@ class _StudentScanPageState extends State<StudentScanPage> {
     }
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('สแกนได้: $token')), // เดโม: แสดงโทเคนที่อ่านได้
-    );
   }
 
   void _scanAgain() {

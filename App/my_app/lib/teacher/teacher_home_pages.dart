@@ -1,16 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
+
 import 'package:my_app/components/custom_bar.dart';
-import 'package:my_app/pages/login_page.dart';
 import 'package:my_app/components/menu_title.dart';
+import 'package:my_app/pages/login_page.dart';
+import 'package:my_app/pages/edit_profile_page.dart';
+
 import 'package:my_app/teacher/teacher_attendancehistory_page.dart';
 import 'package:my_app/teacher/teacher_calendar_loader.dart';
 import 'package:my_app/teacher/courses_page.dart';
 import 'package:my_app/teacher/dashboard_page.dart';
-import 'package:my_app/pages/edit_profile_page.dart';
-import 'package:my_app/teacher/pending_approvals_page.dart';
+import 'package:my_app/teacher/course_approvals_page.dart';
 import 'package:my_app/teacher/qr_code_page.dart';
 
 import 'package:my_app/config.dart';
@@ -24,27 +25,6 @@ class AppColors {
   static const fabRing = Color(0xFFA6CAFA);
 }
 
-class ApiService {
-  static Map<String, String> get _jsonHeaders => {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json; charset=utf-8',
-  };
-
-  static Future<Map<String, dynamic>> getJson(
-    String path, {
-    Map<String, String>? query,
-  }) async {
-    final uri = Uri.parse('$apiBase/$path').replace(queryParameters: query);
-    final res = await http.get(uri, headers: _jsonHeaders);
-
-    if (res.statusCode != 200) {
-      throw Exception('HTTP ${res.statusCode}');
-    }
-
-    return jsonDecode(res.body);
-  }
-}
-
 class MenuItemData {
   final String title;
   final String svgPath;
@@ -52,7 +32,7 @@ class MenuItemData {
 }
 
 class TeacherHomePage extends StatelessWidget {
-  final String userId; // ✅ รหัสอาจารย์ที่ล็อกอินอยู่
+  final String userId;
   const TeacherHomePage({super.key, required this.userId});
 
   @override
@@ -64,12 +44,24 @@ class TeacherHomePage extends StatelessWidget {
       MenuItemData("ประวัติ\nการเข้าเรียน", "assets/history.svg"),
       MenuItemData("สรุป\nผลรายงาน", "assets/piechart.svg"),
     ];
+
     final topRow = items.sublist(0, 2);
     final bottomRow = items.sublist(2);
 
     return CustomBottomBarWithFab(
       role: 'teacher',
-      onHome: () {},
+
+      // ===== PROFILE (แทน Home เดิม) =====
+      onProfile: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EditProfilePage(userId: userId, role: 'teacher'),
+          ),
+        );
+      },
+
+      // ===== LOGOUT =====
       onLogout: () {
         Navigator.pushAndRemoveUntil(
           context,
@@ -77,6 +69,8 @@ class TeacherHomePage extends StatelessWidget {
           (route) => false,
         );
       },
+
+      // ===== FAB (สร้าง QR) =====
       onFabTap: () async {
         final result = await Navigator.push(
           context,
@@ -87,210 +81,148 @@ class TeacherHomePage extends StatelessWidget {
         }
       },
 
-      // ===== Body =====
+      // ===== BODY =====
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 🔹 Top icons (โปรไฟล์)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  InkWell(
-                    borderRadius: BorderRadius.circular(50),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              EditProfilePage(userId: userId, role: 'teacher'),
-                        ),
-                      );
-                    },
-                    child: SvgPicture.asset(
-                      "assets/profile.svg",
-                      width: 34,
-                      height: 34,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final screenWidth = constraints.maxWidth;
+            final screenHeight = constraints.maxHeight;
 
-            // 🔹 โลโก้
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.28,
-                    minHeight: 120,
-                  ),
-                  child: Image.asset(
-                    'assets/logounimai.png',
-                    height: 230,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) =>
-                        const Icon(Icons.image, size: 80, color: AppColors.sub),
-                  ),
+            final double logoHeight = (screenHeight * 0.28)
+                .clamp(120.0, 220.0)
+                .toDouble();
+
+            final double horizontalPadding = screenWidth > 900
+                ? 120
+                : screenWidth > 600
+                ? 60
+                : 24;
+
+            return Column(
+              children: [
+                const SizedBox(height: 20),
+
+                /// ===== LOGO =====
+                Image.asset(
+                  'assets/mainlogo.png',
+                  height: logoHeight,
+                  fit: BoxFit.contain,
                 ),
-              ),
-            ),
-            const SizedBox(height: 10),
 
-            // 🔹 หัวข้อเมนู
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 26),
-              child: Text(
-                "Menu",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // 🔹 เมนูกริด
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  24,
-                  8,
-                  24,
-                  kBottomNavigationBarHeight,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    // แถวบน
-                    Row(
-                      children: [
-                        Expanded(
-                          child: MenuTitle(
-                            title: topRow[0].title,
-                            svgPath: topRow[0].svgPath,
-                            iconBg: const Color(0xFFCDE0F9),
-                            iconColor: Colors.black,
-                            textColor: Colors.black,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => CoursesPage(userId: userId),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: MenuTitle(
-                            title: topRow[1].title,
-                            svgPath: topRow[1].svgPath,
-                            iconBg: const Color(0xFFCDE0F9),
-                            iconColor: Colors.black,
-                            textColor: Colors.black,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const TeacherCalendarLoader(),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // แถวล่าง
-                    Row(
-                      children: [
-                        // ✅ เอกสารรออนุมัติ
-                        Expanded(
-                          child: MenuTitle(
-                            title: bottomRow[0].title,
-                            svgPath: bottomRow[0].svgPath,
-                            iconBg: const Color(0xFFCDE0F9),
-                            iconColor: Colors.black,
-                            textColor: Colors.black,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => PendingApprovalsPage(
-                                  userId: userId,
-                                  loadList: (uid) async {
-                                    final res = await http.get(
-                                      Uri.parse(
-                                        '$baseUrl/get_pending.php?teacher_id=$uid',
-                                      ),
-                                    );
-                                    final data =
-                                        jsonDecode(res.body) as List<dynamic>;
-                                    return data
-                                        .map((e) => ApprovalItem.fromJson(e))
-                                        .toList();
-                                  },
-                                  loadDetail: (reqId) async {
-                                    final res = await http.get(
-                                      Uri.parse(
-                                        '${baseUrl}get_pending_detail.php?id=$reqId',
-                                      ),
-                                    );
-                                    return jsonDecode(res.body);
-                                  },
+                /// ===== MENU อยู่กลางจอ =====
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // ---- แถวบน ----
+                          Row(
+                            children: [
+                              Expanded(
+                                child: MenuTitle(
+                                  title: topRow[0].title,
+                                  svgPath: topRow[0].svgPath,
+                                  iconBg: const Color(0xFFCDE0F9),
+                                  iconColor: Colors.black,
+                                  textColor: Colors.black,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          CoursesPage(userId: userId),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-
-                        // ✅ ประวัติการเข้าเรียน
-                        Expanded(
-                          child: MenuTitle(
-                            title: bottomRow[1].title,
-                            svgPath: bottomRow[1].svgPath,
-                            iconBg: const Color(0xFFCDE0F9),
-                            iconColor: Colors.black,
-                            textColor: Colors.black,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    AttendanceHistoryPage(userId: userId),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-
-                        // ✅ แดชบอร์ด — ดึงข้อมูลจริงจาก API
-                        Expanded(
-                          child: MenuTitle(
-                            title: bottomRow[2].title,
-                            svgPath: bottomRow[2].svgPath,
-                            iconBg: const Color(0xFFCDE0F9),
-                            iconColor: Colors.black,
-                            textColor: Colors.black,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => DashboardPage(
-                                  userId: userId, // ✅ ส่งแค่นี้พอ
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: MenuTitle(
+                                  title: topRow[1].title,
+                                  svgPath: topRow[1].svgPath,
+                                  iconBg: const Color(0xFFCDE0F9),
+                                  iconColor: Colors.black,
+                                  textColor: Colors.black,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const TeacherCalendarLoader(),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
-                        ),
-                      ],
+
+                          const SizedBox(height: 20),
+
+                          // ---- แถวล่าง ----
+                          Row(
+                            children: [
+                              Expanded(
+                                child: MenuTitle(
+                                  title: bottomRow[0].title,
+                                  svgPath: bottomRow[0].svgPath,
+                                  iconBg: const Color(0xFFCDE0F9),
+                                  iconColor: Colors.black,
+                                  textColor: Colors.black,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          CourseApprovalPage(userId: userId),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: MenuTitle(
+                                  title: bottomRow[1].title,
+                                  svgPath: bottomRow[1].svgPath,
+                                  iconBg: const Color(0xFFCDE0F9),
+                                  iconColor: Colors.black,
+                                  textColor: Colors.black,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          AttendanceHistoryPage(userId: userId),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: MenuTitle(
+                                  title: bottomRow[2].title,
+                                  svgPath: bottomRow[2].svgPath,
+                                  iconBg: const Color(0xFFCDE0F9),
+                                  iconColor: Colors.black,
+                                  textColor: Colors.black,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          DashboardPage(userId: userId),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );

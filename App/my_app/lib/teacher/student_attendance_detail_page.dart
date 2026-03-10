@@ -3,16 +3,23 @@ import 'package:flutter/material.dart';
 
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/teacher/dashbord_detail_page.dart';
-// ใช้ StudentStat จากไฟล์นี้ 👆
 
 class StudentAttendanceDetailPage extends StatelessWidget {
   final StudentStat student;
   final String courseName;
+  final String courseCode;
+  final String? year;
+  final String? term;
+  final String? section;
 
   const StudentAttendanceDetailPage({
     super.key,
     required this.student,
     required this.courseName,
+    required this.courseCode,
+    this.year,
+    this.term,
+    this.section,
   });
 
   @override
@@ -20,9 +27,11 @@ class StudentAttendanceDetailPage extends StatelessWidget {
     final int total = student.totalClasses;
     final int attend = student.attend;
     final int absent = student.absent;
+    final int leave = student.leave;
 
     final double attendPercent = total > 0 ? (attend / total) * 100 : 0;
     final double absentPercent = total > 0 ? (absent / total) * 100 : 0;
+    final double leavePercent = total > 0 ? (leave / total) * 100 : 0;
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'รายละเอียดการเข้าเรียน'),
@@ -33,11 +42,15 @@ class StudentAttendanceDetailPage extends StatelessWidget {
           children: [
             /// ===== ชื่อรายวิชา =====
             Text(
-              courseName,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              '$courseCode  $courseName',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 4),
+
+            Text(
+              'ปีการศึกษา ${year ?? '-'} | ภาคเรียน ${term ?? '-'} | Sec ${section ?? '-'}',
+              style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
             ),
 
             const SizedBox(height: 16),
@@ -47,13 +60,8 @@ class StudentAttendanceDetailPage extends StatelessWidget {
               color: Colors.white,
               elevation: 3,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20), // มุมโค้ง (ปรับได้)
-                side: const BorderSide(
-                  color: Color(
-                    0xFF84A9EA,
-                  ), // 👈 สีเส้นกรอบ (โทนเดียวกับ TextBox)
-                  width: 1.5, // 👈 ความหนาเส้น
-                ),
+                borderRadius: BorderRadius.circular(20),
+                side: const BorderSide(color: Color(0xFF84A9EA), width: 1.5),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -78,8 +86,9 @@ class StudentAttendanceDetailPage extends StatelessWidget {
                     Center(
                       child: _AttendancePieChart(
                         attendPercent: attendPercent,
+                        leavePercent: leavePercent,
                         absentPercent: absentPercent,
-                        size: 120,
+                        size: 140,
                       ),
                     ),
 
@@ -88,19 +97,20 @@ class StudentAttendanceDetailPage extends StatelessWidget {
 
                     _infoRow(
                       'เข้าเรียน',
-                      '${student.attend} ครั้ง (${attendPercent.toStringAsFixed(0)}%)',
+                      '${attend} ครั้ง (${attendPercent.toStringAsFixed(0)}%)',
                       Colors.green,
                     ),
                     _infoRow(
-                      'ขาดเรียน',
-                      '${student.absent} ครั้ง (${absentPercent.toStringAsFixed(0)}%)',
-                      Colors.red,
+                      'ลาเรียน',
+                      '${leave} ครั้ง (${leavePercent.toStringAsFixed(0)}%)',
+                      Colors.orange,
                     ),
                     _infoRow(
-                      'จำนวนคาบทั้งหมด',
-                      '${student.totalClasses} คาบ',
-                      Colors.blue,
+                      'ขาดเรียน',
+                      '${absent} ครั้ง (${absentPercent.toStringAsFixed(0)}%)',
+                      Colors.red,
                     ),
+                    _infoRow('จำนวนคาบทั้งหมด', '$total คาบ', Colors.blue),
                   ],
                 ),
               ),
@@ -120,10 +130,7 @@ class StudentAttendanceDetailPage extends StatelessWidget {
           Text(label),
           Text(
             value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, color: color),
           ),
         ],
       ),
@@ -132,16 +139,18 @@ class StudentAttendanceDetailPage extends StatelessWidget {
 }
 
 /// =======================================================
-/// ================== PIE CHART (INLINE) =================
+/// ================== PIE CHART ==========================
 /// =======================================================
 
 class _AttendancePieChart extends StatelessWidget {
   final double attendPercent;
+  final double leavePercent;
   final double absentPercent;
   final double size;
 
   const _AttendancePieChart({
     required this.attendPercent,
+    required this.leavePercent,
     required this.absentPercent,
     this.size = 120,
   });
@@ -154,16 +163,14 @@ class _AttendancePieChart extends StatelessWidget {
       child: CustomPaint(
         painter: _PieChartPainter(
           attendPercent: attendPercent,
+          leavePercent: leavePercent,
           absentPercent: absentPercent,
         ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'เข้าเรียน',
-                style: TextStyle(fontSize: 12, color: Color.fromARGB(255, 0, 0, 0)),
-              ),
+              const Text('เข้าเรียน', style: TextStyle(fontSize: 12)),
               Text(
                 '${attendPercent.toStringAsFixed(0)}%',
                 style: const TextStyle(
@@ -181,10 +188,12 @@ class _AttendancePieChart extends StatelessWidget {
 
 class _PieChartPainter extends CustomPainter {
   final double attendPercent;
+  final double leavePercent;
   final double absentPercent;
 
   _PieChartPainter({
     required this.attendPercent,
+    required this.leavePercent,
     required this.absentPercent,
   });
 
@@ -195,26 +204,42 @@ class _PieChartPainter extends CustomPainter {
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.15
+      ..strokeWidth = size.width * 0.18
       ..strokeCap = StrokeCap.round;
 
-    // 🔴 background (ทั้งหมด)
-    paint.color = const Color(0xFFE74848);
+    double start = -pi / 2;
+
+    // เข้าเรียน (เขียว)
+    paint.color = Colors.green;
+    double attendSweep = 2 * pi * (attendPercent / 100);
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      -pi / 2,
-      2 * pi,
+      start,
+      attendSweep,
       false,
       paint,
     );
+    start += attendSweep;
 
-    // 🟢 attend
-    paint.color = Colors.green;
-    final sweepAngle = 2 * pi * (attendPercent / 100);
+    // ลา (ส้ม)
+    paint.color = Colors.orange;
+    double leaveSweep = 2 * pi * (leavePercent / 100);
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      -pi / 2,
-      sweepAngle,
+      start,
+      leaveSweep,
+      false,
+      paint,
+    );
+    start += leaveSweep;
+
+    // ขาด (แดง)
+    paint.color = Colors.red;
+    double absentSweep = 2 * pi * (absentPercent / 100);
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      start,
+      absentSweep,
       false,
       paint,
     );

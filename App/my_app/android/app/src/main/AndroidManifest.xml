@@ -16,7 +16,7 @@
 
     <application
         android:name="${applicationName}"
-        android:label="my_app"
+        android:label="Student Attendance App"
         android:icon="@mipmap/ic_launcher"
         android:hardwareAccelerated="true"
         android:usesCleartextTraffic="true"> <!-- 👈 อนุญาต HTTP -->

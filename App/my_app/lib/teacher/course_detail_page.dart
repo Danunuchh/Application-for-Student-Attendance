@@ -36,6 +36,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   String? _time; // ex. '17:00 - 20:00'
   String? _room;
   String? _sessions;
+  String? _year;
+  String? _term;
 
   // ชื่อวิชา/รหัสวิชา (ตั้งต้นจากที่ส่งมา แล้ว override ด้วยข้อมูลจาก DB ถ้ามี)
   late String _name;
@@ -62,21 +64,19 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     }
   }
 
-  Future<void> _refresh() async {
-    await _fetchCourseDetail();
-  }
-
-  Future<void> _updateCourseToServer({
-    required String name,
-    required String code,
-    String? credit,
-    String? teacher,
-    String? day,
-    String? time,
-    String? room,
-    String? section,
-    String? sessions,
-  }) async {
+Future<void> _updateCourseToServer({
+  required String name,
+  required String code,
+  String? credit,
+  String? teacher,
+  String? day,
+  String? time,
+  String? room,
+  String? section,
+  String? year,
+  String? term,
+  String? sessions,
+}) async {
     final res = await http.post(
       Uri.parse('$apiBase/courses_api.php?type=update_course'),
       headers: {'Content-Type': 'application/json'},
@@ -90,6 +90,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         'time': time ?? '',
         'room': room ?? '',
         'section': section ?? '',
+        'year': year ?? '',
+        'term': term ?? '',
         'sessions': sessions ?? '',
       }),
     );
@@ -160,6 +162,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         final time = (course['time'] ?? '').toString();
         final room = (course['room'] ?? '').toString();
         final section = (course['section'] ?? '').toString();
+        final year = (course['year'] ?? '').toString();
+        final term = (course['term'] ?? '').toString();
         final sessions = (course['sessions'] ?? '').toString();
 
         // 👇 JSON จริงของคุณ: { user_id, name, student_id }
@@ -186,6 +190,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
           _time = time.isEmpty ? null : time;
           _room = room.isEmpty ? null : room;
           _section = section.isEmpty ? null : section;
+          _year = year.isEmpty ? null : year;
+          _term = term.isEmpty ? null : term;
           _sessions = sessions.isEmpty ? null : sessions;
 
           _students
@@ -312,9 +318,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             child: const Text('ยกเลิก'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFF44336),
-            ),
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFF44336)),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('ลบ'),
           ),
@@ -392,6 +396,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     final timeCtl = TextEditingController(text: _time ?? '');
     final roomCtl = TextEditingController(text: _room ?? '');
     final sectionCtl = TextEditingController(text: _section ?? '');
+    final yearCtl = TextEditingController(text: _year ?? '');
+    final termCtl = TextEditingController(text: _term ?? '');
     final sessionsCtl = TextEditingController(text: _sessions ?? '');
 
     final formKey = GlobalKey<FormState>();
@@ -425,7 +431,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 TextFormField(
                   controller: nameCtl,
                   decoration: _dec('วิชา'),
-                  inputFormatters: [UpperCaseEnglishFormatter()],
+                  inputFormatters: [
+                    UpperCaseEnglishFormatter(),
+                  ],
                   validator: (v) => (v == null || v.trim().isEmpty)
                       ? 'กรุณากรอกชื่อวิชา'
                       : null,
@@ -450,6 +458,16 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
+                  controller: yearCtl,
+                  decoration: _dec('ปีการศึกษา'),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: termCtl,
+                  decoration: _dec('ภาคเรียน'),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
                   controller: dayCtl,
                   decoration: _dec('วันที่เรียน'),
                 ),
@@ -459,7 +477,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 TextFormField(
                   controller: roomCtl,
                   decoration: _dec('ห้องเรียน'),
-                  inputFormatters: [UpperCaseEnglishFormatter()],
+                  inputFormatters: [
+                    UpperCaseEnglishFormatter(),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
@@ -514,6 +534,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                             time: timeCtl.text.trim(),
                             room: roomCtl.text.trim(),
                             section: sectionCtl.text.trim(),
+                            year: yearCtl.text.trim(),
+                            term: termCtl.text.trim(),
                             sessions: sessionsCtl.text.trim(),
                           );
 
@@ -526,6 +548,12 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                             _teacher = teacherCtl.text.trim().isEmpty
                                 ? null
                                 : teacherCtl.text.trim();
+                            _year = yearCtl.text.trim().isEmpty
+                                ? null
+                                : yearCtl.text.trim();
+                            _term = termCtl.text.trim().isEmpty
+                                ? null
+                                : termCtl.text.trim();
                             _day = dayCtl.text.trim().isEmpty
                                 ? null
                                 : dayCtl.text.trim();
@@ -641,119 +669,117 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const CustomAppBar(title: 'รายละเอียดคลาสเรียน'),
+      appBar: const CustomAppBar(title: 'คลาสเรียน'),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                children: [
-                  // การ์ดรายละเอียดรายวิชา
-                  Card(
-                    color: Colors.white,
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: const BorderSide(color: _borderBlue, width: 1.2),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _kv('วิชา', _name, maxLines: 3),
-                          _kv('รหัสวิชา', _code),
-                          _kv('หน่วยกิต', _credit),
-                          _kv('อาจารย์ผู้สอน', _teacher, maxLines: 2),
-                          _kv('วันที่เรียน', _day),
-                          _kv('เวลา', _time),
-                          _kv('ห้องเรียน', _room),
-                          _kv('กลุ่มที่เรียน', _section),
-                          _kv('จำนวนครั้งที่ลาได้', _sessions),
-                          const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              OutlinedButton.icon(
-                                onPressed: _deleteCourse,
-                                icon: const Icon(
-                                  Icons.delete_outline,
-                                  color: Colors.red,
-                                ),
-                                label: const Text(
-                                  'ลบรายวิชา',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Colors.red),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              children: [
+                // การ์ดรายละเอียดรายวิชา
+                Card(
+                  color: Colors.white,
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(color: _borderBlue, width: 1.2),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _kv('วิชา', _name, maxLines: 3),
+                        _kv('รหัสวิชา', _code),
+                        _kv('หน่วยกิต', _credit),
+                        _kv('อาจารย์ผู้สอน', _teacher, maxLines: 2),
+                        _kv('ปีการศึกษา', _year),
+                        _kv('ภาคเรียน', _term),
+                        _kv('วันที่เรียน', _day),
+                        _kv('เวลา', _time),
+                        _kv('ห้องเรียน', _room),
+                        _kv('กลุ่มที่เรียน', _section),
+                        _kv('จำนวนครั้งที่ลาได้', _sessions),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            OutlinedButton.icon(
+                              onPressed: _deleteCourse,
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                              ),
+                              label: const Text(
+                                'ลบรายวิชา',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Colors.red),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              FilledButton.tonalIcon(
-                                onPressed: _openEditCourse,
-                                icon: const Icon(
-                                  Icons.edit_outlined,
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton.tonalIcon(
+                              onPressed: _openEditCourse,
+                              icon: const Icon(
+                                Icons.edit_outlined,
+                                color: Color(0xFFD98C06),
+                              ),
+                              label: const Text(
+                                'แก้ไขรายวิชา',
+                                style: TextStyle(color: Color(0xFFD98C06)),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                side: const BorderSide(
                                   color: Color(0xFFD98C06),
                                 ),
-                                label: const Text(
-                                  'แก้ไขรายวิชา',
-                                  style: TextStyle(color: Color(0xFFD98C06)),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  side: const BorderSide(
-                                    color: Color(0xFFD98C06),
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
+                ),
 
-                  const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-                  // ช่องค้นหา
-                  TextField(controller: _searchCtl, decoration: _searchDeco()),
-                  const SizedBox(height: 16),
+                // ช่องค้นหา
+                TextField(controller: _searchCtl, decoration: _searchDeco()),
+                const SizedBox(height: 16),
 
-                  // รายชื่อนักศึกษา
-                  if (_filtered.isEmpty)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Text('ยังไม่มีรายชื่อนักศึกษา'),
-                      ),
-                    )
-                  else
-                    ...List.generate(_filtered.length, (index) {
-                      final s = _filtered[index];
-                      // แทนที่เดิม
-                      return TextBox(
-                        title: s['name'],
-                        subtitle: s['student_id'], // ✅ โชว์รหัสนักศึกษา
-                        trailing: IconButton(
-                          tooltip: 'ลบนักศึกษา',
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            color: Color(0xFFF44336),
-                          ),
-                          onPressed: () => _deleteStudentAt(index),
+                // รายชื่อนักศึกษา
+                if (_filtered.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Text('ยังไม่มีรายชื่อนักศึกษา'),
+                    ),
+                  )
+                else
+                  ...List.generate(_filtered.length, (index) {
+                    final s = _filtered[index];
+                    // แทนที่เดิม
+                    return TextBox(
+                      title: s['name'],
+                      subtitle: s['student_id'], // ✅ โชว์รหัสนักศึกษา
+                      trailing: IconButton(
+                        tooltip: 'ลบนักศึกษา',
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Color(0xFFF44336),
                         ),
-                      );
-                    }),
-                ],
-              ),
+                        onPressed: () => _deleteStudentAt(index),
+                      ),
+                    );
+                  }),
+              ],
             ),
     );
   }

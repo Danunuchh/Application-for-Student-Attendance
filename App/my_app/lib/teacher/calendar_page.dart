@@ -47,79 +47,66 @@ class _CalendarPageState extends State<CalendarPage> {
     // TODO: fetch teaching events แล้ว setState ใส่ _events
   }
 
-  /// ===== REFRESH =====
-  Future<void> _refresh() async {
-    // ถ้ามี API จริง ให้เรียก fetch ตรงนี้
-    // await _fetchTeachingEvents();
-
-    // ตอนนี้แค่ rebuild หน้าจอ
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
-    final items = _selectedDay != null
-        ? _itemsOf(_selectedDay!)
-        : const <Subject>[];
+    final items =
+        _selectedDay != null ? _itemsOf(_selectedDay!) : const <Subject>[];
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'ปฏิทิน'),
       backgroundColor: Colors.white,
-      body: RefreshIndicator(
-        onRefresh: _refresh,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          children: [
-            /// ===== AppCalendar =====
-            AppCalendar<Subject>(
-              events: widget.events ?? _events,
-              initialFocusedDay: _focusedDay,
-              initialSelectedDay: _selectedDay,
-              onDaySelected: (day) {
-                setState(() {
-                  _selectedDay = day;
-                  _focusedDay = day;
-                });
-              },
-            ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          /// ===== AppCalendar (ใช้ตัวเดียวกับหน้าอื่น) =====
+          AppCalendar<Subject>(
+            events: widget.events ?? _events,
+            initialFocusedDay: _focusedDay,
+            initialSelectedDay: _selectedDay,
+            onDaySelected: (day) {
+              setState(() {
+                _selectedDay = day;
+                _focusedDay = day;
+              });
+            },
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-            /// ===== รายวิชาที่สอนในวันนั้น =====
-            if (_selectedDay == null)
-              const SizedBox.shrink()
-            else if (items.isEmpty)
-              const Center(
-                child: Text(
-                  'ไม่มีคาบสอนในวันนี้',
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                ),
-              )
-            else
-              ...items.map(
-                (s) => TextBox(
-                  subject: s,
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                    color: Color(0xFF9CA3AF),
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => CourseDetailPage(
-                          courseId: s.id,
-                          courseName: s.title,
-                          courseCode: s.code,
-                        ),
-                      ),
-                    );
-                  },
-                ),
+          /// ===== รายวิชาที่สอนในวันนั้น =====
+          if (_selectedDay == null)
+            const SizedBox.shrink()
+          else if (items.isEmpty)
+            const Center(
+              child: Text(
+                'ไม่มีคาบสอนในวันนี้',
+                style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
               ),
-          ],
-        ),
+            )
+          else
+            ...items.map(
+              (s) => TextBox(
+                title: '${s.code ?? '-'}  ${s.title ?? '-'}',
+                subtitle: 'ปีการศึกษา ${s.year ?? '-'} | ภาคเรียน ${s.term ?? '-'} | Sec ${s.section ?? '-'}',
+                trailing: const Icon(
+                  Icons.chevron_right,
+                  color: Color(0xFF9CA3AF),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CourseDetailPage(
+                        courseId: s.id.toString(),
+                        courseName: (s.title ?? '-').toString(),
+                        courseCode: (s.code ?? '-').toString(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
       ),
     );
   }

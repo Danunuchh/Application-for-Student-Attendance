@@ -1,21 +1,19 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-
-import 'package:my_app/config.dart';
-import 'package:my_app/components/custom_appbar.dart';
-import 'package:my_app/components/textbox.dart';
-
 import 'dart:math' as math;
+
+import 'package:my_app/components/custom_appbar.dart';
 
 class StudentCourseReportPage extends StatelessWidget {
   final String courseId;
   final String courseName;
   final String courseCode;
+  final String? year;
+  final String? term;
   final String? section;
 
   final int totalClasses;
   final int attend;
+  final int leave;
   final int absent;
 
   const StudentCourseReportPage({
@@ -23,19 +21,24 @@ class StudentCourseReportPage extends StatelessWidget {
     required this.courseId,
     required this.courseName,
     required this.courseCode,
-    this.section,
     required this.totalClasses,
     required this.attend,
+    required this.leave,
     required this.absent,
+    this.year,
+    this.term,
+    this.section,
   });
 
   @override
   Widget build(BuildContext context) {
     final int total = totalClasses;
     final int attendCount = attend;
+    final int leaveCount = leave;
     final int absentCount = absent;
 
     final double attendPercent = total > 0 ? (attendCount / total) * 100 : 0;
+    final double leavePercent = total > 0 ? (leaveCount / total) * 100 : 0;
     final double absentPercent = total > 0 ? (absentCount / total) * 100 : 0;
 
     return Scaffold(
@@ -45,31 +48,26 @@ class StudentCourseReportPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// ===== ชื่อวิชา =====
             Text(
-              courseName,
+              '$courseCode  $courseName',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            Text(
-              (section == null || section!.isEmpty)
-                  ? courseCode
-                  : '$courseCode | S.$section',
-              style: const TextStyle(color: Colors.black54),
-            ),
+            const SizedBox(height: 4),
 
+            Text(
+              'ปีการศึกษา ${year ?? '-'} | ภาคเรียน ${term ?? '-'} | Sec ${section ?? '-'}',
+              style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+            ),
             const SizedBox(height: 16),
 
-            /// ===== CARD =====
             Card(
               color: Colors.white,
               elevation: 3,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20), // มุมโค้ง (ปรับได้)
+                borderRadius: BorderRadius.circular(20),
                 side: const BorderSide(
-                  color: Color(
-                    0xFF84A9EA,
-                  ), // 👈 สีเส้นกรอบ (โทนเดียวกับ TextBox)
-                  width: 1.5, // 👈 ความหนาเส้น
+                  color: Color(0xFF84A9EA),
+                  width: 1.5,
                 ),
               ),
               child: Padding(
@@ -79,10 +77,10 @@ class StudentCourseReportPage extends StatelessWidget {
                   children: [
                     const SizedBox(height: 24),
 
-                    /// ===== PIE =====
                     Center(
                       child: _AttendancePieChart(
                         attendPercent: attendPercent,
+                        leavePercent: leavePercent,
                         absentPercent: absentPercent,
                         size: 120,
                       ),
@@ -95,6 +93,12 @@ class StudentCourseReportPage extends StatelessWidget {
                       'เข้าเรียน',
                       '$attendCount ครั้ง (${attendPercent.toStringAsFixed(0)}%)',
                       Colors.green,
+                    ),
+
+                    _infoRow(
+                      'ลา',
+                      '$leaveCount ครั้ง (${leavePercent.toStringAsFixed(0)}%)',
+                      Colors.orange,
                     ),
 
                     _infoRow(
@@ -133,11 +137,13 @@ class StudentCourseReportPage extends StatelessWidget {
 
 class _AttendancePieChart extends StatelessWidget {
   final double attendPercent;
+  final double leavePercent;
   final double absentPercent;
   final double size;
 
   const _AttendancePieChart({
     required this.attendPercent,
+    required this.leavePercent,
     required this.absentPercent,
     this.size = 120,
   });
@@ -150,27 +156,16 @@ class _AttendancePieChart extends StatelessWidget {
       child: CustomPaint(
         painter: _PieChartPainter(
           attendPercent: attendPercent,
+          leavePercent: leavePercent,
           absentPercent: absentPercent,
         ),
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'เข้าเรียน',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color.fromARGB(255, 0, 0, 0),
-                ),
-              ),
-              Text(
-                '${attendPercent.toStringAsFixed(0)}%',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          child: Text(
+            '${attendPercent.toStringAsFixed(0)}%',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
@@ -180,40 +175,42 @@ class _AttendancePieChart extends StatelessWidget {
 
 class _PieChartPainter extends CustomPainter {
   final double attendPercent;
+  final double leavePercent;
   final double absentPercent;
 
-  _PieChartPainter({required this.attendPercent, required this.absentPercent});
+  _PieChartPainter({
+    required this.attendPercent,
+    required this.leavePercent,
+    required this.absentPercent,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
+    final rect = Rect.fromCircle(
+      center: Offset(size.width / 2, size.height / 2),
+      radius: size.width / 2,
+    );
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = size.width * 0.15
       ..strokeCap = StrokeCap.round;
 
-    // 🔴 วงพื้นหลัง (ทั้งหมด = ขาดเรียน)
-    paint.color = const Color(0xFFE74848);
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2,
-      2 * math.pi,
-      false,
-      paint,
-    );
+    double start = -math.pi / 2;
 
-    // 🟢 เข้าเรียน
     paint.color = Colors.green;
-    final sweepAngle = 2 * math.pi * (attendPercent / 100);
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2,
-      sweepAngle,
-      false,
-      paint,
-    );
+    final attendSweep = 2 * math.pi * (attendPercent / 100);
+    canvas.drawArc(rect, start, attendSweep, false, paint);
+    start += attendSweep;
+
+    paint.color = Colors.orange;
+    final leaveSweep = 2 * math.pi * (leavePercent / 100);
+    canvas.drawArc(rect, start, leaveSweep, false, paint);
+    start += leaveSweep;
+
+    paint.color = Colors.red;
+    final absentSweep = 2 * math.pi * (absentPercent / 100);
+    canvas.drawArc(rect, start, absentSweep, false, paint);
   }
 
   @override

@@ -1,187 +1,92 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/components/custom_appbar.dart';
-import 'package:my_app/models/subject.dart'; // ✅ ใช้ Subject จากโมเดลกลาง
+import 'package:my_app/models/subject.dart';
 
 class SubjectDetailPage extends StatelessWidget {
   final Subject subject;
-  const SubjectDetailPage({super.key, required this.subject});
 
-  static const _ink = Color(0xFF1F2937);
-  static const _border = Color(0xFFCFE0FF);
+  const SubjectDetailPage({
+    super.key,
+    required this.subject,
+  });
+
+  static const Color _borderBlue = Color(0xFF88A8E8);
+  static const double _labelW = 110;
+
+  // helper แสดง label + value (เหมือนหน้า CourseDetailPage)
+  Widget _kv(String label, String? value, {int? maxLines}) {
+    final display =
+        (value == null || value.trim().isEmpty) ? '-' : value;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: _labelW,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              display,
+              softWrap: true,
+              maxLines: maxLines,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'ข้อมูลรายวิชา'),
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            //ตกแต่งกรอบข้อมูลรายวิชา
+      appBar: const CustomAppBar(title: 'ข้อมูลรายวิชา'),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        children: [
+          Card(
             color: Colors.white,
-            border: Border.all(
-              color: const Color(0xFF84A9EA),
-              width: 1.5, // ✅ เส้นขอบหนา 2
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(
+                color: _borderBlue,
+                width: 1.2,
+              ),
             ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 6,
-                spreadRadius: 2, // ✅ เงาชัดขึ้น
-                offset: const Offset(0, 3),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _kv('วิชา', subject.title, maxLines: 3),
+                  _kv('รหัสวิชา', subject.code),
+                  _kv('หน่วยกิต', subject.credits),
+                  _kv('อาจารย์ผู้สอน', subject.teacher, maxLines: 2),
+                  _kv('ปีการศึกษา', subject.year),
+                  _kv('ภาคเรียน', subject.term),
+                  _kv('เวลา', subject.time),
+                  _kv('ห้องเรียน', subject.room),
+                  _kv('กลุ่มที่เรียน', subject.section),
+                ],
               ),
-            ],
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "วิชา",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: _ink,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subject.title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                  color: _ink,
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // 🔹 รหัสวิชา & หน่วยกิต
-              LayoutBuilder(
-                builder: (context, c) {
-                  final narrow = c.maxWidth < 360;
-                  final pairGap = narrow ? 12.0 : 16.0;
-                  final child = [
-                    _KV(k: "รหัสวิชา", v: subject.code),
-                    _KV(k: "หน่วยกิต", v: subject.credits),
-                  ];
-
-                  if (narrow) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        child[0],
-                        SizedBox(height: pairGap),
-                        child[1],
-                      ],
-                    );
-                  }
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(child: child[0]),
-                      const SizedBox(width: 16),
-                      Expanded(child: child[1]),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _KV(k: "กลุ่มที่เรียน", v: subject.section),
-
-              const SizedBox(height: 20),
-
-              const Text(
-                "อาจารย์ผู้สอน",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: _ink,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subject.teacher,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                  color: _ink,
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // 🔹 เวลา & ห้อง
-              LayoutBuilder(
-                builder: (context, c) {
-                  final narrow = c.maxWidth < 360;
-                  final child = [
-                    _KV(k: "เวลา", v: subject.time),
-                    _KV(k: "ห้อง", v: subject.room),
-                  ];
-                  if (narrow) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        child[0],
-                        const SizedBox(height: 12),
-                        child[1],
-                      ],
-                    );
-                  }
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(child: child[0]),
-                      const SizedBox(width: 16),
-                      Expanded(child: child[1]),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
-    );
-  }
-}
-
-class _KV extends StatelessWidget {
-  final String k;
-  final String v;
-  const _KV({required this.k, required this.v});
-
-  static const _ink = SubjectDetailPage._ink;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          k,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold, // ✅ หัวข้อเป็นตัวหนา
-            color: _ink,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          v.isEmpty ? '-' : v,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.normal, // ✅ ค่าเป็นตัวธรรมดา
-            color: _ink,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomBottomBarWithFab extends StatelessWidget {
   final String role; // 'student' | 'teacher' | 'admin'
-  final VoidCallback onHome;
+  final VoidCallback onProfile;
   final VoidCallback onLogout;
   final VoidCallback onFabTap;
   final Widget body; // เนื้อหาหลักของหน้า (จะถูกวางใน Scaffold.body)
@@ -11,7 +11,7 @@ class CustomBottomBarWithFab extends StatelessWidget {
   const CustomBottomBarWithFab({
     super.key,
     required this.role,
-    required this.onHome,
+    required this.onProfile,
     required this.onLogout,
     required this.onFabTap,
     required this.body,
@@ -81,49 +81,51 @@ class CustomBottomBarWithFab extends StatelessWidget {
         ),
       ),
 
-      // ===== Bottom Bar (มี notch รับ FAB) =====
       bottomNavigationBar: BottomAppBar(
-        color: fabRing,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 4,
-        height: 52, //ความสูงของแทบสีฟ้า
-        padding: const EdgeInsets.symmetric(horizontal: 50),  //ระยะห่างของไอคอนกับวงกลมกรงกลาง
-        child: Transform.translate(
-          offset: const Offset(0, 2), // ✅ ขยับลง 6px (ปรับได้ 4–10 ตามความพอดี) ความสูงของไอคอน
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              IconButton(
-                onPressed: onHome,
-                icon: SvgPicture.asset(
-                  "assets/home.svg",
-                  width: 28,
-                  height: 28,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.black,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                splashRadius: 24,
-              ),
-              IconButton(
-                onPressed: onLogout,
-                icon: SvgPicture.asset(
-                  "assets/logout.svg",
-                  width: 26,
-                  height: 26,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.black,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                splashRadius: 24,
-              ),
-            ],
+  color: fabRing,
+  shape: const CircularNotchedRectangle(),
+  notchMargin: 4,
+  height: 52,
+  padding: const EdgeInsets.symmetric(horizontal: 50),
+  child: Transform.translate(
+    offset: const Offset(0, 2),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // ===== PROFILE (แทน HOME) =====
+        IconButton(
+          onPressed: onProfile,
+          icon: SvgPicture.asset(
+            "assets/profile.svg",
+            width: 30,
+            height: 30,
+            colorFilter: const ColorFilter.mode(
+              Colors.black,
+              BlendMode.srcIn,
+            ),
           ),
+          splashRadius: 24,
         ),
-      ),
+
+        // ===== LOGOUT =====
+        IconButton(
+          onPressed: onLogout,
+          icon: SvgPicture.asset(
+            "assets/logout.svg",
+            width: 26,
+            height: 26,
+            colorFilter: const ColorFilter.mode(
+              Colors.black,
+              BlendMode.srcIn,
+            ),
+          ),
+          splashRadius: 24,
+        ),
+      ],
+    ),
+  ),
+),
+
 
       // ===== Body ที่ส่งมาจากหน้าเรียกใช้ =====
       body: body,

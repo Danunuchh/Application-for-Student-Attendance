@@ -220,6 +220,8 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
                       'id': e['id'],
                       'name': e['name'],
                       'code': e['code'],
+                      'year': e['year'],
+                      'term': e['term'],
                       'section': e['section'],
                       'user_id': e['user_id'],
                     },
@@ -249,7 +251,8 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
       MaterialPageRoute(
         builder: (_) => TeacherQRPage(
           courseId: (c['id'] as num).toInt(),
-          courseName: c['name'] as String,
+          courseName: c['name'],
+          token: '',
         ),
       ),
     );
@@ -298,24 +301,28 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
                   final c = _courses[i];
 
                   return TextBox(
-                    title: c['name'],
-                    subtitle: '${c['code']} | S.${c['section']}',
-                    trailing: const Icon(
-                      Icons.chevron_right,
-                      size: 22,
-                      color: Color(0xFF9CA3AF),
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AttendanceDetailPage(
-                            courseName: c['name'] as String,
-                            courseId: (c['id'] as num).toString(),
+                    title: '${c['code']}  ${c['name']}',
+                    subtitle:
+                        'ปีการศึกษา ${c['year']} | ภาคเรียน ${c['term']} | Sec ${c['section']}',
+                    // 👇 ปรับตรงนี้
+                    trailing: IconButton(
+                      icon: const Icon(
+                        Icons.chevron_right,
+                        size: 22,
+                        color: Color(0xFF9CA3AF),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AttendanceDetailPage(
+                              courseName: c['name'] as String,
+                              courseId: (c['id'] as num).toString(),
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   );
                 },
               ),

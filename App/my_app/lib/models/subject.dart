@@ -3,8 +3,10 @@ class Subject {
   final String id;
   final String title;
   final String code;
-  final String section;
   final String credits;
+  final String section;
+  final String year;
+  final String term;
   final String teacher;
   final String time;   // เช่น "17:00 - 20:00"
   final String room;
@@ -13,8 +15,10 @@ class Subject {
     required this.id,
     required this.title,
     required this.code,
-    required this.section,
     required this.credits,
+    required this.section,
+    required this.year,
+    required this.term,
     required this.teacher,
     required this.time,
     required this.room,
@@ -25,8 +29,10 @@ class Subject {
         id: (json['id'] ?? '').toString(),
         title: (json['title'] ?? '').toString(),
         code: (json['code'] ?? '').toString(),
-        section: (json['section'] ?? '').toString(),
         credits: (json['credits'] ?? '').toString(),
+        section: (json['section'] ?? '').toString(),
+        year: (json['year'] ?? '').toString(),
+        term: (json['term'] ?? '').toString(),
         teacher: (json['teacher'] ?? '').toString(),
         time: (json['time'] ?? '').toString(),
         room: (json['room'] ?? '').toString(),
@@ -37,8 +43,10 @@ class Subject {
         'id': id,
         'title': title,
         'code': code,
-        'section' : section,
         'credits': credits,
+        'section': section,
+        'year': year,
+        'term': term,
         'teacher': teacher,
         'time': time,
         'room': room,
@@ -49,8 +57,10 @@ class Subject {
     String? id,
     String? title,
     String? code,
-    String? section,
     String? credits,
+    String? section,
+    String? year,
+    String? term,
     String? teacher,
     String? time,
     String? room,
@@ -59,8 +69,10 @@ class Subject {
       id: id ?? this.id,
       title: title ?? this.title,
       code: code ?? this.code,
-      section: section ?? this.section,
       credits: credits ?? this.credits,
+      section: section ?? this.section,
+      year: year ?? this.year,
+      term: term ?? this.term,
       teacher: teacher ?? this.teacher,
       time: time ?? this.time,
       room: room ?? this.room,
@@ -69,7 +81,7 @@ class Subject {
 
   @override
   String toString() =>
-      'Subject(title: $title, code: $code, section: $section, credits: $credits, teacher: $teacher, time: $time, room: $room)';
+      'Subject(title: $title, code: $code, credits: $credits, section: $section, year: $year, term: $term, teacher: $teacher, time: $time, room: $room)';
 
   // เทียบค่า (เพื่อประโยชน์เวลาทดสอบ/เทียบรายการ)
   @override
@@ -78,8 +90,10 @@ class Subject {
     return other is Subject &&
         other.title == title &&
         other.code == code &&
-        other.section == section &&
         other.credits == credits &&
+        other.section == section &&
+        other.year == year &&
+        other.term == term &&
         other.teacher == teacher &&
         other.time == time &&
         other.room == room;
@@ -89,8 +103,10 @@ class Subject {
   int get hashCode =>
       title.hashCode ^
       code.hashCode ^
-      section.hashCode ^
       credits.hashCode ^
+      section.hashCode ^
+      year.hashCode ^
+      term.hashCode ^
       teacher.hashCode ^
       time.hashCode ^
       room.hashCode;

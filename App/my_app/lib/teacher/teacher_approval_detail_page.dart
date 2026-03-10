@@ -1,16 +1,24 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:my_app/components/custom_appbar.dart';
+import 'package:my_app/components/button.dart';
+import 'package:my_app/config.dart';
+import 'package:my_app/common/pdf_viewer_page.dart' as pdf;
+import 'package:my_app/common/image_viewer_page.dart' as img;
 
-/// ถ้าคุณมี enum/สีจากหน้าอื่นอยู่แล้ว ให้ลบบรรทัดนี้ทิ้งและ import ต้นฉบับแทนได้
+const String apiBase = baseUrl;
+
 enum ApprovalStatus { pending, approved, rejected }
 
 class ApprovalDetail {
-  final String id;            // ไอดีเอกสาร (ใช้เรียก API)
+  final String id;
   final DateTime date;
-  final String subject;       // ชื่อวิชา
-  final String students;      // ข้อความรวม เช่น "65200128 ณนุช & 65200020 กวิสรา"
-  final String leaveType;     // ประเภทการลา
-  final String reason;        // หมายเหตุ
+  final String subject;
+  final String students;
+  final String leaveType;
+  final String reason;
+  final String? attachment;
   final ApprovalStatus status;
 
   const ApprovalDetail({
@@ -20,260 +28,254 @@ class ApprovalDetail {
     required this.students,
     required this.leaveType,
     required this.reason,
-    this.status = ApprovalStatus.pending,
+    required this.status,
+    this.attachment,
   });
+
+  factory ApprovalDetail.fromJson(Map<String, dynamic> json) {
+    ApprovalStatus parseStatus(String? s) {
+      switch (s) {
+        case 'อนุมัติ':
+          return ApprovalStatus.approved;
+        case 'ไม่อนุมัติ':
+          return ApprovalStatus.rejected;
+        default:
+          return ApprovalStatus.pending;
+      }
+    }
+
+    return ApprovalDetail(
+      id: json['id'].toString(),
+      date: DateTime.parse(json['leave_date']),
+      subject: '${json['code']} ${json['course_name']}',
+      students: json['student'] ?? '-',
+      leaveType: json['leave_type'] ?? '-',
+      reason: json['reason'] ?? '-',
+      attachment: json['attachment'],
+      status: parseStatus(json['status']),
+    );
+  }
 }
 
-/// หน้าแสดงรายละเอียด: ไม่ใช้ดัมมี่ แต่ "รอข้อมูล" จากฟังก์ชันโหลดที่ส่งมา
 class ApprovalDetailPage extends StatefulWidget {
-  /// ไอดีเอกสารที่ต้องการดูรายละเอียด
   final String approvalId;
 
-  /// ฟังก์ชันโหลดรายละเอียดจาก backend (ต้องคืน ApprovalDetail)
-  final Future<ApprovalDetail> Function(String id) loadDetail;
-
-  /// ฟังก์ชันกดอนุมัติ/ไม่อนุมัติ (เลือกใส่)
-  final Future<bool> Function(String id)? onApprove;
-  final Future<bool> Function(String id)? onReject;
-
-  const ApprovalDetailPage({
-    super.key,
-    required this.approvalId,
-    required this.loadDetail,
-    this.onApprove,
-    this.onReject,
-  });
+  const ApprovalDetailPage({super.key, required this.approvalId});
 
   @override
   State<ApprovalDetailPage> createState() => _ApprovalDetailPageState();
 }
 
 class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
-  static const _ink = Color(0xFF1F2937);
-  static const _sub = Color(0xFF9CA3AF);
-  static const _green = Color(0xFF20A445);
-  static const _red = Color(0xFFE53935);
-  static const _border = Color(0xFF9DBAF6);
-
   late Future<ApprovalDetail> _future;
-  bool _busyAction = false;
+  bool _busy = false;
 
   @override
   void initState() {
     super.initState();
-    _future = widget.loadDetail(widget.approvalId);
+    _future = _loadDetail();
+  }
+
+  Future<ApprovalDetail> _loadDetail() async {
+    final res = await http.get(
+      Uri.parse('$apiBase/file_manage.php?type=detail&id=${widget.approvalId}'),
+    );
+
+    final json = jsonDecode(res.body);
+
+    if (json['success'] != true) {
+      throw Exception('โหลดข้อมูลไม่สำเร็จ');
+    }
+
+    return ApprovalDetail.fromJson(json['data']);
+  }
+
+  void _openFile(String fileName) {
+    final encoded = Uri.encodeComponent(fileName);
+
+    final url = '$apiBase/uploads/leave/$encoded';
+
+    print('FILE URL: $url');
+
+    final ext = fileName.split('.').last.toLowerCase();
+
+    if (ext == 'pdf') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => pdf.PdfViewerPage(url: url)),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => img.ImageViewerPage(url: url)),
+      );
+    }
+  }
+
+  Future<void> _confirmUpdate(String type) async {
+    String title;
+    String message;
+    Color color;
+
+    if (type == 'approve') {
+      title = 'ยืนยันการอนุมัติ';
+      message = 'ต้องการอนุมัติเอกสารนี้ใช่หรือไม่';
+      color = Colors.green;
+    } else {
+      title = 'ยืนยันการไม่อนุมัติ';
+      message = 'ต้องการไม่อนุมัติเอกสารนี้ใช่หรือไม่';
+      color = Colors.red;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('ยกเลิก'),
+              onPressed: () => Navigator.pop(context, false),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('ยืนยัน'),
+              onPressed: () => Navigator.pop(context, true),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      _updateStatus(type);
+    }
+  }
+
+  Future<void> _updateStatus(String type) async {
+    setState(() => _busy = true);
+
+    await http.post(
+      Uri.parse('$apiBase/file_manage.php?type=$type'),
+      body: {'id': widget.approvalId},
+    );
+
+    if (!mounted) return;
+
+    Navigator.pop(context, {'updated': true});
   }
 
   static String thShortDate(DateTime d) {
     final buddhistYear = d.year + 543;
     final yy = buddhistYear % 100;
-    return 'วันที่ ${d.day}/${d.month}/$yy';
-  }
-
-  Future<void> _handleApprove(ApprovalDetail d) async {
-    if (widget.onApprove == null) return;
-    setState(() => _busyAction = true);
-    try {
-      final ok = await widget.onApprove!(d.id);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(ok ? 'อนุมัติสำเร็จ' : 'อนุมัติไม่สำเร็จ')),
-      );
-      if (ok) Navigator.pop(context, {'approved': true, 'id': d.id});
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('เกิดข้อผิดพลาดในการอนุมัติ')),
-      );
-    } finally {
-      if (mounted) setState(() => _busyAction = false);
-    }
-  }
-
-  Future<void> _handleReject(ApprovalDetail d) async {
-    if (widget.onReject == null) return;
-    setState(() => _busyAction = true);
-    try {
-      final ok = await widget.onReject!(d.id);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(ok ? 'ไม่อนุมัติสำเร็จ' : 'ไม่อนุมัติไม่สำเร็จ')),
-      );
-      if (ok) Navigator.pop(context, {'rejected': true, 'id': d.id});
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('เกิดข้อผิดพลาดในการไม่อนุมัติ')),
-      );
-    } finally {
-      if (mounted) setState(() => _busyAction = false);
-    }
+    return 'วันที่ลา ${d.day}/${d.month}/$yy';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'เอกสารที่รออนุมัติ'),
+      appBar: const CustomAppBar(title: 'รายละเอียดของเอกสาร'),
       backgroundColor: Colors.white,
       body: FutureBuilder<ApprovalDetail>(
         future: _future,
         builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
+          if (!snap.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snap.hasError) {
-            return _errorState(
-              'โหลดข้อมูลไม่สำเร็จ',
-              onRetry: () {
-                setState(() {
-                  _future = widget.loadDetail(widget.approvalId);
-                });
-              },
-            );
-          }
-          final detail = snap.data!;
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-            children: [
-              Text(thShortDate(detail.date),
-                  style: const TextStyle(fontSize: 16, color: _ink)),
-              const SizedBox(height: 16),
-              Text('วิชา : ${detail.subject}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: _ink,
-                    fontWeight: FontWeight.w600,
-                  )),
-              const SizedBox(height: 28),
 
-              // กล่องไอคอน PDF (คุณจะเปลี่ยนให้กดเปิดไฟล์จริงก็ได้)
-              Center(
-                child: Container(
-                  width: 140,
-                  height: 160,
+          final d = snap.data!;
+
+          return ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              Text(thShortDate(d.date)),
+              const SizedBox(height: 16),
+
+              Text(
+                'วิชา : ${d.subject}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              if (d.attachment != null)
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
-                    border: Border.all(color: _ink.withOpacity(.2)),
-                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white, // พื้นหลังขาว
+                    borderRadius: BorderRadius.circular(16), // มุมโค้ง
+                    border: Border.all(
+                      color: const Color(0xFF84A9EA), // สีเส้นกรอบเทาอ่อน
+                      width: 1.5,
+                    ),
                   ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.insert_drive_file_outlined,
-                          size: 56, color: _ink),
-                      SizedBox(height: 12),
+                    children: [
+                      const Icon(
+                        Icons.insert_drive_file,
+                        size: 60,
+                        color: Color(0xFF4A86E8),
+                      ),
+                      const SizedBox(height: 12),
                       Text(
-                        'PDF',
-                        style:
-                            TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
+                        d.attachment!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 12),
+                      CustomButton(
+                        text: 'เปิดเอกสาร',
+                        onPressed: () => _openFile(d.attachment!),
+                        backgroundColor: const Color(0xFF4A86E8),
+                        textColor: Colors.white,
                       ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
 
-              // ปุ่ม อนุมัติ / ไม่อนุมัติ
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _pillButton(
+                  CustomButton(
                     text: 'อนุมัติ',
-                    color: const Color.fromARGB(255, 104, 48, 146),
-                    enabled: !_busyAction && widget.onApprove != null,
-                    onTap: () => _handleApprove(detail),
+                    onPressed: _busy ? null : () => _confirmUpdate('approve'),
+                    backgroundColor: Colors.green,
+                    textColor: Colors.white,
+                    loading: _busy,
                   ),
                   const SizedBox(width: 16),
-                  _pillButton(
+                  CustomButton(
                     text: 'ไม่อนุมัติ',
-                    color: _red,
-                    enabled: !_busyAction && widget.onReject != null,
-                    onTap: () => _handleReject(detail),
+                    onPressed: _busy ? null : () => _confirmUpdate('reject'),
+                    backgroundColor: Colors.red,
+                    textColor: Colors.white,
+                    loading: false,
                   ),
                 ],
               ),
 
-              const SizedBox(height: 28),
-              Text(detail.students,
-                  style: const TextStyle(fontSize: 16, color: _ink)),
-              const SizedBox(height: 16),
-              _kv('ประเภทการลา', detail.leaveType),
-              const SizedBox(height: 10),
-              _kv('หมายเหตุการลา', detail.reason),
+              const SizedBox(height: 24),
+              Text('นักศึกษา : ${d.students}'),
+              const SizedBox(height: 8),
+              Text('ประเภทการลา : ${d.leaveType}'),
+              const SizedBox(height: 8),
+              Text('หมายเหตุ : ${d.reason}'),
             ],
           );
         },
       ),
     );
   }
-
-  Widget _errorState(String msg, {VoidCallback? onRetry}) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(msg, style: const TextStyle(color: _sub)),
-          const SizedBox(height: 8),
-          if (onRetry != null)
-            OutlinedButton(
-              onPressed: onRetry,
-              child: const Text('ลองใหม่'),
-            ),
-        ],
-      ),
-    );
-  }
-
-  static Widget _pillButton({
-    required String text,
-    required Color color,
-    required VoidCallback onTap,
-    bool enabled = true,
-  }) {
-    return Opacity(
-      opacity: enabled ? 1 : .5,
-      child: InkWell(
-        onTap: enabled ? onTap : null,
-        borderRadius: BorderRadius.circular(22),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: _border),
-            borderRadius: BorderRadius.circular(22),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12.withOpacity(.04),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Text(
-            text,
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.w700,
-              fontSize: 15,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _kv(String k, String v) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$k :',
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: _ink,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(v, style: const TextStyle(fontSize: 15, color: _ink)),
-        ],
-      );
 }

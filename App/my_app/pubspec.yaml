@@ -33,6 +33,7 @@ dependencies:
   file_picker: ^8.0.0           # ✅ เหลืออันเดียว
   open_filex: ^4.4.0
   syncfusion_flutter_pdfviewer: ^31.1.23
+  url_launcher: ^6.2.5
 
   # --- i18n ---
   flutter_localizations:
@@ -55,9 +56,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/logologin.png
+    - assets/logonewlogin.png
     - assets/logoregister.png
-    - assets/logounimai.png
+    - assets/mainlogo.png
     - assets/logoadmin.png
     - assets/loader.json
     - assets/bell.svg
