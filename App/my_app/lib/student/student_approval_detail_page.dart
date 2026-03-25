@@ -106,6 +106,7 @@ class _StudentApprovalDetailPageState extends State<StudentApprovalDetailPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
         title: const Text('ยกเลิกการส่งคำขอลา'),
         content: const Text('ต้องการยกเลิกคำขอลานี้หรือไม่ ?'),
         actions: [

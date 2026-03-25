@@ -15,6 +15,7 @@ class AttendanceRecord {
   final String studentName;
   final bool present;
   final String? checkTime;
+  final String? leaveStatus;
 
   const AttendanceRecord({
     required this.date,
@@ -22,6 +23,7 @@ class AttendanceRecord {
     required this.studentName,
     required this.present,
     this.checkTime,
+    this.leaveStatus,
   });
 
   factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class AttendanceRecord {
           .toString(),
       present: t != null && t.toString().isNotEmpty,
       checkTime: t?.toString(),
+      leaveStatus: json['leave_status']?.toString(),
     );
   }
 }
@@ -243,8 +246,30 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   Widget _buildCard(AttendanceRecord r) {
     final Color presentColor = const Color(0xFF34D399); // เขียว
     final Color absentColor = const Color(0xFFF87171); // แดง
+    final Color leaveColor = const Color(0xFFF59E0B);
     final Color bgPresent = presentColor.withOpacity(0.2); // พื้นหลังเขียวอ่อน
     final Color bgAbsent = absentColor.withOpacity(0.2); // พื้นหลังแดงอ่อน
+
+    Color bgColor;
+    Color textColor;
+    String text;
+
+    if (r.leaveStatus == '1') {
+      // 🟠 ลา
+      bgColor = leaveColor.withOpacity(0.2);
+      textColor = leaveColor;
+      text = 'ลา';
+    } else if (r.checkTime != null) {
+      // 🟢 มาเรียน
+      bgColor = bgPresent;
+      textColor = presentColor;
+      text = r.checkTime!;
+    } else {
+      // 🔴 ไม่ได้เช็คชื่อ
+      bgColor = bgAbsent;
+      textColor = absentColor;
+      text = 'ไม่ได้เช็คชื่อ';
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -291,16 +316,14 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: r.checkTime != null
-                      ? bgPresent
-                      : bgAbsent, // ✅ พื้นหลังอ่อน
+                  color: bgColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  r.checkTime ?? 'ไม่ได้เช็คชื่อ',
+                  text,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: r.checkTime != null ? presentColor : absentColor,
+                    color: textColor,
                     fontSize: 14,
                   ),
                 ),

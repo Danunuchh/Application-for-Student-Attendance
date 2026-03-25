@@ -6,6 +6,7 @@ import 'package:my_app/components/app_calendar.dart';
 import 'package:my_app/config.dart';
 
 class AttendanceRecord {
+  final String? leaveStatus;
   final DateTime date;
   final String studentId;
   final String studentName;
@@ -18,10 +19,12 @@ class AttendanceRecord {
     required this.studentName,
     required this.present,
     this.checkTime,
+    this.leaveStatus,
   });
 
   factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
     final time = json['attendance_time'];
+    final leave = json['leave_status'];
     final presentBool = time != null && time.toString().isNotEmpty;
 
     DateTime parsedDate;
@@ -38,6 +41,7 @@ class AttendanceRecord {
       studentName: (json['student_name'] ?? '') as String,
       present: presentBool,
       checkTime: time?.toString(),
+      leaveStatus: leave?.toString(),
     );
   }
 }
@@ -197,6 +201,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   List<Widget> _buildCards() {
     final Color presentColor = const Color(0xFF34D399); // เขียว
     final Color absentColor = const Color(0xFFF87171); // แดง
+    final Color leaveColor = const Color(0xFFF59E0B);
     final Color cardBorder = const Color(0xFF84A9EA);
     final Color cardShadow = const Color(0x0D000000);
 
@@ -213,6 +218,27 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
     }
 
     return _records.map((r) {
+      // ✅ เพิ่มไว้ก่อน Container (อยู่ใน map ของ r)
+      Color bgColor;
+      Color textColor;
+      String text;
+
+      if (r.leaveStatus == '1') {
+        // 🟠 ลา
+        bgColor = leaveColor.withOpacity(0.1);
+        textColor = leaveColor;
+        text = 'ลา';
+      } else if (r.checkTime != null) {
+        // 🟢 มาเรียน
+        bgColor = presentColor.withOpacity(0.1);
+        textColor = presentColor;
+        text = r.checkTime!;
+      } else {
+        // 🔴 ขาด
+        bgColor = absentColor.withOpacity(0.1);
+        textColor = absentColor;
+        text = 'ไม่ได้เช็คชื่อ';
+      }
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Card(
@@ -259,16 +285,14 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: r.checkTime != null 
-                        ? presentColor.withOpacity(0.1)
-                        : absentColor.withOpacity(0.1),
+                    color: bgColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    r.checkTime ?? 'ไม่ได้เช็คชื่อ',
+                    text,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: r.checkTime != null ? presentColor : absentColor,
+                      color: textColor,
                       fontSize: 14,
                     ),
                   ),

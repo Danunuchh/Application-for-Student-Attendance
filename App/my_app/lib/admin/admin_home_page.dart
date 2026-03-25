@@ -61,7 +61,7 @@ class AdminHomePage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Column(
                       children: [
-                        const SizedBox(height: 15),
+                        const SizedBox(height: 40),
 
                         // ===== LOGO =====
                         Padding(

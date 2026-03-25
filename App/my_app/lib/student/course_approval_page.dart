@@ -7,7 +7,6 @@ import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
 import 'package:my_app/student/pending_approvals_page.dart';
 
-
 const String apiBase = baseUrl;
 
 class CourseItem {
@@ -42,18 +41,14 @@ class CourseItem {
 class StudentApprovalCoursePage extends StatefulWidget {
   final String studentId;
 
-  const StudentApprovalCoursePage({
-    super.key,
-    required this.studentId,
-  });
+  const StudentApprovalCoursePage({super.key, required this.studentId});
 
   @override
   State<StudentApprovalCoursePage> createState() =>
       _StudentApprovalCoursePageState();
 }
 
-class _StudentApprovalCoursePageState
-    extends State<StudentApprovalCoursePage> {
+class _StudentApprovalCoursePageState extends State<StudentApprovalCoursePage> {
   late Future<List<CourseItem>> _future;
 
   @override
@@ -94,7 +89,7 @@ class _StudentApprovalCoursePageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'รายวิชาของฉัน'),
+      appBar: const CustomAppBar(title: 'เอกสารการลา'),
       backgroundColor: Colors.white,
       body: FutureBuilder<List<CourseItem>>(
         future: _future,
@@ -117,17 +112,37 @@ class _StudentApprovalCoursePageState
           if (courses.isEmpty) {
             return RefreshIndicator(
               onRefresh: _refresh,
-              child: ListView(
-                padding: const EdgeInsets.all(24),
-                children: const [
-                  SizedBox(height: 80),
-                  Center(
-                    child: Text(
-                      'ยังไม่มีรายวิชา',
-                      style: TextStyle(color: Color(0xFF9CA3AF)),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: const Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.menu_book_outlined,
+                              size: 72,
+                              color: Color(0xFF88A8E8),
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              'ยังไม่มีรายวิชา',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             );
           }

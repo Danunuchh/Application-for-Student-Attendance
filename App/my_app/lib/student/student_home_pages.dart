@@ -108,7 +108,7 @@ class StudentHomePage extends StatelessWidget {
 
             return Column(
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 40),
 
                 /// ===== LOGO =====
                 Image.asset(

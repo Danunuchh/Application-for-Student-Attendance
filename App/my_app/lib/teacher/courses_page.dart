@@ -454,6 +454,7 @@ class _CoursesPageState extends State<CoursesPage> {
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
+                              backgroundColor: Colors.white,
                               title: const Text('ยืนยันการบันทึก'),
                               content: Text(
                                 'คุณต้องการบันทึก ${selected.length} นักศึกษาที่เลือกใช่หรือไม่?',
@@ -948,6 +949,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
     return await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
         title: const Text('เพิ่มนักศึกษาเข้าคลาส'),
         content: TextField(
           controller: controller,

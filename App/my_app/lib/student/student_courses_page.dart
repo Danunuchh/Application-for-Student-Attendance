@@ -79,7 +79,7 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
         section: e['section']?.toString(),
         totalClasses: student['total_classes'] ?? 0,
         attend: student['attend'] ?? 0,
-        leave: student['leave'] ?? 0, 
+        leave: student['leave'] ?? 0,
         absent: student['absent'] ?? 0,
       );
     }).toList();
@@ -120,7 +120,29 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
                 }
 
                 if (!snap.hasData || snap.data!.isEmpty) {
-                  return const _EmptyBox(text: 'ไม่พบรายวิชา', sub: sub);
+                  return SizedBox(
+                    height: MediaQuery.of(context).size.height - 120,
+                    child: const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.menu_book_outlined,
+                            size: 72,
+                            color: Color(0xFF88A8E8),
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            'ยังไม่มีรายวิชา',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
                 }
 
                 final courses = snap.data!;

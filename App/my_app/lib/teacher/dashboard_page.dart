@@ -84,7 +84,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const CustomAppBar(title: 'รายวิชาที่สอน'),
+      appBar: const CustomAppBar(title: 'สรุปผลรายงาน'),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -97,9 +97,30 @@ class _DashboardPageState extends State<DashboardPage> {
               }
 
               if (!snap.hasData || snap.data!.isEmpty) {
-                return const _EmptyBox(text: 'ไม่มีรายวิชา', sub: sub);
+                return SizedBox(
+                  height: MediaQuery.of(context).size.height - 120,
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.menu_book_outlined,
+                          size: 72,
+                          color: Color(0xFF88A8E8),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'ยังไม่มีรายวิชา',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               }
-
               final courses = snap.data!;
 
               return Column(
