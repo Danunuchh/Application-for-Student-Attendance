@@ -122,7 +122,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
     final student = filteredStudents[index];
     final studentId = student['student_id'];
 
-    // ลบออกจาก UI ทันที
+    // ลบออกจากหน้า UI ทันที
     setState(() {
       filteredStudents.removeAt(index);
       allStudents.removeWhere(
@@ -152,7 +152,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
             allStudents = studentList;
           });
 
-          // 🔥 รีเฟรชตาม filter ปัจจุบัน
+          // รีเฟรชตาม filter ปัจจุบัน
           _applyFilter();
         }
 
@@ -227,7 +227,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
 
             const SizedBox(height: 20),
 
-            /// ====== ค้นหา ======
+            /// ====== ช่องค้นหา ======
             TextField(
               decoration: _searchDeco('ค้นหารหัสนักศึกษา'),
               onChanged: (v) {
@@ -271,7 +271,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
                           child: Container(
                             margin: const EdgeInsets.only(
                               bottom: 14,
-                            ), // 👈 เพิ่มระยะห่างระหว่างช่อง
+                            ), 
                             padding: const EdgeInsets.symmetric(
                               horizontal: 14,
                               vertical: 12,
@@ -320,7 +320,7 @@ class _AdminStudentPageState extends State<AdminStudentPage> {
                                   ),
                                 ),
 
-                                /// ===== ปุ่มลบ =====
+                                /// ===== ปุ่มลบนักศึกษา =====
                                 IconButton(
                                   tooltip: 'ลบนักศึกษา',
                                   icon: const Icon(

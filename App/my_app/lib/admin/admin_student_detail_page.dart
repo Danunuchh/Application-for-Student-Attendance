@@ -79,7 +79,7 @@ class _AdminStudentDetailPageState extends State<AdminStudentDetailPage> {
     }).toList();
   }
 
-  // ===================== เพิ่ม Dialog ยืนยัน =====================
+  // ===================== Dialog ยืนยัน =====================
   Future<void> _confirmAndUpdateStatus(bool newStatus) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -177,7 +177,7 @@ class _AdminStudentDetailPageState extends State<AdminStudentDetailPage> {
                     Text('ที่อยู่ : ${_studentInfo!['address'] ?? '-'}'),
                     const SizedBox(height: 6),
 
-                    // ===================== Switch แทน Dropdown =====================
+                    // ===================== Dropdown การเปลี่ยนสถานะ =====================
                     Row(
                       children: [
                         const Text('สถานะ : '),

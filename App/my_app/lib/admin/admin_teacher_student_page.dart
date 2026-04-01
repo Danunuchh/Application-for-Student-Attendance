@@ -45,7 +45,7 @@ class _AdminTeacherCourseStudentPageState
     final json = jsonDecode(res.body);
 
     if (json['success'] != true || json['data'] == null) {
-      return []; // 🔥 คืน list ว่างแทน throw
+      return []; 
     }
 
     final List students = json['data']['students'];
