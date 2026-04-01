@@ -51,7 +51,7 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
-  // ✅ ใช้สไตล์เดียวกับหน้าอื่น ๆ (floating label + border โทนฟ้า)
+  // ใช้สไตล์เดียวกับหน้าอื่น ๆ (floating label + border โทนฟ้า)
   InputDecoration _dec(String label, {String? hint, Widget? suffix}) {
     return InputDecoration(
       labelText: label,
@@ -78,7 +78,6 @@ class _SignUpPageState extends State<SignUpPage> {
         borderSide: const BorderSide(color: Color(0xFF4A86E8), width: 2),
       ),
 
-      // ⭐ เพิ่มตรงนี้
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Colors.red, width: 1.6),
@@ -96,10 +95,7 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   Future<void> _sendToServer() async {
-    // NOTE: ถ้ารันบน Emulator ให้ใช้ http://10.0.2.2:8000
-    // ถ้ารันบนมือถือจริง ให้ใช้ IP เครื่องคอม เช่น http://192.168.1.20:8000
     final url = Uri.parse('${baseUrl}/signup_api.php');
-    //final url = Uri.parse('${baseUrl}signup_api.php');
     final data = {
       'prefix': _prefix == kOtherTitle ? _customTitleCtrl.text.trim() : _prefix,
       'full_name': _nameCtrl.text.trim(),
@@ -178,7 +174,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       child: IntrinsicHeight(
                         child: Column(
                           mainAxisAlignment:
-                              MainAxisAlignment.center, // ⭐ สำคัญ
+                              MainAxisAlignment.center, 
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             // ===== LOGO =====

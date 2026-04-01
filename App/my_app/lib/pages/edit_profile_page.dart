@@ -21,7 +21,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String? _error;
   bool _isEditing = false;
 
-  String? _resolvedUserId; // ✅ userId ที่ใช้จริงหลังเช็ค/ดึงจาก prefs
+  String? _resolvedUserId; // userId ที่ใช้จริงหลังเช็ค/ดึงจาก prefs
 
   // controllers
   final _username = TextEditingController();
@@ -36,7 +36,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    _init(); // ✅ resolve userId แล้วค่อยโหลดข้อมูล
+    _init(); // resolve userId แล้วค่อยโหลดข้อมูล
   }
 
   @override
@@ -52,7 +52,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.dispose();
   }
 
-  // ✅ ดึง userId จาก constructor หรือ SharedPreferences
+  // ดึง userId จาก constructor หรือ SharedPreferences
   Future<void> _init() async {
     setState(() {
       _loading = true;
@@ -151,8 +151,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
 InputDecoration _field(String hint) => InputDecoration(
       hintText: hint,
       filled: true,
-
-      // ✅ พื้นหลัง "ขาวตลอด" ไม่ว่าโหมดไหน
       fillColor: Colors.white,
 
       contentPadding:
@@ -162,8 +160,8 @@ InputDecoration _field(String hint) => InputDecoration(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
           color: _isEditing
-              ? Colors.grey.shade400 // ✅ เทา (โหมดแก้ไข)
-              : const Color(0xFF84A9EA), // 🔵 ฟ้า (โหมดดู)
+              ? Colors.grey.shade400 // เทา (โหมดแก้ไข)
+              : const Color(0xFF84A9EA), // ฟ้า (โหมดดู)
           width: 1.5,
         ),
       ),
@@ -172,8 +170,8 @@ InputDecoration _field(String hint) => InputDecoration(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
           color: _isEditing
-              ? Colors.grey.shade600 // ✅ เทาเข้ม ตอน focus
-              : const Color(0xFF6A9BF5), // 🔵 ฟ้าเข้ม
+              ? Colors.grey.shade600 // เทาเข้ม ตอน focus
+              : const Color(0xFF6A9BF5), // ฟ้าเข้ม
           width: 2,
         ),
       ),
@@ -316,10 +314,10 @@ InputDecoration _field(String hint) => InputDecoration(
                       child: CustomButton(
                         text: 'บันทึกข้อมูล',
                         onPressed: () async {
-                          await _save(); // ✅ บันทึกข้อมูล
+                          await _save(); //  บันทึกข้อมูล
                           setState(
                             () => _isEditing = false,
-                          ); // ✅ ออกจากโหมดแก้ไข
+                          ); //  ออกจากโหมดแก้ไข
                         },
                         backgroundColor: const Color(0xFF21BA0C),
                         textColor: Colors.white,

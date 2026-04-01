@@ -121,7 +121,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       final data = jsonDecode(res.body);
 
       if (res.statusCode == 200 && data['success'] == true) {
-        // ✅ OTP ถูก → ไปหน้าเปลี่ยนรหัสผ่าน
+        // OTP ถูก → ไปหน้าเปลี่ยนรหัสผ่าน
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -240,7 +240,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           child: CustomButton(
                             text: 'ขอรหัส OTP',
                             onPressed: _sendingOtp ? null : _sendOtp,
-                            loading: _sendingOtp, // ✅ ใช้ตัวนี้ถูกต้อง
+                            loading: _sendingOtp, // ใช้ตัวนี้
                             backgroundColor: const Color(0xFF4A86E8),
                             textColor: Colors.white,
                           ),

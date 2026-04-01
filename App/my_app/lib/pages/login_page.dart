@@ -86,9 +86,6 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final url = Uri.parse('${baseUrl}/login_api.php');
-      //final url = Uri.parse(
-      //'${baseUrl}login_api.php',
-      //); //10.0.2.2 //192.168.0.101 //localhost
       final res = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -170,7 +167,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: IntrinsicHeight(
                         child: Column(
                           mainAxisAlignment:
-                              MainAxisAlignment.center, // ⭐ กึ่งกลางแนวตั้ง
+                              MainAxisAlignment.center, 
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             // image
@@ -255,7 +252,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
 
-            // ✅ ส่วนล่าง (เฉพาะปุ่ม "ลงทะเบียน" เปลี่ยนเป็น CustomButton)
+            // (ปุ่ม "ลงทะเบียน" เปลี่ยนเป็น CustomButton)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
               decoration: const BoxDecoration(
@@ -278,7 +275,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(width: 8),
 
-                      // ✅ ปุ่มลงทะเบียน (ใช้ CustomButton)
+                      // ปุ่มลงทะเบียน (ใช้ CustomButton)
                       CustomButton(
                         text: 'ลงทะเบียน',
                         onPressed: () {
