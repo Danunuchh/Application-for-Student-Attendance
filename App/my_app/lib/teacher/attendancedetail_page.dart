@@ -199,8 +199,8 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   }
 
   List<Widget> _buildCards() {
-    final Color presentColor = const Color(0xFF34D399); // เขียว
-    final Color absentColor = const Color(0xFFF87171); // แดง
+    final Color presentColor = const Color(0xFF34D399); 
+    final Color absentColor = const Color(0xFFF87171); 
     final Color leaveColor = const Color(0xFFF59E0B);
     final Color cardBorder = const Color(0xFF84A9EA);
     final Color cardShadow = const Color(0x0D000000);

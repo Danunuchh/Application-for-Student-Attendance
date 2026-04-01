@@ -217,15 +217,15 @@ class _CourseDetailPageState extends State<DashbordDetailPage> {
             padding: const EdgeInsets.all(16),
             children: [
               Container(
-                padding: const EdgeInsets.all(20), // เพิ่ม padding นิดนึง
+                padding: const EdgeInsets.all(20), 
                 margin: const EdgeInsets.only(
                   bottom: 20,
-                ), // เว้นช่องว่างล่างเพิ่ม
+                ), 
                 decoration: BoxDecoration(
-                  color: Colors.white, // 🔥 พื้นหลังขาว
+                  color: Colors.white, 
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFF3B82F6), // ขอบฟ้าเหมือนเดิม
+                    color: const Color(0xFF3B82F6), 
                     width: 1.2,
                   ),
                   boxShadow: [
@@ -246,12 +246,12 @@ class _CourseDetailPageState extends State<DashbordDetailPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 24), // 🔥 เพิ่มจาก 16 → 24
+                    const SizedBox(height: 24),
 
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         vertical: 8,
-                      ), // 🔥 เว้นบนล่าง Pie เพิ่ม
+                      ),
                       child: _AttendancePieChart(
                         attendPercent: attendPercent,
                         leavePercent: leavePercent,
@@ -366,7 +366,6 @@ class _AttendancePieChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ กำหนด label และ percent ให้ใช้ layout เดียวกันทั้งหมด
     String label;
     String percentText;
 
@@ -417,7 +416,6 @@ class _AttendancePieChart extends StatelessWidget {
               ),
             ),
 
-            /// ✅ ตรงกลางวงกลม
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

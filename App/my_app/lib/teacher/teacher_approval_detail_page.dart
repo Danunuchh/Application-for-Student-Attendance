@@ -214,10 +214,10 @@ class _ApprovalDetailPageState extends State<ApprovalDetailPage> {
                   padding: const EdgeInsets.all(20),
                   margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
-                    color: Colors.white, // พื้นหลังขาว
-                    borderRadius: BorderRadius.circular(16), // มุมโค้ง
+                    color: Colors.white, 
+                    borderRadius: BorderRadius.circular(16), 
                     border: Border.all(
-                      color: const Color(0xFF84A9EA), // สีเส้นกรอบเทาอ่อน
+                      color: const Color(0xFF84A9EA), 
                       width: 1.5,
                     ),
                   ),

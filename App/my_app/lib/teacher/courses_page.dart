@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http; // ✅ ใช้ http
+import 'package:http/http.dart' as http; 
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
 import 'package:my_app/components/button.dart';
@@ -10,12 +10,10 @@ import 'package:my_app/teacher/course_detail_page.dart';
 import 'teacher_qr_page.dart';
 import 'package:my_app/config.dart';
 
-// import 'course_detail_page.dart'; // มีอยู่แล้วในโปรเจกต์คุณ
 
 // ---------- ปรับตามเครื่องคุณ ----------
 const String apiBase =
-    //'http://10.0.2.2:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
-    baseUrl; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
+    baseUrl; 
 
 class ApiService {
   static Map<String, String> get _jsonHeaders => {
@@ -51,7 +49,6 @@ class ApiService {
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
-  // ✅ ย้ายเมธอดนี้เข้ามาในคลาส และยังเป็น static ได้
   static Future<Map<String, dynamic>> addStudentToCourse({
     required String studentId,
     required int courseId,
@@ -239,7 +236,7 @@ class _CoursesPageState extends State<CoursesPage> {
                         onPressed: () => Navigator.pop(context),
                       ),
                       actions: const [
-                        SizedBox(width: 6), // เผื่อระยะห่างด้านขวา
+                        SizedBox(width: 6),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -282,7 +279,7 @@ class _CoursesPageState extends State<CoursesPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // 🔍 ช่องค้นหานักศึกษา
+                    // ช่องค้นหานักศึกษา
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: TextField(
@@ -297,7 +294,7 @@ class _CoursesPageState extends State<CoursesPage> {
 
                     const SizedBox(height: 16),
 
-                    // ✅ Smart Select All Box
+                    // Smart Select All Box
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Builder(
@@ -337,7 +334,7 @@ class _CoursesPageState extends State<CoursesPage> {
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(
                                     12,
-                                  ), // เท่าช่องค้นหา
+                                  ),
                                   border: Border.all(
                                     color: selectedYear == null
                                         ? Colors.grey.shade300
@@ -473,7 +470,7 @@ class _CoursesPageState extends State<CoursesPage> {
                                     backgroundColor: const Color(0xFF21BA0C),
                                     foregroundColor: const Color(
                                       0xFFFFFFFF,
-                                    ), // สีพื้นหลังปุ่ม
+                                    ), 
                                   ),
                                   onPressed: () => Navigator.pop(context, true),
                                   child: const Text('ตกลง'),
@@ -625,8 +622,6 @@ class _CoursesPageState extends State<CoursesPage> {
                         ),
                       );
                     },
-
-                    // 👇 ปรับตรงนี้
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -638,7 +633,7 @@ class _CoursesPageState extends State<CoursesPage> {
                           ),
                           onPressed: () {
                             _showAddStudentSheet(
-                              c['id'], // courseId
+                              c['id'], 
                             );
                           },
                         ),
@@ -751,7 +746,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
       );
 
       if (json['success'] == true && json['name'] is String) {
-        _teacher.text = json['name']; // ✅ ใส่ชื่ออาจารย์ให้ auto
+        _teacher.text = json['name']; // ใส่ชื่ออาจารย์ให้ auto
       } else {
         // ถ้า backend ไม่ส่ง name กลับมา จะปล่อยให้ผู้ใช้กรอกเอง
         debugPrint('teacher_name not found -> fallback to manual input');
@@ -886,10 +881,10 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
         'name': _name.text.trim(),
         'code': _code.text.trim(),
         'credit': _credit.text
-            .trim(), // ถ้าฝั่ง PHP ต้องการ int ก็แปลงเป็น int ที่นี่ได้
+            .trim(), 
         'teacher': _teacher.text.trim(), // ดึงจาก user_id มาก่อนหน้าแล้ว
         'day': _day.text
-            .trim(), // ถ้ามี day_id จาก dropdown ให้ใส่ 'day_id': _selectedDayId
+            .trim(), 
         'day_id': _selectedDayId,
         'start_time': _start.text.trim(),
         'end_time': _end.text.trim(),
@@ -897,11 +892,9 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
         'section': _section.text.trim(),
         'year': _year.text.trim(),
         'term': _term.text.trim(),
-        'sessions': _sessions.text.trim(), // เช่น "3"
-        // ไม่ต้องใส่ 'type' ใน body
+        'sessions': _sessions.text.trim(), 
       };
 
-      // ✅ เปลี่ยนปลายทางให้ถูก
       final json = await ApiService.postJson(
         'courses_api.php?type=coursesadd',
         body,
@@ -1017,7 +1010,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                     controller: _name,
                     decoration: _dec('วิชา'),
                     inputFormatters: [
-                      UpperCaseEnglishFormatter(), // ✅ ตัวนี้พอ
+                      UpperCaseEnglishFormatter(),
                     ],
                     validator: (v) => _required(v, 'กรุณากรอกชื่อวิชา'),
                   ),
@@ -1077,7 +1070,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                       ? const LinearProgressIndicator(minHeight: 2)
                       : TextFormField(
                           controller: _teacher,
-                          readOnly: true, // ✅ ไม่ให้แก้ (เพราะดึงจาก user_id)
+                          readOnly: true, 
                           decoration: _dec('อาจารย์ผู้สอน'),
                           validator: (v) =>
                               _required(v, 'กรุณากรอกชื่ออาจารย์ผู้สอน'),
@@ -1110,14 +1103,14 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                         255,
                         255,
                         255,
-                      ), // ✅ สีพื้นหลังช่อง dropdown
+                      ), 
                     ),
                     dropdownColor: const Color.fromARGB(
                       255,
                       255,
                       255,
                       255,
-                    ), // ✅ สีพื้นหลัง popup list
+                    ),
                     validator: (v) => (v == null || v.isEmpty)
                         ? 'กรุณาเลือกวันที่เรียน'
                         : null,

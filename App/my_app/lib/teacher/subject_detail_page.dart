@@ -18,7 +18,6 @@ class Subject {
     required this.room,
   });
 
-  // ✅ เพิ่มส่วนนี้เข้าไป
   factory Subject.fromMap(Map<String, dynamic> m) {
     return Subject(
       title: (m['name'] ?? m['title'] ?? '').toString(),

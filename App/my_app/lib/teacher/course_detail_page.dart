@@ -7,12 +7,12 @@ import 'package:my_app/components/upper_case_english_formatter.dart';
 import 'package:my_app/config.dart';
 
 /// ปรับให้ตรงกับเครื่อง/เซิร์ฟเวอร์ของคุณ
-const String apiBase = baseUrl; // Android Emulator ใช้ http://10.0.2.2:8000
+const String apiBase = baseUrl;
 
 class CourseDetailPage extends StatefulWidget {
-  final String courseId; // ✅ รับ id ที่หน้า list ส่งมา
-  final String? courseName; // optional
-  final String? courseCode; // optional
+  final String courseId; 
+  final String? courseName; 
+  final String? courseCode; 
 
   const CourseDetailPage({
     super.key,
@@ -33,7 +33,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   String? _section;
   String? _credit;
   String? _teacher;
-  String? _time; // ex. '17:00 - 20:00'
+  String? _time;
   String? _room;
   String? _sessions;
   String? _year;
@@ -109,7 +109,7 @@ Future<void> _updateCourseToServer({
     _filtered = List.of(_students);
     _searchCtl.addListener(_onSearch);
 
-    _fetchCourseDetail(); // 👈 ดึงข้อมูลด้วย courseId
+    _fetchCourseDetail(); 
   }
 
   @override
@@ -166,7 +166,7 @@ Future<void> _updateCourseToServer({
         final term = (course['term'] ?? '').toString();
         final sessions = (course['sessions'] ?? '').toString();
 
-        // 👇 JSON จริงของคุณ: { user_id, name, student_id }
+        // JSON จริงของคุณ: { user_id, name, student_id }
         final List stuList = (json['students'] is List)
             ? (json['students'] as List)
             : const [];
@@ -768,7 +768,7 @@ Future<void> _updateCourseToServer({
                     // แทนที่เดิม
                     return TextBox(
                       title: s['name'],
-                      subtitle: s['student_id'], // ✅ โชว์รหัสนักศึกษา
+                      subtitle: s['student_id'], 
                       trailing: IconButton(
                         tooltip: 'ลบนักศึกษา',
                         icon: const Icon(

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http; // ✅ ใช้ http
+import 'package:http/http.dart' as http; 
 import 'package:my_app/components/custom_appbar.dart';
 import 'package:my_app/components/textbox.dart';
 import 'package:my_app/teacher/attendancedetail_page.dart';
@@ -9,12 +9,10 @@ import 'teacher_qr_page.dart';
 
 import 'package:my_app/config.dart';
 
-// import 'course_detail_page.dart'; // มีอยู่แล้วในโปรเจกต์คุณ
 
 // ---------- ปรับตามเครื่องคุณ ----------
 const String apiBase =
-    //'http://10.0.2.2:8000'; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
-    baseUrl; // หรือ http://10.0.2.2:8000 สำหรับ Android Emulator
+    baseUrl; 
 
 class ApiService {
   static Map<String, String> get _jsonHeaders => {
@@ -50,7 +48,6 @@ class ApiService {
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
-  // ✅ ย้ายเมธอดนี้เข้ามาในคลาส และยังเป็น static ได้
   static Future<Map<String, dynamic>> addStudentToCourse({
     required String studentId,
     required int courseId,
@@ -175,7 +172,7 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
               child: SafeArea(
                 child: Column(
                   children: [
-                    // ✅ ใช้ CustomAppBar เหมือนหน้า CoursesPage
+                    // ใช้ CustomAppBar เหมือนหน้า CoursesPage
                     CustomAppBar(
                       title: 'เพิ่มนักศึกษาเข้าคลาส',
                       leading: IconButton(
@@ -304,7 +301,6 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
                     title: '${c['code']}  ${c['name']}',
                     subtitle:
                         'ปีการศึกษา ${c['year']} | ภาคเรียน ${c['term']} | Sec ${c['section']}',
-                    // 👇 ปรับตรงนี้
                     trailing: IconButton(
                       icon: const Icon(
                         Icons.chevron_right,
@@ -418,7 +414,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
       );
 
       if (json['success'] == true && json['name'] is String) {
-        _teacher.text = json['name']; // ✅ ใส่ชื่ออาจารย์ให้ auto
+        _teacher.text = json['name']; // ใส่ชื่ออาจารย์ให้ auto
       } else {
         // ถ้า backend ไม่ส่ง name กลับมา จะปล่อยให้ผู้ใช้กรอกเอง
         debugPrint('teacher_name not found -> fallback to manual input');
@@ -548,20 +544,20 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
         'name': _name.text.trim(),
         'code': _code.text.trim(),
         'credit': _credit.text
-            .trim(), // ถ้าฝั่ง PHP ต้องการ int ก็แปลงเป็น int ที่นี่ได้
+            .trim(), 
         'teacher': _teacher.text.trim(), // ดึงจาก user_id มาก่อนหน้าแล้ว
         'day': _day.text
-            .trim(), // ถ้ามี day_id จาก dropdown ให้ใส่ 'day_id': _selectedDayId
+            .trim(), 
         'day_id': _selectedDayId,
         'start_time': _start.text.trim(),
         'end_time': _end.text.trim(),
         'room': _room.text.trim(),
         'section': _section.text.trim(),
-        'sessions': _sessions.text.trim(), // เช่น "3"
-        // ไม่ต้องใส่ 'type' ใน body
+        'sessions': _sessions.text.trim(),
+   
       };
 
-      // ✅ เปลี่ยนปลายทางให้ถูก
+
       final json = await ApiService.postJson(
         'courses_api.php?type=coursesadd',
         body,
@@ -709,7 +705,7 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                       ? const LinearProgressIndicator(minHeight: 2)
                       : TextFormField(
                           controller: _teacher,
-                          readOnly: true, // ✅ ไม่ให้แก้ (เพราะดึงจาก user_id)
+                          readOnly: true, // ไม่ให้แก้ (เพราะดึงจาก user_id)
                           decoration: _dec('อาจารย์ผู้สอน'),
                           validator: (v) =>
                               _required(v, 'กรุณากรอกชื่ออาจารย์ผู้สอน'),
@@ -742,14 +738,14 @@ class _AddCourseSheetState extends State<AddCourseSheet> {
                         255,
                         255,
                         255,
-                      ), // ✅ สีพื้นหลังช่อง dropdown
+                      ), // 
                     ),
                     dropdownColor: const Color.fromARGB(
                       255,
                       255,
                       255,
                       255,
-                    ), // ✅ สีพื้นหลัง popup list
+                    ), // 
                     validator: (v) => (v == null || v.isEmpty)
                         ? 'กรุณาเลือกวันที่เรียน'
                         : null,

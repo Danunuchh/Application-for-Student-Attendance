@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class TeacherQRPage extends StatefulWidget {
-  final int courseId; // ✅ ใช้ id ด้วย
+  final int courseId; 
   final String courseName;
-  final String token; // ✅ token จาก backend
+  final String token; 
 
   const TeacherQRPage({
     super.key,
@@ -82,17 +82,15 @@ class _TeacherQRPageState extends State<TeacherQRPage> {
 
             const SizedBox(height: 24),
 
-            /// ✅ แสดง QR จาก token ที่ได้จาก backend
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFF88A8E8), width: 2),
-                // ❌ ลบ boxShadow ออก
               ),
               child: QrImageView(
                 data: widget.token,
-                size: 300, // 🔥 จาก 250 → 300
+                size: 300, 
                 backgroundColor: Colors.white,
               ),
             ),

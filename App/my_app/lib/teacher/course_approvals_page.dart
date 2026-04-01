@@ -165,7 +165,6 @@ class _CourseApprovalPageState extends State<CourseApprovalPage> {
                     color: Color(0xFF9CA3AF),
                   ),
                   onTap: () {
-                    // ✅ กดได้ทั้งกล่อง
                     Navigator.push(
                       context,
                       MaterialPageRoute(

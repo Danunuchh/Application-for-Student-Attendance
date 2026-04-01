@@ -75,7 +75,7 @@ class _QrCodePageState extends State<QrCodePage> {
     }
   }
 
-  /// 🔥 ยิง API สร้าง QR แค่ครั้งเดียว
+  // ยิง API สร้าง QR แค่ครั้งเดียว
   Future<void> _createQrAndGo(Map<String, dynamic> course) async {
     setState(() => _loading = true);
 
@@ -85,7 +85,7 @@ class _QrCodePageState extends State<QrCodePage> {
       double? lat;
       double? lng;
 
-      // 👉 ถ้าไม่ใช่เว็บ ให้ดึงตำแหน่ง
+      // ถ้าไม่ใช่เว็บ ให้ดึงตำแหน่ง
       if (!kIsWeb) {
         try {
           final pos = await _getCurrentLocation();
@@ -96,7 +96,7 @@ class _QrCodePageState extends State<QrCodePage> {
         }
       }
 
-      // ✅ ส่ง lat/long ไป backend เพื่อบันทึก
+      // ส่ง lat/long ไป backend เพื่อบันทึก
       final res = await http.post(
         Uri.parse('$apiBase/qrcode.php'),
         headers: {'Content-Type': 'application/json'},
@@ -114,7 +114,7 @@ class _QrCodePageState extends State<QrCodePage> {
         throw Exception("Create QR failed");
       }
 
-      // ✅ QR มีแค่ id + password เท่านั้น
+      // QR มีแค่ id + password เท่านั้น
       final qrPayload = jsonEncode({
         'qr_id': data['qr_code_id'],
         'password': data['qr_password'],

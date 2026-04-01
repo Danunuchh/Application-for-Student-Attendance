@@ -129,7 +129,7 @@ class MyApp extends StatelessWidget {
               builder: (_) => TeacherQRPage(
                 courseId: courseId,
                 courseName: courseName,
-                token: '', // ใส่ค่าว่างถ้ายังไม่มี
+                token: '', 
               ),
             );
           }
