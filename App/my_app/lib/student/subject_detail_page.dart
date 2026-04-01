@@ -13,7 +13,6 @@ class SubjectDetailPage extends StatelessWidget {
   static const Color _borderBlue = Color(0xFF88A8E8);
   static const double _labelW = 110;
 
-  // helper แสดง label + value (เหมือนหน้า CourseDetailPage)
   Widget _kv(String label, String? value, {int? maxLines}) {
     final display =
         (value == null || value.trim().isEmpty) ? '-' : value;

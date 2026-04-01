@@ -168,7 +168,7 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
                                 section: course.section,
                                 totalClasses: course.totalClasses,
                                 attend: course.attend,
-                                leave: course.leave, // ← เพิ่มตรงนี้
+                                leave: course.leave, 
                                 absent: course.absent,
                               ),
                             ),
@@ -199,7 +199,7 @@ class CourseOption {
 
   final int totalClasses;
   final int attend;
-  final int leave; // ← เพิ่ม
+  final int leave; 
   final int absent;
 
   const CourseOption({

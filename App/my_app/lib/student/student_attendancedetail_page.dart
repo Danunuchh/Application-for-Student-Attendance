@@ -68,7 +68,7 @@ class AttendanceDetailPage extends StatefulWidget {
 }
 
 class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
-  /// ❗️เริ่มต้นยังไม่เลือกวัน → today จะเป็นวงกลมขอบ
+  /// เริ่มต้นยังไม่เลือกวัน → today จะเป็นวงกลมขอบ
   DateTime? _selectedDay;
   DateTime _focusedDay = DateTime.now();
 
@@ -169,7 +169,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
       }
 
       setState(() {
-        _events.addAll(monthEvents); // ⭐ สำคัญ: เติม event ลง calendar
+        _events.addAll(monthEvents); // เติม event ลง calendar
       });
     } catch (e) {
       debugPrint('fetchMonth error: $e');
@@ -200,7 +200,7 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
 
           /// ===== AppCalendar (เหมือนอีกหน้า) =====
           AppCalendar<AttendanceRecord>(
-            key: ValueKey(_events.length), // ⭐ สำคัญ
+            key: ValueKey(_events.length), 
             events: _events,
             initialFocusedDay: _focusedDay,
             initialSelectedDay: _selectedDay,
@@ -244,11 +244,11 @@ class _AttendanceDetailPageState extends State<AttendanceDetailPage> {
   /// CARD
   /// =====================
   Widget _buildCard(AttendanceRecord r) {
-    final Color presentColor = const Color(0xFF34D399); // เขียว
-    final Color absentColor = const Color(0xFFF87171); // แดง
+    final Color presentColor = const Color(0xFF34D399); 
+    final Color absentColor = const Color(0xFFF87171); 
     final Color leaveColor = const Color(0xFFF59E0B);
-    final Color bgPresent = presentColor.withOpacity(0.2); // พื้นหลังเขียวอ่อน
-    final Color bgAbsent = absentColor.withOpacity(0.2); // พื้นหลังแดงอ่อน
+    final Color bgPresent = presentColor.withOpacity(0.2); 
+    final Color bgAbsent = absentColor.withOpacity(0.2); 
 
     Color bgColor;
     Color textColor;

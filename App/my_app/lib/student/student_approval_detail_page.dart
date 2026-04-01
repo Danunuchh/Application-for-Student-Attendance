@@ -292,12 +292,12 @@ class _StudentApprovalDetailPageState extends State<StudentApprovalDetailPage> {
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
-                      foregroundColor: Colors.white, // ตัวอักษร + icon สีขาว
+                      foregroundColor: Colors.white, 
                       padding: const EdgeInsets.symmetric(
                         vertical: 12,
-                        horizontal: 20, // ลดความกว้าง
+                        horizontal: 20, 
                       ),
-                      minimumSize: const Size(180, 45), // กำหนดขนาดปุ่ม
+                      minimumSize: const Size(180, 45), 
                     ),
                     onPressed: _cancelLeave,
                     icon: const Icon(Icons.cancel),

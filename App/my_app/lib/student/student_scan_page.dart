@@ -54,7 +54,6 @@ class _StudentScanPageState extends State<StudentScanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // AppBar มีปุ่มกลับแบบในภาพ
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -64,7 +63,6 @@ class _StudentScanPageState extends State<StudentScanPage> {
         ),
       ),
 
-      // กล้องเต็มจอ (ไม่มีกรอบ CustomPainter แล้ว)
       body: MobileScanner(controller: _controller, onDetect: _onDetect),
 
       // แถบล่างสีฟ้า + ปุ่มกลางวงกลมไอคอน QR (กดเพื่อสแกนอีกครั้ง)
@@ -87,7 +85,7 @@ class _StudentScanPageState extends State<StudentScanPage> {
                 Expanded(
                   child: Center(
                     child: InkResponse(
-                      onTap: _scanAgain, // แตะเพื่อเริ่มสแกนอีกครั้ง
+                      onTap: _scanAgain, 
                       child: Container(
                         width: 58,
                         height: 58,

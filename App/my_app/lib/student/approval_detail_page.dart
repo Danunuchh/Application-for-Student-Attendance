@@ -6,7 +6,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class ApprovalDetailPage extends StatelessWidget {
-  final Map<String, dynamic> item; // ✅ รับทุกชนิด
+  final Map<String, dynamic> item; 
   const ApprovalDetailPage({super.key, required this.item});
 
   bool _isPdf(String? pathOrName) {
@@ -121,7 +121,7 @@ class ApprovalDetailPage extends StatelessWidget {
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 20),
 
-              // 👇 แสดงไฟล์แนบจริง
+              // แสดงไฟล์แนบจริง
               Center(child: _buildAttachment(context)),
               const SizedBox(height: 24),
 

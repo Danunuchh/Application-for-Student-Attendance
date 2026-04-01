@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:my_app/models/subject.dart';
 import 'package:my_app/models/day.dart';
 import 'package:my_app/student/student_calendar_page.dart';
-import 'package:my_app/services/api_service.dart'; // N: ใช้ ApiService แทน http ตรงๆ
-import 'package:shared_preferences/shared_preferences.dart'; // N: เพิ่มเพื่อดึง user_id
+import 'package:my_app/services/api_service.dart'; 
+import 'package:shared_preferences/shared_preferences.dart'; 
 
 class StudentCalendarLoader extends StatefulWidget {
   const StudentCalendarLoader({super.key});
@@ -27,7 +27,6 @@ class _StudentCalendarLoaderState extends State<StudentCalendarLoader> {
   
   //N: ปรับให้ใช้ api จริง
   Future<Map<DateTime, List<Subject>>> _fetchEvents() async {
-    // N: ดึง userId จาก SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString('userId') ?? '';
 
@@ -35,7 +34,6 @@ class _StudentCalendarLoaderState extends State<StudentCalendarLoader> {
       throw Exception('ไม่พบ user_id กรุณาเข้าสู่ระบบใหม่');
     }
 
-    // N: เรียก courses_api.php?type=show_student&user_id={id} เพื่อดึงรายวิชาของนักศึกษา
     final uri = ApiService.uri('/courses_api.php?type=show_student&user_id=$userId');
     final headers = await ApiService.authHeaders();
     final res = await ApiService.client().get(uri, headers: headers);
@@ -59,13 +57,12 @@ class _StudentCalendarLoaderState extends State<StudentCalendarLoader> {
     final startDate = DateTime(now.year, now.month, now.day);
     final endDate = startDate.add(const Duration(days: 56)); // 8 สัปดาห์
 
-    // N: แปลงข้อมูลจาก API (courses) ให้เป็น calendar events
     // API คืน: {id, name, code, credit, day_id, start_time, end_time, room, teacher_name, section}
     for (final raw in data) {
       // สร้าง Subject จากข้อมูลรายวิชา
       final subject = Subject(
         id: '${raw['id'] ?? ''}',
-        title: '${raw['name'] ?? ''}', // course_name
+        title: '${raw['name'] ?? ''}',
         code: '${raw['code'] ?? ''}',
         credits: '${raw['credit'] ?? ''}',
         section: '${raw['section'] ?? ''}',

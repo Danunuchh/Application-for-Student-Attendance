@@ -2,24 +2,20 @@
 import 'dart:convert';
 import 'package:my_app/models/user_profile.dart';
 import 'package:my_app/services/api_service.dart';
-import 'package:my_app/config.dart'; // N: เพิ่ม import config เพื่อใช้ baseUrl
+import 'package:my_app/config.dart'; 
 
-// หมายเหตุ:
-// - ApiService.uri(String path) ควรคืนค่า Uri ที่รวม baseUrl + path
-// - ApiService.authHeaders() ควรคืน header พื้นฐาน (เช่น Authorization, Cookie ฯลฯ)
-// - ApiService.client() คืน http.Client (ถ้ามี cookie manager/keep-alive ก็จัดในนี้)
+
 
 class ProfileService {
   static const String _showPath = '/profile_api.php';
   static const String _updatePath = '/profile_api.php';
 
   /// ดึงโปรไฟล์จาก PHP:
-  /// GET /api/profile_show.php?user_id=123&role=student
   static Future<UserProfile> fetchProfile({
     required String userId,
     required String role,
   }) async {
-    // N: เปลี่ยนจาก hardcode localhost เป็นใช้ baseUrl จาก config.dart
+
     final baseUri = Uri.parse('$baseUrl/profile_api.php');
     final uri = baseUri.replace(
       queryParameters: {'type': 'show', 'user_id': userId, 'role': role},
@@ -39,7 +35,6 @@ class ProfileService {
 
     final data = jsonDecode(res.body);
     if (data is! Map || data['success'] != true) {
-      // ดึง message จาก PHP ถ้ามี
       final msg = (data is Map)
           ? (data['message']?.toString() ?? 'โหลดโปรไฟล์ล้มเหลว')
           : 'โหลดโปรไฟล์ล้มเหลว';
@@ -54,7 +49,6 @@ class ProfileService {
     required String role,
     required UserProfile payload,
   }) async {
-    // N: เปลี่ยนจาก hardcode localhost เป็นใช้ baseUrl จาก config.dart
     final uri = Uri.parse('$baseUrl/profile_api.php');
 
     final bodyMap = <String, dynamic>{

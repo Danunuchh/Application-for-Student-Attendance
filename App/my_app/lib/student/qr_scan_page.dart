@@ -69,7 +69,7 @@ class Student {
 Future<String?> getUserId() async {
   final prefs = await SharedPreferences.getInstance();
   final userId = prefs.getString('userId');
-  debugPrint('getUserId() -> $userId'); // ✅ เพิ่ม debug
+  debugPrint('getUserId() -> $userId');
   return userId;
 }
 
@@ -188,7 +188,6 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
 
   Future<void> _initPermission() async {
     if (kIsWeb) {
-      // ✅ Web: ไม่ต้องขอ permission
       _permissionGranted = true;
       _checkingPermission = false;
 
@@ -271,7 +270,7 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
 
       await _fetchQRCodeInfo(
         qrData['qr_id'].toString(),
-        qrData['password'].toString(), // ✅ ส่ง password ไปด้วย
+        qrData['password'].toString(),
         userId,
         formattedDate,
       );
@@ -291,7 +290,7 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
     try {
       final payload = {
         'qr_code_id': qrCodeId,
-        'qr_password': qrPassword, // 🔥 เพิ่มบรรทัดนี้
+        'qr_password': qrPassword,
         'user_id': userId,
         'day': day,
       };
@@ -445,8 +444,7 @@ class _QRScanPageState extends State<QRScanPage> with WidgetsBindingObserver {
         message: 'ระบบได้บันทึกเวลาเรียบร้อยแล้ว',
         isSuccess: true,
       );
-
-      _completed = true; // 🔥 เพิ่มบรรทัดนี้
+      _completed = true; 
 
       if (mounted) {
         Navigator.of(context).pop();

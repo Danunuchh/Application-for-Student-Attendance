@@ -6,10 +6,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:my_app/config.dart';
 
-const String apiBase = baseUrl; // เปลี่ยนเป็น IP/URL จริงของคุณ
+const String apiBase = baseUrl; 
 
 class AttendanceHistoryPage extends StatefulWidget {
-  final String userId; // ใช้ userId เพื่อดึงรายวิชา
+  final String userId; 
   const AttendanceHistoryPage({super.key, required this.userId});
 
   @override

@@ -37,10 +37,7 @@ class ApiMock {
 /// REAL API CLIENT (เชื่อมต่อจริง)
 /// ==========================
 class ApiService {
-  // N: ลบ baseUrl ที่ซ้ำออก เพราะใช้จาก config.dart แทน
-  // เดิม: static const String baseUrl = 'http://10.0.2.2:8000/api';
-  // ตอนนี้: ใช้ baseUrl จาก config.dart + '/api' เวลาเรียก
-
+ 
   /// ดึง token ที่บันทึกไว้ตอน login
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
