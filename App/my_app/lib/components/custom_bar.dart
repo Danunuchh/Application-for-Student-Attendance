@@ -6,7 +6,7 @@ class CustomBottomBarWithFab extends StatelessWidget {
   final VoidCallback onProfile;
   final VoidCallback onLogout;
   final VoidCallback onFabTap;
-  final Widget body; // เนื้อหาหลักของหน้า (จะถูกวางใน Scaffold.body)
+  final Widget body; 
 
   const CustomBottomBarWithFab({
     super.key,
@@ -29,7 +29,6 @@ class CustomBottomBarWithFab extends StatelessWidget {
     }
   }
 
-  // สีปุ่มตามบทบาท
   Color _getFabColor() {
     switch (role) {
       case 'teacher':
@@ -55,7 +54,7 @@ class CustomBottomBarWithFab extends StatelessWidget {
       floatingActionButton: Container(
         padding: const EdgeInsets.all(5),
         decoration: const BoxDecoration(
-          color: fabRing, // วงแหวนรอบ FAB
+          color: fabRing, // วงแหวนรอบวงกลม
           shape: BoxShape.circle,
         ),
         child: SizedBox(
@@ -71,7 +70,6 @@ class CustomBottomBarWithFab extends StatelessWidget {
               _getFabIcon(),
               width: 40,
               height: 40,
-              // บังคับให้เป็นสีดำ (กรณีไฟล์ SVG มีสีในตัวเอง)
               colorFilter: const ColorFilter.mode(
                 Colors.black,
                 BlendMode.srcIn,

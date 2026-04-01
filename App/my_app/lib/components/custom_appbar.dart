@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final Widget? leading;                 // ถ้าไม่ส่ง จะเช็ค canPop() แล้วใส่ Back ให้อัตโนมัติ
-  final VoidCallback? onBack;            // ถ้าต้องการ override พฤติกรรมปุ่ม Back
-  final List<Widget>? actions;           // ปุ่มฝั่งขวา
+  final Widget? leading;               
+  final VoidCallback? onBack;           
+  final List<Widget>? actions;           
   final Color backgroundColor;
   final Color textColor;
   final bool centerTitle;
@@ -49,14 +49,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: centerTitle,
       elevation: elevation,
       backgroundColor: backgroundColor,
-      surfaceTintColor: Colors.transparent, // ✅ ปิดเงาสีม่วงอ่อนของ Material 3
+      surfaceTintColor: Colors.transparent,
       scrolledUnderElevation: 0, 
       actions: actions,
       iconTheme: IconThemeData(color: textColor),
       // ปรับสีไอคอน Status Bar ให้เข้ากับพื้นหลัง
       systemOverlayStyle: backgroundColor.computeLuminance() > 0.5
-          ? SystemUiOverlayStyle.dark   // พื้นหลังสว่าง → ไอคอนดำ
-          : SystemUiOverlayStyle.light, // พื้นหลังเข้ม → ไอคอนขาว
+          ? SystemUiOverlayStyle.dark   
+          : SystemUiOverlayStyle.light, 
     );
   }
 }

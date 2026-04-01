@@ -15,7 +15,7 @@ class TwoRowMenuItem {
 
 /// เมนู 2 แถว “ไม่เลื่อน” ย่อขนาดอัตโนมัติให้พอดีจอ
 class TwoRowMenu extends StatelessWidget {
-  /// รายการทั้งหมด (อย่างน้อย 3 ชิ้นขึ้นไปจะสวยสุดในเลย์เอาต์นี้)
+  /// รายการทั้งหมด (อย่างน้อย 3 ชิ้นขึ้นไป)
   final List<TwoRowMenuItem> items;
 
   /// แบ่งคั่นรายการไปแถวบนกี่ชิ้น (เช่น 2 ชิ้นบน / ที่เหลือล่าง)
@@ -52,8 +52,8 @@ class TwoRowMenu extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, c) {
-        final h = c.maxHeight;         // พื้นที่ที่ได้รับจาก parent
-        final isSmall = h < 700;       // เกณฑ์ย่อสำหรับจอเตี้ย
+        final h = c.maxHeight;        
+        final isSmall = h < 700;       
 
         // สเกลต่าง ๆ ให้พอดีทุกจอ (ไม่เลื่อน)
         final tilePadV = isSmall ? 10.0 : 14.0;

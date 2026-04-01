@@ -9,7 +9,7 @@ class TextBox extends StatelessWidget {
   // ใช้กับหน้าอื่น ๆ
   final String? title; // หัวข้อหลัก
   final String? subtitle; // subtitle แบบข้อความ (เดิม)
-  final Widget? subtitleWidget; // ✅ subtitle แบบ Widget (ใหม่)
+  final Widget? subtitleWidget; // subtitle แบบ Widget (ใหม่)
   final String? code;
   final String? status;
   final Color? statusColor;
@@ -25,7 +25,7 @@ class TextBox extends StatelessWidget {
     this.text,
     this.title,
     this.subtitle,
-    this.subtitleWidget, // ✅ เพิ่ม
+    this.subtitleWidget, 
     this.code,
     this.status,
     this.statusColor,

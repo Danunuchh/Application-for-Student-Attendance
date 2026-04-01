@@ -7,8 +7,6 @@ class AppCalendar<T> extends StatefulWidget {
   final DateTime? initialFocusedDay;
   final DateTime? initialSelectedDay;
   final ValueChanged<DateTime>? onDaySelected;
-
-  /// ✅ เพิ่ม callback นี้
   final ValueChanged<DateTime>? onMonthChanged;
 
   const AppCalendar({
@@ -17,7 +15,7 @@ class AppCalendar<T> extends StatefulWidget {
     this.initialFocusedDay,
     this.initialSelectedDay,
     this.onDaySelected,
-    this.onMonthChanged, // ✅
+    this.onMonthChanged, 
   });
 
   @override
@@ -76,7 +74,7 @@ class _AppCalendarState<T> extends State<AppCalendar<T>> {
         daysOfWeekStyle: AppCalendarTheme.daysOfWeekStyle,
         calendarStyle: AppCalendarTheme.calendarStyle,
 
-        /// ⭐ จุดเล็กใต้วันที่มี event
+        /// จุดเล็กใต้วันที่มี event
         calendarBuilders: CalendarBuilders(
           markerBuilder: (context, day, events) {
             if (!_hasEvent(day)) return null;
@@ -102,7 +100,7 @@ class _AppCalendarState<T> extends State<AppCalendar<T>> {
           widget.onDaySelected?.call(selected);
         },
 
-        /// ✅ ตรงนี้แหละที่เรียก fetchMonth
+        /// fetchMonth
         onPageChanged: (focused) {
           _focusedDay = focused;
           widget.onMonthChanged?.call(focused);

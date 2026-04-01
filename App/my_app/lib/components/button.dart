@@ -15,10 +15,10 @@ class CustomButton extends StatelessWidget {
     required this.text,
     required this.onPressed,
     this.loading = false,
-    this.backgroundColor = const Color(0xFF34A853), // เขียว
+    this.backgroundColor = const Color(0xFF34A853), 
     this.textColor = Colors.white,
     this.fontSize = 16,
-    this.borderRadius = 30, // มุมโค้งมน (เหมือนในภาพ)
+    this.borderRadius = 30, 
     this.padding = const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
   });
 
