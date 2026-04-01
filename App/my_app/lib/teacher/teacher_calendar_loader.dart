@@ -61,7 +61,6 @@ class _TeacherCalendarLoaderState extends State<TeacherCalendarLoader> {
     final endDate = startDate.add(const Duration(days: 56)); // 8 สัปดาห์
 
     // แปลงข้อมูลจาก API (courses) ให้เป็น calendar events
-    // API คืน: {id, name, code, day_id, start_time, end_time, room, teacher_name}
     for (final raw in data) {
       // สร้าง Subject จากข้อมูลรายวิชา
       final subject = Subject(
